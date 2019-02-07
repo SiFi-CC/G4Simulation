@@ -1,0 +1,2 @@
+WarningsAsErrors: '*'
+Checks: '*,-llvm-header-guard,-fuchsia-default-arguments'

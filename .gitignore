@@ -1,0 +1,7 @@
+*.swp
+*.swo
+.vimrc
+.clang_complete
+
+build
+
