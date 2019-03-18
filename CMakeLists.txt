@@ -8,14 +8,21 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
 find_package(Geant4 10.2.2 REQUIRED)
-find_package(ROOT 6.13 REQUIRED)
+find_package(ROOT 6.13 REQUIRED RIO Geom)
 message(STATUS "Found Geant4 version " ${Geant4_VERSION} )
 message(STATUS "Found ROOT version " ${ROOT_VERSION} ) 
+add_subdirectory(third_party/spdlog)
+
 
 add_library(g4sim
     ./src/Simulation.cpp
+    ./src/PhysicsList.cpp
+    ./src/PrimaryGeneratorAction.cpp
+    ./src/MuraMask.cpp
+    ./src/EventAction.cpp
 )
 
+target_compile_features(g4sim PRIVATE cxx_std_17)
 target_include_directories(g4sim
     PUBLIC 
         $<INSTALL_INTERFACE:include>    
@@ -27,8 +34,10 @@ target_include_directories(g4sim
 
 target_link_libraries(g4sim
     PUBLIC 
-        ROOT::Core
+        ${ROOT_LIBRARIES}
+        spdlog
         ${Geant4_LIBRARIES}   # TODO (export target)
 )
 
 add_subdirectory(cmd)
+

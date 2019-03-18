@@ -1,2 +1,2 @@
 WarningsAsErrors: '*'
-Checks: '*,-llvm-header-guard,-fuchsia-default-arguments'
+Checks: '*,-llvm-header-guard,-fuchsia-default-arguments,-cppcoreguidelines-owning-memory'
