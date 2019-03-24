@@ -1,7 +1,9 @@
 #pragma once
 
-#include "MuraMask.h"
+#include "Defaults.h"
+#include "MaterialManager.h"
 #include "Utils.h"
+#include "geometry/Element.h"
 
 #include <Geant4/G4Box.hh>
 #include <Geant4/G4LogicalVolume.hh>
@@ -11,37 +13,55 @@
 #include <Geant4/G4SystemOfUnits.hh>
 #include <Geant4/G4Tubs.hh>
 #include <Geant4/G4VUserDetectorConstruction.hh>
+#include <Geant4/G4VisAttributes.hh>
 
 namespace SiFi {
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
   public:
-    DetectorConstruction() = default;
+    DetectorConstruction(
+        DetectorElement* mask, DetectorElement* absorber, double distance)
+        : fMask(mask), fAbsober(absorber), fDistance(distance){};
 
     G4VPhysicalVolume* Construct() override {
         log->debug("Construct()");
 
-        auto matManager = G4NistManager::Instance();
-        auto air = matManager->FindOrBuildMaterial("G4_AIR");
-        auto wolfram = matManager->FindOrBuildMaterial("G4_W");
+        auto world = new G4LogicalVolume(
+            new G4Box("world", 1.0 * m, 3.0 * m, 3.0 * m),
+            MaterialManager::get()->GetMaterial("G4_AIR"),
+            "world");
 
-        auto worldBox = new G4Box("World", 1.0 * m, 3.0 * m, 3.0 * m);
-        auto worldLog = new G4LogicalVolume(worldBox, air, "World");
-        auto worldPhys = new G4PVPlacement(nullptr, G4ThreeVector(), worldLog, "World", nullptr, false, 0);
+        auto detPos = 50 * cm;
 
-        auto detectorBox = new G4Box("detector", 10.0 / 2 * cm, 10.0 / 2 * cm, 5.0 / 2 * cm);
-        auto detectorLog = new G4LogicalVolume(detectorBox, wolfram, "detector");
-        auto detectorPhys =
-            new G4PVPlacement(nullptr, G4ThreeVector(0, 0, 50 * cm), detectorLog, "detector", worldLog, false, 0);
+        new G4PVPlacement(
+            nullptr,
+            G4ThreeVector(0, 0, detPos),
+            fAbsober->Construct(),
+            "detector",
+            world,
+            false,
+            0);
 
-        auto mask = new MuraMask(11, 10 * cm, 10 * cm, 3 * cm, wolfram);
-        auto maskPhys =
-            new G4PVPlacement(nullptr, G4ThreeVector(0, 0, 30 * cm), mask->logicalVolume(), "mask", worldLog, false, 0);
+        new G4PVPlacement(
+            nullptr,
+            G4ThreeVector(0, 0, detPos - fDistance),
+            fMask->Construct(),
+            "mask",
+            world,
+            false,
+            0);
 
-        return worldPhys;
+        world->SetVisAttributes(G4VisAttributes::Invisible);
+        return new G4PVPlacement(
+            nullptr, G4ThreeVector(), world, "world", nullptr, false, 0);
     };
 
     const logger log = createLogger("DetectorConstruction");
+
+  private:
+    DetectorElement* fMask;
+    DetectorElement* fAbsober;
+    double fDistance;
 };
 
 } // namespace SiFi

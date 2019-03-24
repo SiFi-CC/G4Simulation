@@ -1,0 +1,17 @@
+/control/verbose 2
+/control/saveHistory
+/run/verbose 2
+
+/vis/scene/create
+/vis/open OGL
+
+
+/vis/viewer/set/background 1 1 1 		#background white instead of black
+/vis/drawVolume
+/vis/viewer/set/style s
+/vis/viewer/set/edge 0
+/vis/viewer/set/hiddenEdge 1
+
+/run/beamOn 0
+
+

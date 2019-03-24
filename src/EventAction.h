@@ -1,24 +1,21 @@
 #pragma once
 
+#include "DataStorage.h"
+#include "Utils.h"
 #include <Geant4/G4UserEventAction.hh>
-#include <TVector3.h>
-#include <TVectorT.h>
 
 namespace SiFi {
 
 class EventAction : public G4UserEventAction {
   public:
-    EventAction() = default;
+    EventAction(DataStorage* storage) : fStorage(storage){};
     void BeginOfEventAction(const G4Event* evt) override;
     void EndOfEventAction(const G4Event* evt) override;
 
+    const logger log = createLogger("EventAction");
+
   private:
-    struct {
-        TVector3 sourcePosition;
-        TVector3 sourceDirection;
-        double initialEnergy;
-        std::vector<TVector3> hits;
-    } eventData;
+    DataStorage* fStorage = nullptr;
 };
 
 } // namespace SiFi

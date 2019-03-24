@@ -9,8 +9,8 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
     auto vertex = event->GetPrimaryVertex();
     auto position = vertex->GetPosition();
     auto direction = vertex->GetPrimary()->GetMomentumDirection();
-    eventData.sourcePosition = TVector3(position.x(), position.y(), position.z());
-    eventData.sourceDirection = TVector3(direction.x(), direction.y(), direction.z());
+    auto energy = vertex->GetPrimary()->GetKineticEnergy();
+    fStorage->RegisterEventStart(event->GetEventID(), position, direction, energy);
 }
 
 void EventAction::EndOfEventAction(const G4Event* event) {}
