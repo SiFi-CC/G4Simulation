@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     SiFi::log::info("Define storage");
     SiFi::DataStorage storage("./simulation_results.root");
     sim.setDataStorage(&storage);
-    storage.NewSimulation("test");
+    storage.newSimulation("test");
 
     SiFi::log::info("Create mask");
     auto mask = SiFi::defaults::geometry::simpleMask();
@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
     auto detector = SiFi::defaults::geometry::simpleDetectorBlock();
 
     SiFi::log::info("prepare simulation");
-    sim.prepare(&mask, &detector, 20. * cm);
+    sim.prepare(&mask, &detector);
     SiFi::log::info("run Simulation");
     sim.run(1e6);
 }

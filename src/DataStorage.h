@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Utils.h"
 #include <Geant4/G4SystemOfUnits.hh>
 #include <Geant4/G4ThreeVector.hh>
 #include <TFile.h>
@@ -20,10 +21,13 @@ class DataStorage {
         delete fFile;
     };
 
-    void NewSimulation(const TString& name) {
-        Cleanup();
+    void writeMetadata(TObject* obj) { fMetadata->GetUserInfo()->Add(obj); };
+
+    void newSimulation(const TString& name) {
         fFile->mkdir(name);
         fFile->cd(name);
+
+        fMetadata = new TTree("metadata", "metadata");
 
         fEnergyDeposits.hits = new TTree("deposits", "energy deposits in detector");
         fEnergyDeposits.hits->Branch("position", &fEnergyDeposits.position);
@@ -33,11 +37,25 @@ class DataStorage {
             "energyDepostions",
             "energyDepostions",
             100,
-            -50 * cm,
-            50 * cm,
+            -15 * cm,
+            15 * cm,
             100,
-            -50 * m,
-            50 * cm);
+            -15 * cm,
+            15 * cm);
+
+        fMaskEnergyDeposits.hits = new TTree("maskDeposits", "energy deposits in mask");
+        fMaskEnergyDeposits.hits->Branch("position", &fMaskEnergyDeposits.position);
+        fMaskEnergyDeposits.hits->Branch("energy", &fMaskEnergyDeposits.energy);
+        fMaskEnergyDeposits.hits->Branch("id", &fMaskEnergyDeposits.eventId);
+        fMaskEnergyDeposits.histogram = TH2F(
+            "maskEnergydeposits",
+            "mask energy deposits",
+            100,
+            -15 * cm,
+            15 * cm,
+            100,
+            -15 * cm,
+            15 * cm);
 
         fSourceRecord.events = new TTree("source", "source events");
         fSourceRecord.events->Branch("position", &fSourceRecord.position);
@@ -48,27 +66,36 @@ class DataStorage {
             "source_hist",
             "source events",
             100,
-            -50 * cm,
-            50 * cm,
+            -15 * cm,
+            15 * cm,
             100,
-            -50 * m,
-            50 * cm);
+            -15 * cm,
+            15 * cm);
     }
 
-    void RegisterFirstDepositScoring(
+    void registerDepositScoring(
         const G4String& volume, int eventId, const G4ThreeVector& pos, double energy) {
-        if (volume != "fibreLayerRepFibre") {
+        if (volume == "fibreLayerRepFibre") {
+            fEnergyDeposits.eventId = eventId;
+            fEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
+            fEnergyDeposits.energy = energy;
+
+            fEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
+            fEnergyDeposits.hits->Fill();
             return;
         }
-        fEnergyDeposits.eventId = eventId;
-        fEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
-        fEnergyDeposits.energy = energy;
+        if (volume == "maskBin") {
+            fMaskEnergyDeposits.eventId = eventId;
+            fMaskEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
+            fMaskEnergyDeposits.energy = energy;
 
-        fEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
-        fEnergyDeposits.hits->Fill();
+            fMaskEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
+            fMaskEnergyDeposits.hits->Fill();
+            return;
+        }
     }
 
-    void RegisterEventStart(
+    void registerEventStart(
         int eventId, const G4ThreeVector& pos, const G4ThreeVector& dir, double energy) {
         fSourceRecord.eventId = eventId;
         fSourceRecord.position = TVector3(pos.x(), pos.y(), pos.z());
@@ -79,13 +106,18 @@ class DataStorage {
         fSourceRecord.events->Fill();
     }
 
-    void Cleanup() {
+    void cleanup() {
+        fFile->Write();
         delete fEnergyDeposits.hits;
         delete fSourceRecord.events;
+        delete fMaskEnergyDeposits.hits;
+        delete fMetadata;
     }
 
   private:
     TFile* fFile;
+    TTree* fMetadata = nullptr;
+
     struct {
         bool sourceRecord = false;
         bool idealScoring = false;
@@ -103,6 +135,16 @@ class DataStorage {
 
         TH2F histogram;
     } fEnergyDeposits;
+
+    struct {
+        TTree* hits = nullptr;
+
+        TVector3 position;
+        int eventId = 0;
+        double energy = 0;
+
+        TH2F histogram;
+    } fMaskEnergyDeposits;
 
     struct {
         TTree* events = nullptr;

@@ -12,6 +12,8 @@ class DetectorBlock : public DetectorElement {
 
     G4LogicalVolume* Construct() override;
 
+    double getThickness() { return fLayer.getThickness() * fNumberOfLayers; };
+
   private:
     int fNumberOfLayers;
     FibreLayer fLayer;

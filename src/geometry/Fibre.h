@@ -27,9 +27,9 @@ class Fibre : public DetectorElement {
           fCouplingMaterial(specs.couplingMaterial){};
     G4LogicalVolume* Construct() override;
 
-    double GetLength() { return fLength; };
-    double GetWidth() { return fWidth; };
-    double GetThickness() { return fThickness; };
+    double getLength() { return fLength; };
+    double getWidth() { return fWidth; };
+    double getThickness() { return fThickness; };
 
   private:
     double fLength;

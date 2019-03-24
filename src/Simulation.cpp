@@ -19,14 +19,12 @@ void Simulation::prepareDefault() {
     log->info("Setting up default simulation");
     doPrepare(new DetectorConstruction(
         new MuraMask(defaults::geometry::simpleMask()),
-        new DetectorBlock(defaults::geometry::simpleDetectorBlock()),
-        20 * cm));
+        new DetectorBlock(defaults::geometry::simpleDetectorBlock())));
 }
 
-void Simulation::prepare(
-    DetectorElement* mask, DetectorElement* absorber, double distance) {
+void Simulation::prepare(DetectorElement* mask, DetectorElement* absorber) {
     log->info("Setting up standart cm simulation");
-    doPrepare(new DetectorConstruction(mask, absorber, distance));
+    doPrepare(new DetectorConstruction(mask, absorber));
 }
 
 void Simulation::prepare(G4VUserDetectorConstruction* construction) {
@@ -41,7 +39,7 @@ void Simulation::doPrepare(G4VUserDetectorConstruction* construction) {
 
 void Simulation::run(int numberOfEvent) {
     log::debug("Simulation::run()");
-    fRunManager.SetUserAction(new PrimaryGeneratorAction("photon", 4.4 * MeV));
+    fRunManager.SetUserAction(new PrimaryGeneratorAction(new G4GeneralParticleSource()));
     fRunManager.SetUserAction(new SteppingAction(fDataStorage));
     fRunManager.SetUserAction(new EventAction(fDataStorage));
     fRunManager.Initialize();

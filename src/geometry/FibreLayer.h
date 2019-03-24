@@ -12,9 +12,9 @@ class FibreLayer : public DetectorElement {
 
     G4LogicalVolume* Construct() override;
 
-    double GetSizeX() { return fFibre.GetLength(); };
-    double GetSizeY() { return fNumberOfStrips * fFibre.GetWidth(); };
-    double GetThickness() { return fFibre.GetThickness(); };
+    double getSizeX() { return fFibre.getLength(); };
+    double getSizeY() { return fNumberOfStrips * fFibre.getWidth(); };
+    double getThickness() { return fFibre.getThickness(); };
 
   private:
     int fNumberOfStrips;

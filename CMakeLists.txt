@@ -19,7 +19,6 @@ add_library(g4sim
     ./src/Defaults.cpp
     ./src/Simulation.cpp
     ./src/PhysicsList.cpp
-    ./src/PrimaryGeneratorAction.cpp
     ./src/EventAction.cpp
     ./src/MaterialManager.cpp
 

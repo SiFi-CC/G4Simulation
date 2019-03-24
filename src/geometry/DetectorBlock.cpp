@@ -11,9 +11,9 @@ G4LogicalVolume* DetectorBlock::Construct() {
     auto block = new G4LogicalVolume(
         new G4Box(
             "detectorBlockSolid",
-            fLayer.GetSizeX() / 2,
-            fLayer.GetSizeY() / 2,
-            fNumberOfLayers * fLayer.GetThickness() / 2),
+            fLayer.getSizeX() / 2,
+            fLayer.getSizeY() / 2,
+            fNumberOfLayers * fLayer.getThickness() / 2),
         MaterialManager::get()->Vacuum(),
         "detectorBlockLogical");
 
@@ -24,7 +24,7 @@ G4LogicalVolume* DetectorBlock::Construct() {
         block,
         kZAxis,
         fNumberOfLayers,
-        fLayer.GetThickness());
+        fLayer.getThickness());
 
     block->SetVisAttributes(G4VisAttributes::Invisible);
     return block;

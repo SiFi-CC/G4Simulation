@@ -16,7 +16,7 @@ class Simulation {
         fProgramCmd.argv = argv;
     };
     void prepareDefault();
-    void prepare(DetectorElement* mask, DetectorElement* absorber, double distance);
+    void prepare(DetectorElement* mask, DetectorElement* absorber);
     void prepare(G4VUserDetectorConstruction* construction);
 
     void print();

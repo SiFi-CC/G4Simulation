@@ -19,9 +19,8 @@ namespace SiFi {
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
   public:
-    DetectorConstruction(
-        DetectorElement* mask, DetectorElement* absorber, double distance)
-        : fMask(mask), fAbsober(absorber), fDistance(distance){};
+    DetectorConstruction(DetectorElement* mask, DetectorElement* absorber)
+        : fMask(mask), fAbsober(absorber){};
 
     G4VPhysicalVolume* Construct() override {
         log->debug("Construct()");
@@ -31,11 +30,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
             MaterialManager::get()->GetMaterial("G4_AIR"),
             "world");
 
-        auto detPos = 50 * cm;
-
         new G4PVPlacement(
             nullptr,
-            G4ThreeVector(0, 0, detPos),
+            G4ThreeVector(0, 0, fDetectorPosZ),
             fAbsober->Construct(),
             "detector",
             world,
@@ -44,7 +41,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
 
         new G4PVPlacement(
             nullptr,
-            G4ThreeVector(0, 0, detPos - fDistance),
+            G4ThreeVector(0, 0, fMaskPosZ),
             fMask->Construct(),
             "mask",
             world,
@@ -56,12 +53,16 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
             nullptr, G4ThreeVector(), world, "world", nullptr, false, 0);
     };
 
+    void setMaskPos(double z) { fMaskPosZ = z; };
+    void setDetectorPos(double z) { fDetectorPosZ = z; };
+
     const logger log = createLogger("DetectorConstruction");
 
   private:
     DetectorElement* fMask;
     DetectorElement* fAbsober;
-    double fDistance;
+    double fMaskPosZ = 30 * cm;
+    double fDetectorPosZ = 50 * cm;
 };
 
 } // namespace SiFi

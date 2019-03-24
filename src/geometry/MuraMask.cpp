@@ -1,4 +1,5 @@
 #include "MuraMask.h"
+#include "MaterialManager.h"
 #include <Geant4/G4PVPlacement.hh>
 #include <Geant4/G4VisAttributes.hh>
 #include <TFile.h>
@@ -13,7 +14,7 @@ G4LogicalVolume* MuraMask::Construct() {
 
     auto mask = new G4LogicalVolume(
         new G4Box("mask", fSize.x() / 2, fSize.y() / 2, fSize.z() / 2),
-        fMaterial,
+        MaterialManager::get()->Vacuum(),
         "mask");
 
     auto segX = fSize.x() / fMaskOrder;
@@ -47,6 +48,7 @@ G4LogicalVolume* MuraMask::Construct() {
             }
         }
     }
+    delete file;
     return mask;
 }
 
