@@ -18,7 +18,8 @@ int main(int argc, char** argv) {
 
     G4RunManager runManager;
     runManager.SetUserInitialization(construction);
-    runManager.SetUserInitialization(new PhysicsList());
+    auto physicsList = new PhysicsList();
+    runManager.SetUserInitialization(physicsList);
 
     G4GeneralParticleSource source;
     source.GetCurrentSource()->GetPosDist()->SetPosDisType("Point");
@@ -33,8 +34,10 @@ int main(int argc, char** argv) {
 
     const int nIter = 100000;
 
-    for (int maskDetDistance = 20; maskDetDistance < 30; maskDetDistance += 5) {
-        for (int maskSrcDistance = 5; maskSrcDistance < 60; maskSrcDistance += 5) {
+    for (int maskDetDistance = 10; maskDetDistance < 25; maskDetDistance += 5) {
+        for (int maskSrcDistance = 5; maskSrcDistance < 80; maskSrcDistance += 5) {
+            maskSrcDistance = 40;
+            maskDetDistance = 15;
             construction->setMaskPos(maskSrcDistance * cm + mask.getThickness() / 2);
             construction->setDetectorPos(
                 maskSrcDistance * cm + maskDetDistance * cm +
@@ -42,12 +45,13 @@ int main(int argc, char** argv) {
             runManager.DefineWorldVolume(construction->Construct());
             runManager.GeometryHasBeenModified();
 
-            for (int sPosX = 0; sPosX <= 10; sPosX++) {
-                for (int sPosY = 0; sPosY <= 10; sPosY++) {
+            for (int sPosX = -10; sPosX <= 10; sPosX++) {
+                for (int sPosY = -10; sPosY <= 10; sPosY++) {
                     for (int energy = 4400; energy > 100; energy /= 2) {
                         log::info(
-                            "Starting simulation source({}, {}), maskToDetDistance={}, "
-                            "sourceToMaskDistance={}, baseEenrgy={}",
+                            "Starting simulation source({}, {}), "
+                            "maskToDetectorDistance={}, sourceToMaskDistance={}, "
+                            "baseEenrgy={}",
                             sPosX * cm,
                             sPosY * cm,
                             maskDetDistance * cm,
@@ -67,11 +71,13 @@ int main(int argc, char** argv) {
                         storage.writeMetadata(
                             new TParameter<double>("sourcePosY", sPosY * cm));
                         storage.writeMetadata(
+                            new TParameter<double>("sourcePosZ", 0 * cm));
+                        storage.writeMetadata(
                             new TParameter<double>("energy", energy * MeV / 1000));
                         storage.writeMetadata(new TParameter<double>(
-                            "srcMaskDistance", maskSrcDistance * cm));
+                            "sourceToMaskDistance", maskSrcDistance * cm));
                         storage.writeMetadata(new TParameter<double>(
-                            "maskDetDistance", maskDetDistance * cm));
+                            "maskToDetectorDistance", maskDetDistance * cm));
 
                         source.GetCurrentSource()->GetPosDist()->SetCentreCoords(
                             G4ThreeVector(sPosX * cm, sPosY * cm, 0));
@@ -81,10 +87,9 @@ int main(int argc, char** argv) {
                         storage.cleanup();
                         break;
                     }
-                    break;
                 }
-                break;
             }
+            break;
         }
         break;
     }

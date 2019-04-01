@@ -1,15 +1,14 @@
 #pragma once
 
 #include "Utils.h"
-#include <Geant4/G4VUserPhysicsList.hh>
+#include <Geant4/G4VModularPhysicsList.hh>
 
 namespace SiFi {
 
-class PhysicsList : public G4VUserPhysicsList {
+class PhysicsList : public G4VModularPhysicsList {
   public:
-    PhysicsList() = default;
+    PhysicsList();
     void ConstructParticle() override;
-    void ConstructProcess() override;
 
     const logger log = createLogger("PhysicsList");
 };

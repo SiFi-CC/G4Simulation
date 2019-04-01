@@ -1,43 +1,43 @@
 #include "PhysicsList.h"
 #include "Utils.h"
+#include <Geant4/G4ChargeExchangePhysics.hh>
 #include <Geant4/G4ComptonScattering.hh>
-#include <Geant4/G4Electron.hh>
-#include <Geant4/G4Gamma.hh>
+#include <Geant4/G4DecayPhysics.hh>
+#include <Geant4/G4EmExtraPhysics.hh>
+#include <Geant4/G4EmLowEPPhysics.hh>
+#include <Geant4/G4EmStandardPhysics.hh>
 #include <Geant4/G4GammaConversion.hh>
+#include <Geant4/G4HadronElasticPhysicsHP.hh>
+#include <Geant4/G4HadronPhysicsQGSP_BERT_HP.hh>
+#include <Geant4/G4IonElasticPhysics.hh>
+#include <Geant4/G4IonPhysics.hh>
+#include <Geant4/G4OpticalPhysics.hh>
 #include <Geant4/G4ParticleTable.hh>
 #include <Geant4/G4PhotoElectricEffect.hh>
 #include <Geant4/G4PhysicsListHelper.hh>
-#include <Geant4/G4Positron.hh>
 #include <Geant4/G4ProcessTable.hh>
-#include <Geant4/G4Proton.hh>
-#include <Geant4/G4RayleighScattering.hh>
+#include <Geant4/G4StoppingPhysics.hh>
 
 namespace SiFi {
 
+PhysicsList::PhysicsList() {
+    RegisterPhysics(new G4EmStandardPhysics());
+    // RegisterPhysics(new G4EmLowEPPhysics());
+    RegisterPhysics(new G4EmExtraPhysics());
+    RegisterPhysics(new G4OpticalPhysics());
+    RegisterPhysics(new G4DecayPhysics());
+    RegisterPhysics(new G4StoppingPhysics());
+    RegisterPhysics(new G4IonPhysics());
+    RegisterPhysics(new G4IonElasticPhysics());
+    RegisterPhysics(new G4ChargeExchangePhysics());
+    RegisterPhysics(new G4HadronElasticPhysicsHP());
+    // RegisterPhysics(new G4HadronPhysicsQGSP_BERT_HP());
+}
+
 void PhysicsList::ConstructParticle() {
     log->debug("ConstructParticle()");
-    G4Proton::ProtonDefinition();
-    G4Gamma::GammaDefinition();
-    G4Electron::ElectronDefinition();
-    G4Positron::PositronDefinition();
+    G4VModularPhysicsList::ConstructParticle();
     PhysicsList::DumpList();
     log->debug("ConstructParticle()");
-};
-void PhysicsList::ConstructProcess() {
-    log->debug("ConstructProcess()");
-    AddTransportation();
-
-    auto ph = G4PhysicsListHelper::GetPhysicsListHelper();
-    auto particle = G4Gamma::GammaDefinition();
-    ph->RegisterProcess(new G4PhotoElectricEffect(), particle);
-    ph->RegisterProcess(new G4ComptonScattering(), particle);
-    ph->RegisterProcess(new G4GammaConversion(), particle);
-    ph->RegisterProcess(new G4RayleighScattering(), particle);
-
-    auto processNameList = G4ProcessTable::GetProcessTable()->GetNameList();
-    for (G4int i = 0; i < G4int(processNameList->size()); i++) {
-        log->debug("AddProcess: {}", (*processNameList)[i]);
-    }
-    log->debug("ConstructProcess()");
 };
 } // namespace SiFi

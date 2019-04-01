@@ -16,7 +16,6 @@ class DataStorage {
         : fFile(new TFile(filename, "RECREATE")){};
 
     virtual ~DataStorage() {
-        fFile->Write();
         fFile->Close();
         delete fFile;
     };
