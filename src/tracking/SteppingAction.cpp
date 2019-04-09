@@ -15,7 +15,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
 
         log->debug("hit in volume {}", name);
 
-        fStorage->registerDepositScoring(name, 1, pos, deposit);
+        fStorage->registerDepositScoring(name, pos, deposit);
     }
 }
 

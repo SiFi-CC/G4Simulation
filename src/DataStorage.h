@@ -73,9 +73,9 @@ class DataStorage {
     }
 
     void registerDepositScoring(
-        const G4String& volume, int eventId, const G4ThreeVector& pos, double energy) {
+        const G4String& volume, const G4ThreeVector& pos, double energy) {
         if (volume == "fibreLayerRepFibre") {
-            fEnergyDeposits.eventId = eventId;
+            fEnergyDeposits.eventId = fSourceRecord.eventId;
             fEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
             fEnergyDeposits.energy = energy;
 
@@ -84,7 +84,7 @@ class DataStorage {
             return;
         }
         if (volume == "maskBin") {
-            fMaskEnergyDeposits.eventId = eventId;
+            fMaskEnergyDeposits.eventId = fSourceRecord.eventId;
             fMaskEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
             fMaskEnergyDeposits.energy = energy;
 
