@@ -17,6 +17,8 @@ class MuraMask : public DetectorElement {
     G4LogicalVolume* Construct() override;
 
     double getThickness() { return fSize.z(); }
+    bool isMaskedAt(int x, int y);
+    int isQuaResidue(int q, int p);
 
   private:
     int fMaskOrder;

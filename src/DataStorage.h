@@ -22,9 +22,13 @@ class DataStorage {
 
     void writeMetadata(TObject* obj) { fMetadata->GetUserInfo()->Add(obj); };
 
-    void newSimulation(const TString& name) {
-        fFile->mkdir(name);
-        fFile->cd(name);
+    void newSimulation(const TString& name, bool singleSimulationMode = false) {
+        if (!singleSimulationMode) {
+            fFile->mkdir(name);
+            fFile->cd(name);
+        } else {
+            fFile->cd();
+        }
 
         fMetadata = new TTree("metadata", "metadata");
 

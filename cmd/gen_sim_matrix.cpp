@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
     log::set_level(spdlog::level::info);
     DataStorage storage("./simulation_results.root");
 
-    MuraMask mask(11, {20. * cm, 20. * cm, 6. * cm}, MaterialManager::get()->LuAGCe());
+    MuraMask mask(11, {20. * cm, 20. * cm, 3. * cm}, MaterialManager::get()->LuAGCe());
     DetectorBlock detector(defaults::geometry::simpleDetectorBlock());
     auto construction = new DetectorConstruction(&mask, &detector);
 
@@ -32,18 +32,20 @@ int main(int argc, char** argv) {
     runManager.SetUserAction(new EventAction(&storage));
     runManager.Initialize();
 
-    const int nIter = 200000;
+    const int nIter = 10000;
 
     for (int maskDetDistance = 12; maskDetDistance <= 20; maskDetDistance += 2) {
         for (int maskSrcDistance = 10; maskSrcDistance <= 80; maskSrcDistance += 10) {
+            maskDetDistance = 16;
+            maskSrcDistance = 50;
             construction->setMaskPos(maskSrcDistance * cm);
             construction->setDetectorPos(maskSrcDistance * cm + maskDetDistance * cm);
             runManager.DefineWorldVolume(construction->Construct());
             runManager.GeometryHasBeenModified();
 
-            for (int sPosX = -10; sPosX <= 10; sPosX += 10) {
-                for (int sPosY = -10; sPosY <= 10; sPosY += 10) {
-                    sPosY = sPosX;
+            for (int sPosX = -10; sPosX <= 10; sPosX += 1) {
+                for (int sPosY = -10; sPosY <= 10; sPosY += 1) {
+                    // sPosY = sPosX;
                     for (int energy = 4400; energy > 50; energy /= 4) {
                         log::info(
                             "Starting simulation source({}, {}), "
@@ -53,7 +55,7 @@ int main(int argc, char** argv) {
                             sPosY * cm,
                             maskDetDistance * cm,
                             maskSrcDistance * cm,
-                            energy * MeV / 1000);
+                            energy * keV);
 
                         storage.newSimulation(TString::Format(
                             "%d_%d_%d_%d_%d",
@@ -70,7 +72,7 @@ int main(int argc, char** argv) {
                         storage.writeMetadata(
                             new TParameter<double>("sourcePosZ", 0 * cm));
                         storage.writeMetadata(
-                            new TParameter<double>("energy", energy * MeV / 1000));
+                            new TParameter<double>("energy", energy * keV));
                         storage.writeMetadata(new TParameter<double>(
                             "sourceToMaskDistance", maskSrcDistance * cm));
                         storage.writeMetadata(new TParameter<double>(
@@ -82,10 +84,12 @@ int main(int argc, char** argv) {
                             energy * keV);
                         runManager.BeamOn(nIter);
                         storage.cleanup();
+                        break;
                     }
-                    break;
                 }
             }
+            break;
         }
+        break;
     }
 }

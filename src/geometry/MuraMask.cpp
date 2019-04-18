@@ -7,11 +7,31 @@
 
 namespace SiFi {
 
-G4LogicalVolume* MuraMask::Construct() {
-    // TODO: generate masks here
-    auto file = new TFile("../../sificcsimulation/macros/hMURA2d_11.root", "READ");
-    TH2F* muraHist = static_cast<TH2F*>(file->Get("hMURA2d"));
+bool MuraMask::isMaskedAt(int x, int y) {
+    if (x == 0) {
+        return false;
+    }
+    if (y == 0) {
+        return true;
+    }
+    if (isQuaResidue(x, fMaskOrder) * isQuaResidue(y, fMaskOrder) == -1) {
+        return true;
+    }
+    return false;
+}
 
+int MuraMask::isQuaResidue(int q, int p) {
+    int result = -1;
+    for (int i = 1; i < p; i++) {
+        if ((i * i) % p == q) {
+            result = 1;
+            break;
+        }
+    }
+    return result;
+}
+
+G4LogicalVolume* MuraMask::Construct() {
     auto mask = new G4LogicalVolume(
         new G4Box("mask", fSize.x() / 2, fSize.y() / 2, fSize.z() / 2),
         MaterialManager::get()->Vacuum(),
@@ -28,13 +48,11 @@ G4LogicalVolume* MuraMask::Construct() {
 
     int placementId = 1;
 
-    for (int i = 1; i < fMaskOrder + 1; i++) {
-        for (int j = 1; j < fMaskOrder + 1; j++) {
-            if (muraHist->GetBinContent(i, j) > 0) {
-                auto posX =
-                    muraHist->GetXaxis()->GetBinCenter(i) * segX - fMaskOrder * segX / 2;
-                auto posY =
-                    muraHist->GetYaxis()->GetBinCenter(j) * segY - fMaskOrder * segY / 2;
+    for (int i = 0; i < fMaskOrder; i++) {
+        for (int j = 0; j < fMaskOrder; j++) {
+            if (isMaskedAt(i, j)) {
+                auto posX = (i + 0.5) * segX - fSize.x() / 2;
+                auto posY = (j + 0.5) * segY - fSize.y() / 2;
 
                 new G4PVPlacement(
                     nullptr,
@@ -48,7 +66,6 @@ G4LogicalVolume* MuraMask::Construct() {
             }
         }
     }
-    delete file;
     return mask;
 }
 

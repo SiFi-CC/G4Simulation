@@ -7,13 +7,16 @@ set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
-find_package(Geant4 10.2.2 REQUIRED ui_all vis_all)
-find_package(ROOT 6.13 REQUIRED RIO Geom MathCore Physics Gui Tree)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS})
+find_package(Geant4 REQUIRED ui_all vis_all)
+find_package(ROOT REQUIRED RIO Geom MathCore Physics Gui Tree)
 message(STATUS "Found Geant4 version " ${Geant4_VERSION} )
 message(STATUS "Found ROOT version " ${ROOT_VERSION} ) 
 add_subdirectory(third_party/spdlog)
 
-include("${Geant4_USE_FILE}")
+include(${Geant4_USE_FILE})
+include(${ROOT_USE_FILE})
+include_directories(${ROOT_INCLUDE_DIRS})
 
 add_library(g4sim
     ./src/Defaults.cpp
@@ -44,8 +47,9 @@ target_include_directories(g4sim
 
 target_link_libraries(g4sim
     PUBLIC 
-    ROOT::Core ROOT::RIO ROOT::Geom ROOT::MathCore ROOT::Physics ROOT::Gui ROOT::Tree
+    #  ROOT::Core ROOT::RIO ROOT::Geom ROOT::MathCore ROOT::Physics ROOT::Gui ROOT::Tree
     spdlog::spdlog
+    ${ROOT_LIBRARIES} 
     ${Geant4_LIBRARIES}   # TODO (export target)
 )
 
