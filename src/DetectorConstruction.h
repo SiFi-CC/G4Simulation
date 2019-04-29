@@ -26,7 +26,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
         log->debug("Construct()");
 
         auto world = new G4LogicalVolume(
-            new G4Box("world", 1.0 * m, 3.0 * m, 3.0 * m),
+            new G4Box("world", .5 * m, .5 * m, 1.2 * m),
             MaterialManager::get()->GetMaterial("G4_AIR"),
             "world");
 

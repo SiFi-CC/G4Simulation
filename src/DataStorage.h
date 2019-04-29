@@ -37,8 +37,8 @@ class DataStorage {
         fEnergyDeposits.hits->Branch("energy", &fEnergyDeposits.energy);
         fEnergyDeposits.hits->Branch("id", &fEnergyDeposits.eventId);
         fEnergyDeposits.histogram = TH2F(
-            "energyDepostions",
-            "energyDepostions",
+            "energyDeposits",
+            "energy deposits in detector",
             100,
             -15 * cm,
             15 * cm,
@@ -51,8 +51,8 @@ class DataStorage {
         fMaskEnergyDeposits.hits->Branch("energy", &fMaskEnergyDeposits.energy);
         fMaskEnergyDeposits.hits->Branch("id", &fMaskEnergyDeposits.eventId);
         fMaskEnergyDeposits.histogram = TH2F(
-            "maskEnergydeposits",
-            "mask energy deposits",
+            "maskEnergyDeposits",
+            "energy deposits in mask",
             100,
             -15 * cm,
             15 * cm,
@@ -66,7 +66,7 @@ class DataStorage {
         fSourceRecord.events->Branch("energy", &fSourceRecord.energy);
         fSourceRecord.events->Branch("id", &fSourceRecord.eventId);
         fSourceRecord.histogram = TH2F(
-            "source_hist",
+            "sourceHist",
             "source events",
             100,
             -15 * cm,
