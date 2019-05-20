@@ -69,4 +69,16 @@ G4LogicalVolume* MuraMask::Construct() {
     return mask;
 }
 
+void MuraMask::writeMetadata(DataStorage* storage) {
+    double zPosition = storage->getMetadataNumber("sourceToMaskDistance");
+    storage->writeMetadata("maskMinX", -fSize.x() / 2);
+    storage->writeMetadata("maskMaxX", fSize.x() / 2);
+    storage->writeMetadata("maskMinY", -fSize.y() / 2);
+    storage->writeMetadata("maskMaxY", fSize.y() / 2);
+    storage->writeMetadata("maskMinZ", zPosition - fSize.z() / 2);
+    storage->writeMetadata("maskMaxZ", zPosition + fSize.z() / 2);
+    storage->writeMetadata("maskBinX", fMaskOrder);
+    storage->writeMetadata("maskBinY", fMaskOrder);
+}
+
 } // namespace SiFi

@@ -22,16 +22,16 @@ int main(int argc, char** argv) {
     DataStorage storage(output);
 
     MuraMask mask(
-        11, {20. * cm, 20. * cm, 3. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
+        11, {10. * cm, 10. * cm, 2. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
 
     auto material = MaterialManager::get()->LuAGCe();
     DetectorBlock detector(
-        5,                   // number of layers
+        50,                  // number of layers
         FibreLayer(          //
-            20,              // number of fibres in layer
-            Fibre({20. * cm, // fibre length
-                   1. * cm,  // fibre width
-                   1. * cm,  // thickness (z-axis)
+            100,             // number of fibres in layer
+            Fibre({10. * cm, // fibre length
+                   0.1 * cm, // fibre width
+                   0.1 * cm, // thickness (z-axis)
                    material,
                    material,
                    material})));
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     runManager.SetUserAction(new EventAction(&storage));
     runManager.Initialize();
 
-    const int nIter = 200000;
+    const int nIter = 100000;
 
     //
     // Easiest way to use this part of code is to add break statements
@@ -70,43 +70,47 @@ int main(int argc, char** argv) {
             runManager.DefineWorldVolume(construction->Construct());
             runManager.GeometryHasBeenModified();
 
-            for (int sPosX = -10; sPosX <= 10; sPosX += 1) {
-                for (int sPosY = -10; sPosY <= 10; sPosY += 1) {
+            int maxBinX = 100;
+            int maxBinY = 100;
+            for (int binX = 0; binX < maxBinX; binX += 1) {
+                for (int binY = 0; binY < maxBinY; binY += 1) {
                     // sPosY = sPosX;
+                    double sPosX = -10 * cm + (0.5 + binX) * (20 * cm / maxBinX);
+                    double sPosY = -10 * cm + (0.5 + binY) * (20 * cm / maxBinY);
                     for (int energy = 4400; energy > 50; energy /= 4) {
                         log::info(
                             "Starting simulation source({}, {}), "
                             "maskToDetectorDistance={}, sourceToMaskDistance={}, "
                             "baseEnergy={}",
-                            sPosX * cm,
-                            sPosY * cm,
+                            sPosX,
+                            sPosY,
                             maskDetDistance * cm,
                             maskSrcDistance * cm,
                             energy * keV);
 
-                        storage.newSimulation(TString::Format(
-                            "%d_%d_%d_%d_%d",
+                        auto simName = TString::Format(
+                            "%f_%f_%d_%d_%d",
                             sPosX,
                             sPosY,
                             maskDetDistance,
                             maskSrcDistance,
-                            energy));
+                            energy);
 
+                        storage.newSimulation(simName);
+                        storage.writeMetadata("sourcePosX", sPosX);
+                        storage.writeMetadata("sourcePosY", sPosY);
+                        storage.writeMetadata("sourcePosZ", 0 * cm);
+                        storage.writeMetadata("energy", energy * keV);
                         storage.writeMetadata(
-                            new TParameter<double>("sourcePosX", sPosX * cm));
+                            "sourceToMaskDistance", maskSrcDistance * cm);
                         storage.writeMetadata(
-                            new TParameter<double>("sourcePosY", sPosY * cm));
-                        storage.writeMetadata(
-                            new TParameter<double>("sourcePosZ", 0 * cm));
-                        storage.writeMetadata(
-                            new TParameter<double>("energy", energy * keV));
-                        storage.writeMetadata(new TParameter<double>(
-                            "sourceToMaskDistance", maskSrcDistance * cm));
-                        storage.writeMetadata(new TParameter<double>(
-                            "maskToDetectorDistance", maskDetDistance * cm));
+                            "maskToDetectorDistance", maskDetDistance * cm);
+                        detector.writeMetadata(&storage);
+                        mask.writeMetadata(&storage);
+                        storage.init();
 
                         source.GetCurrentSource()->GetPosDist()->SetCentreCoords(
-                            G4ThreeVector(sPosX * cm, sPosY * cm, 0));
+                            G4ThreeVector(sPosX * mm, sPosY * mm, 0));
                         source.GetCurrentSource()->GetEneDist()->SetMonoEnergy(
                             energy * keV);
                         runManager.BeamOn(nIter);

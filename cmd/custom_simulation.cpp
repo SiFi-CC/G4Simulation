@@ -23,20 +23,20 @@ int main(int argc, char** argv) {
 
     int maskDetDistance = 16;
     int maskSrcDistance = 50;
-    int sPosX = 10;
-    int sPosY = 0;
+    int sPosX = -2;
+    int sPosY = 3;
     int energy = 4400;
     auto material = MaterialManager::get()->LuAGCe();
 
     MuraMask mask(
-        11, {20. * cm, 20. * cm, 3. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
+        11, {10. * cm, 10. * cm, 2. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
     DetectorBlock detector(
-        5,                   // number of layers
+        50,                  // number of layers
         FibreLayer(          //
-            20,              // number of fibres in layer
-            Fibre({20. * cm, // fibre length
-                   1. * cm,  // fibre width
-                   1. * cm,  // thickness (z-axis)
+            100,             // number of fibres in layer
+            Fibre({10. * cm, // fibre length
+                   0.1 * cm, // fibre width
+                   0.1 * cm, // thickness (z-axis)
                    material,
                    material,
                    material})));
@@ -81,14 +81,15 @@ int main(int argc, char** argv) {
             "%d_%d_%d_%d_%d", sPosX, sPosY, maskDetDistance, maskSrcDistance, energy),
         true);
 
-    storage.writeMetadata(new TParameter<double>("sourcePosX", sPosX * cm));
-    storage.writeMetadata(new TParameter<double>("sourcePosY", sPosY * cm));
-    storage.writeMetadata(new TParameter<double>("sourcePosZ", 0 * cm));
-    storage.writeMetadata(new TParameter<double>("energy", energy * keV));
-    storage.writeMetadata(
-        new TParameter<double>("sourceToMaskDistance", maskSrcDistance * cm));
-    storage.writeMetadata(
-        new TParameter<double>("maskToDetectorDistance", maskDetDistance * cm));
+    storage.writeMetadata("sourcePosX", sPosX * cm);
+    storage.writeMetadata("sourcePosY", sPosY * cm);
+    storage.writeMetadata("sourcePosZ", 0 * cm);
+    storage.writeMetadata("energy", energy * keV);
+    storage.writeMetadata("sourceToMaskDistance", maskSrcDistance * cm);
+    storage.writeMetadata("maskToDetectorDistance", maskDetDistance * cm);
+    detector.writeMetadata(&storage);
+    mask.writeMetadata(&storage);
+    storage.init();
 
     runManager.BeamOn(nIter);
     storage.cleanup();

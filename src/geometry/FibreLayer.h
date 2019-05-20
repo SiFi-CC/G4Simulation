@@ -15,6 +15,7 @@ class FibreLayer : public DetectorElement {
     double getSizeX() { return fFibre.getLength(); };
     double getSizeY() { return fNumberOfStrips * fFibre.getWidth(); };
     double getThickness() { return fFibre.getThickness(); };
+    int getNumberOfStrips() { return fNumberOfStrips; };
 
   private:
     int fNumberOfStrips;

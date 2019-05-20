@@ -4,6 +4,7 @@
 #include <Geant4/G4LogicalVolume.hh>
 #include <Geant4/G4PVReplica.hh>
 #include <Geant4/G4VisAttributes.hh>
+#include <TParameter.h>
 
 namespace SiFi {
 
@@ -28,6 +29,19 @@ G4LogicalVolume* DetectorBlock::Construct() {
 
     block->SetVisAttributes(G4VisAttributes::Invisible);
     return block;
+}
+
+void DetectorBlock::writeMetadata(DataStorage* storage) {
+    double detZPosition = storage->getMetadataNumber("sourceToMaskDistance") +
+                          storage->getMetadataNumber("maskToDetectorDistance");
+    storage->writeMetadata("detectorMinX", -fLayer.getSizeX() / 2);
+    storage->writeMetadata("detectorMaxX", fLayer.getSizeX() / 2);
+    storage->writeMetadata("detectorMinY", -fLayer.getSizeY() / 2);
+    storage->writeMetadata("detectorMaxY", fLayer.getSizeY() / 2);
+    storage->writeMetadata("detectorMinZ", detZPosition - getThickness() / 2);
+    storage->writeMetadata("detectorMaxZ", detZPosition + getThickness() / 2);
+    storage->writeMetadata("detectorBinX", fLayer.getNumberOfStrips());
+    storage->writeMetadata("detectorBinY", fLayer.getNumberOfStrips());
 }
 
 } // namespace SiFi

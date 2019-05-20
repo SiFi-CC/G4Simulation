@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DataStorage.h"
 #include "Element.h"
 
 #include <Geant4/G4Box.hh>
@@ -19,6 +20,8 @@ class MuraMask : public DetectorElement {
     double getThickness() { return fSize.z(); }
     bool isMaskedAt(int x, int y);
     int isQuaResidue(int q, int p);
+
+    void writeMetadata(DataStorage* storage);
 
   private:
     int fMaskOrder;
