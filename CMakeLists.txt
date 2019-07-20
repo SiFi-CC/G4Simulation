@@ -20,7 +20,6 @@ include_directories(${ROOT_INCLUDE_DIRS})
 
 add_library(g4sim
     ./src/Defaults.cpp
-    ./src/Simulation.cpp
     ./src/PhysicsList.cpp
     ./src/EventAction.cpp
     ./src/MaterialManager.cpp

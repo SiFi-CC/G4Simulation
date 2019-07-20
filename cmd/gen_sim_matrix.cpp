@@ -2,8 +2,8 @@
 #include "EventAction.h"
 #include "PhysicsList.h"
 #include "PrimaryGeneratorAction.h"
-#include "Simulation.h"
 #include "tracking/SteppingAction.h"
+#include <Geant4/G4RunManager.hh>
 #include <TParameter.h>
 
 using namespace SiFi;
