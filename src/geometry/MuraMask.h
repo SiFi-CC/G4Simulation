@@ -3,10 +3,10 @@
 #include "DataStorage.h"
 #include "Element.h"
 
-#include <Geant4/G4Box.hh>
-#include <Geant4/G4LogicalVolume.hh>
-#include <Geant4/G4Material.hh>
-#include <Geant4/G4SystemOfUnits.hh>
+#include <G4Box.hh>
+#include <G4LogicalVolume.hh>
+#include <G4Material.hh>
+#include <G4SystemOfUnits.hh>
 
 namespace SiFi {
 

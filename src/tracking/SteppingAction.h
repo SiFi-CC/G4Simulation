@@ -2,7 +2,7 @@
 
 #include "DataStorage.h"
 #include "Utils.h"
-#include <Geant4/G4UserSteppingAction.hh>
+#include <G4UserSteppingAction.hh>
 
 namespace SiFi {
 

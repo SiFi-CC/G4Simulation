@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Geant4/G4LogicalVolume.hh>
+#include <G4LogicalVolume.hh>
 
 namespace SiFi {
 

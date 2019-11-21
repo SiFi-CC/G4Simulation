@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Utils.h"
-#include <Geant4/G4SystemOfUnits.hh>
-#include <Geant4/G4ThreeVector.hh>
+#include <G4SystemOfUnits.hh>
+#include <G4ThreeVector.hh>
 #include <TFile.h>
 #include <TH2F.h>
 #include <TParameter.h>

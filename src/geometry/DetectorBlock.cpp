@@ -1,9 +1,9 @@
 #include "DetectorBlock.h"
 #include "MaterialManager.h"
-#include <Geant4/G4Box.hh>
-#include <Geant4/G4LogicalVolume.hh>
-#include <Geant4/G4PVReplica.hh>
-#include <Geant4/G4VisAttributes.hh>
+#include <G4Box.hh>
+#include <G4LogicalVolume.hh>
+#include <G4PVReplica.hh>
+#include <G4VisAttributes.hh>
 #include <TParameter.h>
 
 namespace SiFi {

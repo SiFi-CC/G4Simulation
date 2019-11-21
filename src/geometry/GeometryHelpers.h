@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DetectorBlock.h"
-#include <Geant4/G4ThreeVector.hh>
+#include <G4ThreeVector.hh>
 
 namespace SiFi {
 namespace geometry {
