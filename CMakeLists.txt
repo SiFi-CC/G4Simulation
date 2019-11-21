@@ -10,8 +10,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS})
 find_package(Geant4 REQUIRED ui_all vis_all)
 find_package(ROOT REQUIRED RIO Geom MathCore Physics Gui Tree)
+find_package(CmdLineArgs 2.0.0 REQUIRED)
 message(STATUS "Found Geant4 version " ${Geant4_VERSION} )
 message(STATUS "Found ROOT version " ${ROOT_VERSION} ) 
+message(STATUS "Found CmdLineArgs version " ${CmdLineArgs_VERSION} ) 
 add_subdirectory(third_party/spdlog)
 
 include(${Geant4_USE_FILE})
@@ -32,7 +34,6 @@ add_library(g4sim
 
     ./src/tracking/SteppingAction.cpp
 )
-
 target_compile_features(g4sim PRIVATE cxx_std_11) #TODO (resolve issue with spdlog and ROOT)
 target_include_directories(g4sim
     PUBLIC 

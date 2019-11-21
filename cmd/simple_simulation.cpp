@@ -40,6 +40,15 @@ int main(int argc, char** argv) {
     const int nIter = 200000;
 
     storage.newSimulation("test_sim", true);
+    // storage.writeMetadata("sourcePosX", sPosX * cm);
+    // storage.writeMetadata("sourcePosY", sPosY * cm);
+    // storage.writeMetadata("sourcePosZ", 0 * cm);
+    // storage.writeMetadata("energy", energy * keV);
+    // storage.writeMetadata("sourceToMaskDistance", maskSrcDistance * cm);
+    // storage.writeMetadata("maskToDetectorDistance", maskDetDistance * cm);
+    storage.init();
+
+    
     runManager.BeamOn(nIter);
     storage.cleanup();
 }
