@@ -9,15 +9,12 @@
 #include <TString.h>
 
 #include <G4RunManager.hh>
-
 #include <CmdLineConfig.hh>
-
 
 using namespace SiFi;
 
 int main(int argc, char** argv) {
     spdlog::set_level(spdlog::level::info);
-
 
     CmdLineOption opt_det(
       "Plane", "-det",
@@ -29,12 +26,10 @@ int main(int argc, char** argv) {
                                "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e",
                                "Energy of particles [keV], default: 4400 (integer)", 4400);
-
     CmdLineOption opt_theta("Theta", "-theta",
                                "Min and max Theta [Deg], default: 170:180", 0);
     CmdLineOption opt_source("Source", "-source",
                                "Source position [mm], default: -2:2", 0);
-
     CmdLineArg cmdarg_output("output", "Output file", CmdLineArg::kString);
 
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
@@ -53,7 +48,6 @@ int main(int argc, char** argv) {
     Float_t minTheta = 170., maxTheta = 180;
 
     Float_t sPosX = -0.2, sPosY = 0.2;
-
 
     if (opt_det.GetArraySize() == 4) {
         ds = opt_det.GetDoubleArrayValue(1);
