@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Element.h"
-#include <Geant4/G4LogicalVolume.hh>
-#include <Geant4/G4Material.hh>
+#include <G4LogicalVolume.hh>
+#include <G4Material.hh>
 
 namespace SiFi {
 

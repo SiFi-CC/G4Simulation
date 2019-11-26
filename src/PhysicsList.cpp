@@ -1,22 +1,22 @@
 #include "PhysicsList.h"
 #include "Utils.h"
-#include <Geant4/G4ChargeExchangePhysics.hh>
-#include <Geant4/G4ComptonScattering.hh>
-#include <Geant4/G4DecayPhysics.hh>
-#include <Geant4/G4EmExtraPhysics.hh>
-#include <Geant4/G4EmLowEPPhysics.hh>
-#include <Geant4/G4EmStandardPhysics.hh>
-#include <Geant4/G4GammaConversion.hh>
-#include <Geant4/G4HadronElasticPhysicsHP.hh>
-#include <Geant4/G4HadronPhysicsQGSP_BERT_HP.hh>
-#include <Geant4/G4IonElasticPhysics.hh>
-#include <Geant4/G4IonPhysics.hh>
-#include <Geant4/G4OpticalPhysics.hh>
-#include <Geant4/G4ParticleTable.hh>
-#include <Geant4/G4PhotoElectricEffect.hh>
-#include <Geant4/G4PhysicsListHelper.hh>
-#include <Geant4/G4ProcessTable.hh>
-#include <Geant4/G4StoppingPhysics.hh>
+#include <G4ChargeExchangePhysics.hh>
+#include <G4ComptonScattering.hh>
+#include <G4DecayPhysics.hh>
+#include <G4EmExtraPhysics.hh>
+#include <G4EmLowEPPhysics.hh>
+#include <G4EmStandardPhysics.hh>
+#include <G4GammaConversion.hh>
+#include <G4HadronElasticPhysicsHP.hh>
+#include <G4HadronPhysicsQGSP_BERT_HP.hh>
+#include <G4IonElasticPhysics.hh>
+#include <G4IonPhysics.hh>
+#include <G4OpticalPhysics.hh>
+#include <G4ParticleTable.hh>
+#include <G4PhotoElectricEffect.hh>
+#include <G4PhysicsListHelper.hh>
+#include <G4ProcessTable.hh>
+#include <G4StoppingPhysics.hh>
 
 namespace SiFi {
 

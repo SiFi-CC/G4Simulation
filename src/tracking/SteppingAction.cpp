@@ -1,5 +1,5 @@
 #include "SteppingAction.h"
-#include <Geant4/G4Step.hh>
+#include <G4Step.hh>
 
 namespace SiFi {
 

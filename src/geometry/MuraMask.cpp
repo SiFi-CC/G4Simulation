@@ -1,7 +1,7 @@
 #include "MuraMask.h"
 #include "MaterialManager.h"
-#include <Geant4/G4PVPlacement.hh>
-#include <Geant4/G4VisAttributes.hh>
+#include <G4PVPlacement.hh>
+#include <G4VisAttributes.hh>
 #include <TFile.h>
 #include <TH2F.h>
 

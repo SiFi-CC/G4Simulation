@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Geant4/G4NistManager.hh>
-#include <Geant4/G4PhysicalConstants.hh>
-#include <Geant4/G4SystemOfUnits.hh>
+#include <G4NistManager.hh>
+#include <G4PhysicalConstants.hh>
+#include <G4SystemOfUnits.hh>
 #include <string>
 #include <unordered_map>
 

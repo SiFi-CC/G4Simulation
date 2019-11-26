@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Utils.h"
-#include <Geant4/G4Event.hh>
-#include <Geant4/G4GeneralParticleSource.hh>
-#include <Geant4/G4ParticleDefinition.hh>
-#include <Geant4/G4ParticleTable.hh>
-#include <Geant4/G4SystemOfUnits.hh>
-#include <Geant4/G4ThreeVector.hh>
-#include <Geant4/G4Types.hh>
-#include <Geant4/G4VUserPrimaryGeneratorAction.hh>
+#include <G4Event.hh>
+#include <G4GeneralParticleSource.hh>
+#include <G4ParticleDefinition.hh>
+#include <G4ParticleTable.hh>
+#include <G4SystemOfUnits.hh>
+#include <G4ThreeVector.hh>
+#include <G4Types.hh>
+#include <G4VUserPrimaryGeneratorAction.hh>
 
 namespace SiFi {
 

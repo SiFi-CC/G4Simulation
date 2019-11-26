@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Utils.h"
-#include <Geant4/G4VModularPhysicsList.hh>
+#include <G4VModularPhysicsList.hh>
 
 namespace SiFi {
 

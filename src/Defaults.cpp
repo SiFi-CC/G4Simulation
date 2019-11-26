@@ -1,6 +1,6 @@
 #include "Defaults.h"
 #include "MaterialManager.h"
-#include <Geant4/G4SystemOfUnits.hh>
+#include <G4SystemOfUnits.hh>
 
 namespace SiFi {
 namespace defaults {

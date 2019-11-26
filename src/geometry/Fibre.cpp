@@ -1,8 +1,8 @@
 #include "Fibre.h"
-#include <Geant4/G4Box.hh>
-#include <Geant4/G4PVPlacement.hh>
-#include <Geant4/G4ThreeVector.hh>
-#include <Geant4/G4VisAttributes.hh>
+#include <G4Box.hh>
+#include <G4PVPlacement.hh>
+#include <G4ThreeVector.hh>
+#include <G4VisAttributes.hh>
 
 namespace SiFi {
 
