@@ -12,14 +12,15 @@ namespace SiFi {
 
 class MuraMask : public DetectorElement {
   public:
-    MuraMask(int order, const G4ThreeVector& size, G4Material* material)
-        : fMaskOrder(order), fSize(size), fMaterial(material) {}
+    MuraMask(int order, double position, const G4ThreeVector& size, G4Material* material)
+        : fMaskOrder(order), fPosition(position), fSize(size), fMaterial(material) {}
 
     G4LogicalVolume* Construct() override;
 
     double getThickness() { return fSize.z(); }
     bool isMaskedAt(int x, int y);
     int isQuaResidue(int q, int p);
+    double getPosition() { return fPosition; };
 
     void writeMetadata(DataStorage* storage);
 
@@ -27,6 +28,7 @@ class MuraMask : public DetectorElement {
     int fMaskOrder;
     G4ThreeVector fSize;
     G4Material* fMaterial;
+    double fPosition;
 };
 
 } // namespace SiFi

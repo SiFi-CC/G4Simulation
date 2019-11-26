@@ -20,11 +20,15 @@ include(${Geant4_USE_FILE})
 include(${ROOT_USE_FILE})
 include_directories(${ROOT_INCLUDE_DIRS})
 
+# include_directories(BEFORE src)
+
 add_library(g4sim
     ./src/Defaults.cpp
     ./src/PhysicsList.cpp
     ./src/EventAction.cpp
     ./src/MaterialManager.cpp
+    ./src/Simulation.cc
+    ./src/Source.cc
 
     ./src/geometry/DetectorBlock.cpp
     ./src/geometry/FibreLayer.cpp

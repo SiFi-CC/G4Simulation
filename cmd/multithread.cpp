@@ -3,17 +3,25 @@
 #include "PhysicsList.h"
 #include "PrimaryGeneratorAction.h"
 #include "tracking/SteppingAction.h"
+#include "Source.hh"
+#include "Simulation.hh"    
 
 #include <TParameter.h>
 #include <TFile.h>
 #include <TString.h>
+#include <TVector2.h>
 
 #include <G4RunManager.hh>
 #include <CmdLineConfig.hh>
 
-using namespace SiFi;
+#include <thread>
 
-int main(int argc, char** argv) {
+using namespace SiFi;
+using namespace std;
+
+
+int main(int argc, char** argv){
+
     spdlog::set_level(spdlog::level::info);
 
     CmdLineOption opt_det(
@@ -37,6 +45,7 @@ int main(int argc, char** argv) {
     const Positional& args = CmdLineConfig::GetPositionalArguments();
 
     TString output(args.at("output")->GetStringValue());
+    
     DataStorage storage(output);
 
     Float_t ds = 175.4, dw = 1., dl = 22.; 
@@ -98,14 +107,17 @@ int main(int argc, char** argv) {
 
     double maskDetDistance = (ds-ms)/10;
     double maskSrcDistance = ms/10;
-    int energy = opt_energy.GetIntValue();
+    Int_t energy = opt_energy.GetIntValue();
     auto material = MaterialManager::get()->LuAGCe();
-
+    
+    // Double_t x0 = sPosX;
+    // Double_t y0 = sPosY;
+    Source source(TVector2(sPosX, sPosY), energy, minTheta, maxTheta);
     MuraMask mask(
         mord, ms/10, {mw/10 * cm, ml/10. * cm, mt/10. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
     DetectorBlock detector(
-        50, ds/10,                  // number of layers
-        FibreLayer(          //
+        50, ds/10,              // number of layers
+        FibreLayer(         //
             dn,             // number of fibres in layer
             Fibre({dl/10. * cm, // fibre length
                    dw/10. * cm, // fibre width
@@ -114,58 +126,39 @@ int main(int argc, char** argv) {
                    material,
                    material})));
 
-    auto construction = new DetectorConstruction(&mask, &detector);
-    construction->setMaskPos(maskSrcDistance * cm);
-    construction->setDetectorPos(maskSrcDistance * cm + maskDetDistance * cm);
+    Simulation sim1(&source, &mask, &detector, &storage);
+    // Simulation sim2(&source, &mask, &detector, &storage);
+    sim1.Init();
+    sim1.RunSim(opt_events.GetIntValue(), false);
 
-    G4RunManager runManager;
-    runManager.SetUserInitialization(construction);
-    auto physicsList = new PhysicsList();
-    runManager.SetUserInitialization(physicsList);
+    sim1.RunSim(opt_events.GetIntValue()*2, false);
+    // sim2.RunSim(opt_events.GetIntValue());
+    // Simulation* sim = new Simulation(&source, &mask, &detector, &storage);
 
-    G4GeneralParticleSource source;
-    source.GetCurrentSource()->GetPosDist()->SetPosDisType("Point");
-    source.GetCurrentSource()->GetAngDist()->SetAngDistType("iso");
-    // source.GetCurrentSource()->GetAngDist()->SetMinTheta(120 * deg);
-    source.GetCurrentSource()->GetAngDist()->SetMinTheta(minTheta * deg);
-    source.GetCurrentSource()->GetAngDist()->SetMaxTheta(maxTheta * deg);
-    source.GetCurrentSource()->GetEneDist()->SetEnergyDisType("Mono");
-    source.GetCurrentSource()->GetPosDist()->SetCentreCoords(
-        G4ThreeVector(sPosX * cm, sPosY * cm, 0));
-    source.GetCurrentSource()->GetEneDist()->SetMonoEnergy(energy * keV);
+    // thread t[2];
 
-    runManager.SetUserAction(new PrimaryGeneratorAction(&source));
-    runManager.SetUserAction(new SteppingAction(&storage));
-    runManager.SetUserAction(new EventAction(&storage));
-    runManager.Initialize();
+    // for (int i = 1; i < 3; ++i) {
+    //     // t[i-1] = thread(&Simulation::RunSim,sim, 100*i);
+    //     if(i == 1)
+    //         t[i-1] = thread(&Simulation::RunSim, &sim1, 1000*i, true);
+    //     else{
+    //         t[i-1] = thread(&Simulation::RunSim, &sim2, 1000*i, true);
+    //     }
+    // }
 
-    const int nIter = opt_events.GetIntValue();
+    // for (int i = 0; i < 2; ++i) {
+    //     t[i].join();
+    // }
 
-    log::info(
-        "Starting simulation source({}, {}), "
-        "maskToDetectorDistance={}, sourceToMaskDistance={}, "
-        "baseEnergy={}",
-        sPosX * cm,
-        sPosY * cm,
-        maskDetDistance * cm,
-        maskSrcDistance * cm,
-        energy * keV);
 
-    storage.newSimulation(
-        TString::Format(
-            "%d_%d_%d_%d_%d", sPosX, sPosY, maskDetDistance, maskSrcDistance, energy),
-        true);
-
-    storage.writeMetadata("sourcePosX", sPosX * cm);
-    storage.writeMetadata("sourcePosY", sPosY * cm);
-    storage.writeMetadata("sourcePosZ", 0 * cm);
-    storage.writeMetadata("energy", energy * keV);
-    storage.writeMetadata("sourceToMaskDistance", maskSrcDistance * cm);
-    storage.writeMetadata("maskToDetectorDistance", maskDetDistance * cm);
-    detector.writeMetadata(&storage);
-    mask.writeMetadata(&storage);
-    storage.init(); 
-
-    runManager.BeamOn(nIter);
-    storage.cleanup();
 }
+
+
+
+
+
+// void sim() {
+    
+
+
+// }

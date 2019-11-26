@@ -160,7 +160,7 @@ class DataStorage {
     struct {
         bool sourceRecord = false;
         bool depositScoring = true;
-        bool maskDepositScoring = true;
+        bool maskDepositScoring = false;
     } fEnable;
 
     struct {

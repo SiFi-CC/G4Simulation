@@ -17,10 +17,10 @@ Fibre simpleFibre() {
 
 FibreLayer simpleFibreLayer() { return {20, simpleFibre()}; };
 
-DetectorBlock simpleDetectorBlock() { return {5, simpleFibreLayer()}; };
+DetectorBlock simpleDetectorBlock() { return {5, 20, simpleFibreLayer()}; };
 
 MuraMask simpleMask() {
-    return MuraMask(11, {20. * cm, 20. * cm, 2. * cm}, material::mask());
+    return MuraMask(11,10, {20. * cm, 20. * cm, 2. * cm}, material::mask());
 };
 
 } // namespace geometry
