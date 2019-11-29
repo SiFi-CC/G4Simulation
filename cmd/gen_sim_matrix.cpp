@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
         maxTheta = opt_theta.GetDoubleArrayValue(2);
     } else if (opt_theta.GetArraySize() != 0) {
         spdlog::error("Theta angles - 2 parameters required: min and max values, {} given",
-                      opt_mask.GetArraySize());
+                      opt_theta.GetArraySize());
         abort();
     }
     if (opt_source.GetArraySize() == 4) {
@@ -83,9 +83,9 @@ int main(int argc, char** argv) {
         yDimSource = opt_source.GetDoubleArrayValue(2)/10. * cm;
         maxBinX = opt_source.GetIntArrayValue(3);
         maxBinY = opt_source.GetIntArrayValue(4);
-    } else if (opt_theta.GetArraySize() != 0) {
+    } else if (opt_source.GetArraySize() != 0) {
         spdlog::error("Source position - 2 parameters required, {} given",
-                      opt_mask.GetArraySize());
+                      opt_source.GetArraySize());
         abort();
     }
 
