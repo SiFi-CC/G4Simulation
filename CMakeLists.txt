@@ -28,6 +28,7 @@ add_library(g4sim
     ./src/EventAction.cpp
     ./src/MaterialManager.cpp
     ./src/DataStructConvert.cc
+    ./src/DataStorage.cc
 
     ./src/geometry/DetectorBlock.cpp
     ./src/geometry/FibreLayer.cpp

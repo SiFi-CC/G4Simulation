@@ -27,9 +27,6 @@ int main(int argc, char** argv) {
                                "Min and max Theta [Deg], default: 170:180", 0);
     CmdLineOption opt_source("Source", "-source",
                                "Source plane size and number of bins [mm], default: 22:22:100:100", 0);
-    CmdLineOption opt_hmat("Hmat", "-hmat",
-                             "Write only Hmatrix, default: NO");
-
 
     CmdLineArg cmdarg_output("output", "Output file", CmdLineArg::kString);
 
@@ -50,11 +47,6 @@ int main(int argc, char** argv) {
 
     Float_t xDimSource = 2.2 * cm, yDimSource = 2.2 * cm;
     Int_t maxBinX = 100, maxBinY = 100;
-
-    Bool_t hmat = kFALSE;
-
-    if (opt_hmat.GetFlagValue()) hmat = kTRUE;
-
 
     if (opt_det.GetArraySize() == 4) {
         ds = opt_det.GetDoubleArrayValue(1);
@@ -111,9 +103,9 @@ int main(int argc, char** argv) {
     auto material = MaterialManager::get()->LuAGCe();
 
     MuraMask mask(
-        mord,ms, {mw/10 * cm, ml/10. * cm, mt/10. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
+        mord, ms, {mw/10 * cm, ml/10. * cm, mt/10. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
     DetectorBlock detector(
-        50,ds,                  // number of layers
+        50, ds,                  // number of layers
         FibreLayer(          //
             dn,             // number of fibres in layer
             Fibre({dl/10. * cm, // fibre length
@@ -141,83 +133,65 @@ int main(int argc, char** argv) {
     runManager.SetUserAction(new EventAction(&storage));
     runManager.Initialize();
 
-    // const int nIter = 100;
     const int nIter = opt_events.GetIntValue();
 
+    storage.setBinnedSize(maxBinX, maxBinY, dn, dn);
+    storage.resizeHmatrix();
 
-
-    storage.fMaxBinX = maxBinX;
-    storage.fMaxBinY = maxBinY;
-    storage.fDetBinsX = dn;
-    storage.fDetBinsY = dn;
-    storage.resizeHmatrix(maxBinX, maxBinY);
+    storage.newSimulation(
+            TString::Format(
+                "%d_%d_%d", maskDetDistance, maskSrcDistance, energy),false);
+    
+    // storage.newSimulation(simName);
+    // storage.writeMetadata("sourcePosX", sPosX);
+    // storage.writeMetadata("sourcePosY", sPosY);
+    // storage.writeMetadata("sourcePosZ", 0 * cm);
+    storage.writeMetadata("energy", energy * keV);
+    storage.writeMetadata(
+        "sourceToMaskDistance", maskSrcDistance * cm);
+    storage.writeMetadata(
+        "maskToDetectorDistance", maskDetDistance * cm);
+    detector.writeMetadata(&storage);
+    mask.writeMetadata(&storage);
+    storage.init();
 
     //
     // Easiest way to use this part of code is to add break statements
     // at the end of loops that are parametrising values that we don't
     // want to change and override initial value at the begining
     //
-    // for (int maskDetDistance = 10; maskDetDistance <= 20; maskDetDistance += 2) {
-        // for (int maskSrcDistance = 50; maskSrcDistance <= 80; maskSrcDistance += 10) {
-            log::info("maskDetDistance {}, maskSrcDistance {}",maskDetDistance * cm,maskSrcDistance * cm);
-            construction->setMaskPos(maskSrcDistance * cm);
-            construction->setDetectorPos(maskSrcDistance * cm + maskDetDistance * cm);
-            runManager.DefineWorldVolume(construction->Construct());
-            runManager.GeometryHasBeenModified();
+    log::info("maskDetDistance {}, maskSrcDistance {}",maskDetDistance * cm,maskSrcDistance * cm);
+    construction->setMaskPos(maskSrcDistance * cm);
+    construction->setDetectorPos(maskSrcDistance * cm + maskDetDistance * cm);
+    runManager.DefineWorldVolume(construction->Construct());
+    runManager.GeometryHasBeenModified();
 
 
+    for (int binX = 0; binX < maxBinX; binX += 1) {
+        for (int binY = 0; binY < maxBinY; binY += 1) {
+            double sPosX = - xDimSource / 2. + (0.5 + binX) * (xDimSource / maxBinX);
+            double sPosY = - yDimSource / 2. + (0.5 + binY) * (yDimSource / maxBinY);
+            for (int energy_it = energy; energy_it > 50; energy_it /= 4) {
+                log::info(
+                    "Starting simulation source({}, {}), "
+                    "maskToDetectorDistance={}, sourceToMaskDistance={}, "
+                    "baseEnergy={}",
+                    sPosX,
+                    sPosY,
+                    maskDetDistance * cm,
+                    maskSrcDistance * cm,
+                    energy_it * keV);
+                storage.setCurrentBins(binX, binY);
 
-            for (int binX = 0; binX < maxBinX; binX += 1) {
-                for (int binY = 0; binY < maxBinY; binY += 1) {
-                    double sPosX = - xDimSource / 2. + (0.5 + binX) * (xDimSource / maxBinX);
-                    double sPosY = - yDimSource / 2. + (0.5 + binY) * (yDimSource / maxBinY);
-                    for (int energy_it = energy; energy_it > 50; energy_it /= 4) {
-                        log::info(
-                            "Starting simulation source({}, {}), "
-                            "maskToDetectorDistance={}, sourceToMaskDistance={}, "
-                            "baseEnergy={}",
-                            sPosX,
-                            sPosY,
-                            maskDetDistance * cm,
-                            maskSrcDistance * cm,
-                            energy_it * keV);
-                        auto simName = TString::Format(
-                            "%f_%f_%d_%d_%d",
-                            sPosX,
-                            sPosY,
-                            maskDetDistance,
-                            maskSrcDistance,
-                            energy_it);
-
-                        storage.fBinX = binX;
-                        storage.fBinY = binY;
-
-                        storage.newSimulation(simName);
-                        storage.writeMetadata("sourcePosX", sPosX);
-                        storage.writeMetadata("sourcePosY", sPosY);
-                        storage.writeMetadata("sourcePosZ", 0 * cm);
-                        storage.writeMetadata("energy", energy_it * keV);
-                        storage.writeMetadata(
-                            "sourceToMaskDistance", maskSrcDistance * cm);
-                        storage.writeMetadata(
-                            "maskToDetectorDistance", maskDetDistance * cm);
-                        detector.writeMetadata(&storage);
-                        mask.writeMetadata(&storage);
-                        storage.init();
-
-                        source.GetCurrentSource()->GetPosDist()->SetCentreCoords(
-                            G4ThreeVector(sPosX * mm, sPosY * mm, 0));
-                        source.GetCurrentSource()->GetEneDist()->SetMonoEnergy(
-                            energy_it * keV);
-                        runManager.BeamOn(nIter);
-                        storage.cleanup();
-                        break;
-                    }
-                }
+                source.GetCurrentSource()->GetPosDist()->SetCentreCoords(
+                    G4ThreeVector(sPosX * mm, sPosY * mm, 0));
+                source.GetCurrentSource()->GetEneDist()->SetMonoEnergy(
+                    energy_it * keV);
+                runManager.BeamOn(nIter);
+                break;
             }
-            storage.writeHmatrix("Hmatrix.root");
-            // break;
-        // }
-        // break;
-    // }
+        }
+    }
+    storage.writeHmatrix("Hmatrix.root");
+    storage.cleanup();
 }
