@@ -14,7 +14,7 @@ using namespace SiFi;
 int main(int argc, char** argv) {
      CmdLineOption opt_det(
       "Plane", "-det",
-      "Detector: detector-source:fibre_length:nFibres:fibre_width, default: 175.4:1:22:22", 0, 0);
+      "Detector: detector-source:fibre_length[mm]:nFibres:fibre_width[mm], default: 175.4:22:22:1", 0, 0);
     CmdLineOption opt_mask(
       "Mask", "-mask",
       "Mask: order:mask-source:width:length:thickness [mm], default: 37:100:22:22:20", 0, 0);
@@ -27,6 +27,9 @@ int main(int argc, char** argv) {
                                "Min and max Theta [Deg], default: 170:180", 0);
     CmdLineOption opt_source("Source", "-source",
                                "Source plane size and number of bins [mm], default: 22:22:100:100", 0);
+    CmdLineOption opt_hmat("Hmat", "-hmat",
+                             "Write only Hmatrix, default: NO");
+
 
     CmdLineArg cmdarg_output("output", "Output file", CmdLineArg::kString);
 
@@ -47,6 +50,11 @@ int main(int argc, char** argv) {
 
     Float_t xDimSource = 2.2 * cm, yDimSource = 2.2 * cm;
     Int_t maxBinX = 100, maxBinY = 100;
+
+    Bool_t hmat = kFALSE;
+
+    if (opt_hmat.GetFlagValue()) hmat = kTRUE;
+
 
     if (opt_det.GetArraySize() == 4) {
         ds = opt_det.GetDoubleArrayValue(1);
@@ -136,6 +144,14 @@ int main(int argc, char** argv) {
     // const int nIter = 100;
     const int nIter = opt_events.GetIntValue();
 
+
+
+    storage.fMaxBinX = maxBinX;
+    storage.fMaxBinY = maxBinY;
+    storage.fDetBinsX = dn;
+    storage.fDetBinsY = dn;
+    storage.resizeHmatrix(maxBinX, maxBinY);
+
     //
     // Easiest way to use this part of code is to add break statements
     // at the end of loops that are parametrising values that we don't
@@ -148,6 +164,8 @@ int main(int argc, char** argv) {
             construction->setDetectorPos(maskSrcDistance * cm + maskDetDistance * cm);
             runManager.DefineWorldVolume(construction->Construct());
             runManager.GeometryHasBeenModified();
+
+
 
             for (int binX = 0; binX < maxBinX; binX += 1) {
                 for (int binY = 0; binY < maxBinY; binY += 1) {
@@ -170,6 +188,9 @@ int main(int argc, char** argv) {
                             maskDetDistance,
                             maskSrcDistance,
                             energy_it);
+
+                        storage.fBinX = binX;
+                        storage.fBinY = binY;
 
                         storage.newSimulation(simName);
                         storage.writeMetadata("sourcePosX", sPosX);
@@ -194,6 +215,7 @@ int main(int argc, char** argv) {
                     }
                 }
             }
+            storage.writeHmatrix("Hmatrix.root");
             // break;
         // }
         // break;

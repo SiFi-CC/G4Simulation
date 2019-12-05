@@ -10,6 +10,11 @@
 #include <TVector3.h>
 #include <string>
 #include <unordered_map>
+#include <math.h>
+
+#include "DataStructConvert.hh"
+
+
 
 namespace SiFi {
 
@@ -96,6 +101,8 @@ class DataStorage {
 
             fEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
             fEnergyDeposits.hits->Fill();
+
+            setHmatrix(pos.x(),pos.y(), fBinX, fBinY);
             return;
         }
         if (volume == "maskBin" && fEnable.maskDepositScoring) {
@@ -124,6 +131,57 @@ class DataStorage {
         }
     }
 
+    void resizeHmatrix(int maxBinX, int maxBinY){
+        fMatrixH.ResizeTo(fDetBinsX*fDetBinsY, maxBinX*maxBinY);
+        // fMatrixH.ResizeTo(fEnergyDeposits.histogram.GetNbinsX()*
+            // fEnergyDeposits.histogram.GetNbinsY(), maxBinX*maxBinY);
+    }
+
+    void setHmatrix(double DetX,double DetY, int sourceBinX, int sourceBinY){
+        auto sourceHistBin = std::make_tuple<int, int>(std::forward<int>(sourceBinX+1),
+            std::forward<int>(sourceBinY+1));
+        
+        auto sourceMatBin =
+            std::make_tuple<int, int>(fMaxBinY - std::get<1>(sourceHistBin),
+                                      std::get<0>(sourceHistBin) - 1);
+        int colIndexMatrixH =
+            std::get<1>(sourceMatBin) * fMaxBinY  + std::get<0>(sourceMatBin);
+
+            double x = DetX;
+            double y = DetY;
+        auto nBinX = static_cast<int>((x + fDetBinsX/2) / 1) + 1;
+        auto nBinY = static_cast<int>((y + fDetBinsY/2) / 1) + 1;
+        nBinX = nBinX < 0 ? 0 : nBinX;
+        nBinX = nBinX > fDetBinsX-1 ? fDetBinsX : nBinX;
+        nBinY = nBinY < 0 ? 0 : nBinY;
+        nBinY = nBinY > fDetBinsY - 1 ? fDetBinsY : nBinY;
+        // detMatrix(22-nBinY,nBinX-1) +=1;
+        int rowIndexMatrixH = (22-nBinY) * 22 + nBinX-1;
+        // std::cout << "rowIndexMatrixH: "<< rowIndexMatrixH <<
+        // " colIndexMatrixH: "<<colIndexMatrixH <<std::endl;
+        fMatrixH(rowIndexMatrixH,colIndexMatrixH)++;
+    }
+
+    void writeHmatrix(TString filename){
+
+        for(int i = 0; i < fMatrixH.GetNcols(); i ++){
+            double sum = 0.0;
+            for(int j = 0; j < fMatrixH.GetNrows(); j ++){
+                sum += fMatrixH(j,i);
+            }
+            for(int j = 0; j < fMatrixH.GetNrows(); j ++){
+                 fMatrixH(j,i) = fMatrixH(j,i) == 0 ? 1e-9 : fMatrixH(j,i)/sum;
+            }
+        }
+
+        // TFile file1(filename,"RECREATE");
+        // TFile file1("my.root","RECREATE");
+
+        // file1.cd();
+        fMatrixH.Write("matrixH");
+        // file1.Close();
+    }
+    
     void cleanup() {
         fFile->Write();
         delete fEnergyDeposits.hits;
@@ -137,9 +195,11 @@ class DataStorage {
         fEnable.depositScoring = true;
         fEnable.maskDepositScoring = true;
     }
-
+    int fBinX, fBinY,fMaxBinX, fMaxBinY, fDetBinsX,fDetBinsY; //VU MAKE private! 
   protected:
     TFile* fFile;
+
+    TMatrixT<Double_t> fMatrixH;
 
     struct {
         TTree* tree = nullptr;
