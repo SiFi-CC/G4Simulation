@@ -16,9 +16,9 @@ inline logger createLogger(const std::string& name) {
         return alreadyExists;
     }
 
-    auto logger = spdlog::stdout_color_st(name);
+    auto _logger = spdlog::stdout_color_st(name);
     spdlog::drop(name); // it will be released after all references are lost
-    return logger;
+    return _logger;
 }
 
 } // namespace SiFi

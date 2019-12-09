@@ -10,7 +10,7 @@ G4Material* MaterialManager::GetMaterial(const G4String& materialName) {
             G4NistManager::Instance()->FindOrBuildMaterial(materialName);
     }
     return fMaterial[materialName];
-};
+}
 
 G4Material* MaterialManager::Vacuum() {
     if (fVacuum == nullptr) {

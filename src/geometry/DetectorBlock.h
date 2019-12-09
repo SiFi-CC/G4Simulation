@@ -9,7 +9,7 @@ namespace SiFi {
 class DetectorBlock : public DetectorElement {
   public:
     DetectorBlock(int nLayers, const FibreLayer& layer)
-        : fLayer(layer), fNumberOfLayers(nLayers){};
+        : fNumberOfLayers(nLayers), fLayer(layer)  {};
 
     G4LogicalVolume* Construct() override;
 

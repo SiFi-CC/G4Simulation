@@ -1,3 +1,6 @@
 [submodule "third_party/spdlog"]
 	path = third_party/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "cmake-scripts"]
+	path = cmake-scripts
+	url = https://github.com/StableCoder/cmake-scripts
