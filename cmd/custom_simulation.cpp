@@ -11,6 +11,8 @@
 #include <G4RunManager.hh>
 #include <CmdLineConfig.hh>
 
+#include "Source.hh"
+
 using namespace SiFi;
 
 int main(int argc, char** argv) {
@@ -122,19 +124,12 @@ int main(int argc, char** argv) {
     runManager.SetUserInitialization(construction);
     auto physicsList = new PhysicsList();
     runManager.SetUserInitialization(physicsList);
+    
+    Source source(energy,minTheta,maxTheta);
 
-    G4GeneralParticleSource source;
-    source.GetCurrentSource()->GetPosDist()->SetPosDisType("Point");
-    source.GetCurrentSource()->GetAngDist()->SetAngDistType("iso");
-    // source.GetCurrentSource()->GetAngDist()->SetMinTheta(120 * deg);
-    source.GetCurrentSource()->GetAngDist()->SetMinTheta(minTheta * deg);
-    source.GetCurrentSource()->GetAngDist()->SetMaxTheta(maxTheta * deg);
-    source.GetCurrentSource()->GetEneDist()->SetEnergyDisType("Mono");
-    source.GetCurrentSource()->GetPosDist()->SetCentreCoords(
-        G4ThreeVector(sPosX * cm, sPosY * cm, 0));
-    source.GetCurrentSource()->GetEneDist()->SetMonoEnergy(energy * keV);
+    source.SetPos(TVector3(sPosX, sPosY, 0));
 
-    runManager.SetUserAction(new PrimaryGeneratorAction(&source));
+    runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource()));
     runManager.SetUserAction(new SteppingAction(&storage));
     runManager.SetUserAction(new EventAction(&storage));
     runManager.Initialize();

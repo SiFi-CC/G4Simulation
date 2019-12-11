@@ -1,7 +1,6 @@
 #ifndef __DataStructConvert_H_
 #define __DataStructConvert_H_ 1
 
-// #include "CLog.hh"
 #include <TH2.h>
 #include <TMatrixT.h>
 
@@ -35,7 +34,9 @@ template <typename T> TMatrixT<T> vectorizeMatrix(const TMatrixT<T>& mat2D) {
 
   for (int row = 0; row < nRows; row++) {
     for (int col = 0; col < nCols; col++) {
+      // matVec(col * nRows + row, 0) = mat2D(row, col);
       matVec(row * nCols + col, 0) = mat2D(row, col);
+      // spdlog::error("matrix({},{}) = {}",row,col,mat2D(row, col));
     }
   }
   // spdlog::error("vectorizeMatrix: Nrows = {}, nRows = {}, nCols = {}",
@@ -50,8 +51,7 @@ template <typename T>
 TMatrixT<T> unvectorizeMatrix(const TMatrixT<T>& matVec, Int_t nRows,
                               Int_t nCols) {
   if (matVec.GetNcols() != 1) {
-    // spdlog::error("unvectorizeMatrix: you need to pass column matrix");
-    // throw "wrong matrix dimensions";
+    throw "wrong matrix dimensions";
   }
   if (matVec.GetNrows() != nRows * nCols) {
     // spdlog::error("unvectorizeMatrix: number of columns needs to be equal to "
@@ -64,6 +64,7 @@ TMatrixT<T> unvectorizeMatrix(const TMatrixT<T>& matVec, Int_t nRows,
 
   for (int row = 0; row < nRows; row++) {
     for (int col = 0; col < nCols; col++) {
+      // mat2D(row, col) = matVec(col * nRows + row, 0);
       mat2D(row, col) = matVec(row * nCols + col, 0);
     }
   }

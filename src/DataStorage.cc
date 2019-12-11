@@ -127,17 +127,19 @@ void DataStorage::setHmatrix(double DetX,double DetY, int sourceBinX, int source
         std::make_tuple<int, int>(fMaxBinY - std::get<1>(sourceHistBin),
                                   std::get<0>(sourceHistBin) - 1);
     int colIndexMatrixH =
-        std::get<1>(sourceMatBin) * fMaxBinY  + std::get<0>(sourceMatBin);
+        std::get<0>(sourceMatBin) * fMaxBinX  + std::get<1>(sourceMatBin);
+        // std::get<1>(sourceMatBin) * fMaxBinY  + std::get<0>(sourceMatBin);
 
         double x = DetX;
         double y = DetY;
     auto nBinX = static_cast<int>((x + fDetBinsX/2) / 1) + 1;
     auto nBinY = static_cast<int>((y + fDetBinsY/2) / 1) + 1;
+    spdlog::info("y = {}, nbin = {}", y,nBinY);//nBinY - HISTOBIN
     nBinX = nBinX < 0 ? 0 : nBinX;
     nBinX = nBinX > fDetBinsX-1 ? fDetBinsX : nBinX;
     nBinY = nBinY < 0 ? 0 : nBinY;
     nBinY = nBinY > fDetBinsY - 1 ? fDetBinsY : nBinY;
-    int rowIndexMatrixH = (22-nBinY) * 22 + nBinX-1;
+    int rowIndexMatrixH = (fDetBinsY-nBinY) * fDetBinsX + nBinX-1;
     fMatrixH(rowIndexMatrixH,colIndexMatrixH)++;
 }
 

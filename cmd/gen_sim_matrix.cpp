@@ -8,6 +8,7 @@
 #include "PhysicsList.h"
 #include "PrimaryGeneratorAction.h"
 #include "tracking/SteppingAction.h"
+#include "Source.hh"
 
 using namespace SiFi;
 
@@ -121,14 +122,10 @@ int main(int argc, char** argv) {
     runManager.SetUserInitialization(construction);
     auto physicsList = new PhysicsList();
     runManager.SetUserInitialization(physicsList);
-    G4GeneralParticleSource source;
-    source.GetCurrentSource()->GetPosDist()->SetPosDisType("Point");
-    source.GetCurrentSource()->GetAngDist()->SetAngDistType("iso");
-    source.GetCurrentSource()->GetAngDist()->SetMinTheta(minTheta * deg);
-    source.GetCurrentSource()->GetAngDist()->SetMaxTheta(maxTheta * deg);
-    source.GetCurrentSource()->GetEneDist()->SetEnergyDisType("Mono");
 
-    runManager.SetUserAction(new PrimaryGeneratorAction(&source));
+    Source source(energy,minTheta,maxTheta);
+    
+    runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource()));
     runManager.SetUserAction(new SteppingAction(&storage));
     runManager.SetUserAction(new EventAction(&storage));
     runManager.Initialize();
@@ -142,10 +139,6 @@ int main(int argc, char** argv) {
             TString::Format(
                 "%d_%d_%d", maskDetDistance, maskSrcDistance, energy),false);
     
-    // storage.newSimulation(simName);
-    // storage.writeMetadata("sourcePosX", sPosX);
-    // storage.writeMetadata("sourcePosY", sPosY);
-    // storage.writeMetadata("sourcePosZ", 0 * cm);
     storage.writeMetadata("energy", energy * keV);
     storage.writeMetadata(
         "sourceToMaskDistance", maskSrcDistance * cm);
@@ -153,6 +146,12 @@ int main(int argc, char** argv) {
         "maskToDetectorDistance", maskDetDistance * cm);
     detector.writeMetadata(&storage);
     mask.writeMetadata(&storage);
+    storage.writeMetadata("sourceMinX", - xDimSource / 2);
+    storage.writeMetadata("sourceMaxX", xDimSource / 2);
+    storage.writeMetadata("sourceMinY", - yDimSource / 2);
+    storage.writeMetadata("sourceMaxY", yDimSource / 2);
+    storage.writeMetadata("sourceBinX", maxBinX);
+    storage.writeMetadata("sourceBinY", maxBinY);
     storage.init();
 
     //
@@ -183,10 +182,7 @@ int main(int argc, char** argv) {
                     energy_it * keV);
                 storage.setCurrentBins(binX, binY);
 
-                source.GetCurrentSource()->GetPosDist()->SetCentreCoords(
-                    G4ThreeVector(sPosX * mm, sPosY * mm, 0));
-                source.GetCurrentSource()->GetEneDist()->SetMonoEnergy(
-                    energy_it * keV);
+                source.SetPos(TVector3(sPosX, sPosY, 0));
                 runManager.BeamOn(nIter);
                 break;
             }
