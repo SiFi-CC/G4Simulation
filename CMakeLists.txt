@@ -7,18 +7,35 @@ set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS})
+list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
+list(APPEND CMAKE_MODULE_PATH
+    $ENV{ROOTSYS}
+    ${CMAKE_SOURCE_DIR}/cmake-scripts
+)
+
 find_package(Geant4 REQUIRED ui_all vis_all)
 find_package(ROOT REQUIRED RIO Geom MathCore Physics Gui Tree)
-find_package(CmdLineArgs REQUIRED)
+find_package(CmdLineArgs 2.0.0 REQUIRED)
 message(STATUS "Found Geant4 version " ${Geant4_VERSION} )
 message(STATUS "Found ROOT version " ${ROOT_VERSION} ) 
 message(STATUS "Found CmdLineArgs version " ${CmdLineArgs_VERSION} ) 
+
 add_subdirectory(third_party/spdlog)
+include_directories(SYSTEM third_party/spdlog/include)
 
 include(${Geant4_USE_FILE})
 include(${ROOT_USE_FILE})
-include_directories(${ROOT_INCLUDE_DIRS})
+include_directories(SYSTEM ${ROOT_INCLUDE_DIRS})
+
+# load macros
+include(c++-standards)
+include(code-coverage)
+include(sanitizers)
+
+cxx_11()
+add_code_coverage()
+
+# libraries and bianries
 
 # include_directories(BEFORE src)
 
@@ -39,7 +56,7 @@ add_library(g4sim
 
     ./src/tracking/SteppingAction.cpp
 )
-target_compile_features(g4sim PRIVATE cxx_std_11) #TODO (resolve issue with spdlog and ROOT)
+
 target_include_directories(g4sim
     PUBLIC 
         $<INSTALL_INTERFACE:include>    
@@ -86,5 +103,3 @@ Doxygen:        ${DOXYGEN_FOUND}
 Build doc:      ${BUILD_DOC}
 Install doc:    ${INSTALL_DOC}
 \n")
-
-

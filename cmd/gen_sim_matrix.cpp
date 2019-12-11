@@ -104,9 +104,9 @@ int main(int argc, char** argv) {
     auto material = MaterialManager::get()->LuAGCe();
 
     MuraMask mask(
-        mord, ms, {mw/10 * cm, ml/10. * cm, mt/10. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
+        mord, {mw/10 * cm, ml/10. * cm, mt/10. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
     DetectorBlock detector(
-        50, ds,                  // number of layers
+        50,                 // number of layers
         FibreLayer(          //
             dn,             // number of fibres in layer
             Fibre({dl/10. * cm, // fibre length
