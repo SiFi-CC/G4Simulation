@@ -188,6 +188,6 @@ int main(int argc, char** argv) {
             }
         }
     }
-    storage.writeHmatrix("Hmatrix.root");
+    storage.writeHmatrix();
     storage.cleanup();
 }

@@ -43,7 +43,7 @@ class DataStorage {
 
     void setHmatrix(double DetX,double DetY, int sourceBinX, int sourceBinY);
 
-    void writeHmatrix(TString filename);
+    void writeHmatrix();
     
     void cleanup();
 

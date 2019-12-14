@@ -4,14 +4,14 @@
 namespace SiFi{
 
 DataStorage::DataStorage(const TString& filename)
-					:fFile(new TFile(filename, "RECREATE")){};
+					:fFile(new TFile(filename, "RECREATE")){}
 
 DataStorage::~DataStorage() {
         fFile->Close();
         delete fFile;
-    };
+    }
 
-void DataStorage::writeMetadata(TObject* obj) { fMetadata.tree->GetUserInfo()->Add(obj); };
+void DataStorage::writeMetadata(TObject* obj) { fMetadata.tree->GetUserInfo()->Add(obj); }
 void DataStorage::writeMetadata(const TString& key, double value) {
     fMetadata.tree->GetUserInfo()->Add(new TParameter<double>(key, value));
     fMetadata.data[key.Data()] = value;
@@ -127,23 +127,22 @@ void DataStorage::setHmatrix(double DetX,double DetY, int sourceBinX, int source
         std::make_tuple<int, int>(fMaxBinY - std::get<1>(sourceHistBin),
                                   std::get<0>(sourceHistBin) - 1);
     int colIndexMatrixH =
-        std::get<0>(sourceMatBin) * fMaxBinX  + std::get<1>(sourceMatBin);
-        // std::get<1>(sourceMatBin) * fMaxBinY  + std::get<0>(sourceMatBin);
+        std::get<1>(sourceMatBin) * fMaxBinY  + std::get<0>(sourceMatBin);
 
         double x = DetX;
         double y = DetY;
     auto nBinX = static_cast<int>((x + fDetBinsX/2) / 1) + 1;
     auto nBinY = static_cast<int>((y + fDetBinsY/2) / 1) + 1;
-    spdlog::info("y = {}, nbin = {}", y,nBinY);//nBinY - HISTOBIN
+    // spdlog::info("y = {}, nbin = {}", y,nBinY);//nBinY - HISTOBIN
     nBinX = nBinX < 0 ? 0 : nBinX;
     nBinX = nBinX > fDetBinsX-1 ? fDetBinsX : nBinX;
     nBinY = nBinY < 0 ? 0 : nBinY;
     nBinY = nBinY > fDetBinsY - 1 ? fDetBinsY : nBinY;
-    int rowIndexMatrixH = (fDetBinsY-nBinY) * fDetBinsX + nBinX-1;
+    int rowIndexMatrixH = (nBinX-1) * fDetBinsY + fDetBinsY-nBinY;
     fMatrixH(rowIndexMatrixH,colIndexMatrixH)++;
 }
 
-void DataStorage::writeHmatrix(TString filename){
+void DataStorage::writeHmatrix(){
 
     for(int i = 0; i < fMatrixH.GetNcols(); i ++){
         double sum = 0.0;
