@@ -41,21 +41,21 @@ int main(int argc, char** argv) {
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t ds = 175.4, dw = 1., dl = 22.; 
-    Int_t dn = 22;
+    Float_t detectorsource = 175.4, fibrewidth = 1., fibrelength = 22.; 
+    Int_t fibrenum = 22;
 
     Int_t mord = 37;
-    Float_t ms = 100., mw = 22., ml = 22., mt = 20.;
+    Float_t masksource = 100., maskwidth = 22., masklength = 22., maskthick = 20.;
 
     Float_t minTheta = 170., maxTheta = 180;
 
     Float_t sPosX = -0.2, sPosY = 0.2;
 
     if (opt_det.GetArraySize() == 4) {
-        ds = opt_det.GetDoubleArrayValue(1);
-        dl = opt_det.GetDoubleArrayValue(2);
-        dn = opt_det.GetIntArrayValue(3);
-        dw = opt_det.GetDoubleArrayValue(4);
+        detectorsource = opt_det.GetDoubleArrayValue(1);
+        fibrelength = opt_det.GetDoubleArrayValue(2);
+        fibrenum = opt_det.GetIntArrayValue(3);
+        fibrewidth = opt_det.GetDoubleArrayValue(4);
     } else if (opt_det.GetArraySize() != 0) {
         spdlog::error("Detector plane - 4 parameters required, {} given",
                       opt_det.GetArraySize());
@@ -63,10 +63,10 @@ int main(int argc, char** argv) {
     }
     if (opt_mask.GetArraySize() == 5) {
         mord = opt_mask.GetIntArrayValue(1);
-        ms = opt_mask.GetDoubleArrayValue(2);
-        mw = opt_mask.GetDoubleArrayValue(3);
-        ml = opt_mask.GetDoubleArrayValue(4);
-        mt = opt_mask.GetDoubleArrayValue(5);
+        masksource = opt_mask.GetDoubleArrayValue(2);
+        maskwidth = opt_mask.GetDoubleArrayValue(3);
+        masklength = opt_mask.GetDoubleArrayValue(4);
+        maskthick = opt_mask.GetDoubleArrayValue(5);
     } else if (opt_mask.GetArraySize() != 0) {
         spdlog::error("Mask plane - 5 parameters required, {} given",
                       opt_mask.GetArraySize());
@@ -90,27 +90,27 @@ int main(int argc, char** argv) {
         abort();
     }
 
-    printf("Detector : %g %g %i %g [mm]\n", ds, dl, dn, dw);
-    printf("Mask     : %g %g %g %g [mm]\n", ms, mw, ml, mt);
+    printf("Detector : %g %g %i %g [mm]\n", detectorsource, fibrelength, fibrenum, fibrewidth);
+    printf("Mask     : %g %g %g %g [mm]\n", masksource, maskwidth, masklength, maskthick);
     printf("Mask order      : %i\n", mord);
     printf("No. of events  : %i\n", opt_events.GetIntValue());
     printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
     printf("Theta [Deg] : %g %g\n", minTheta, maxTheta);
     printf("Source position [mm] : %g %g\n", sPosX*10., sPosY*10.);
 
-    double maskDetDistance = (ds-ms)/10;
-    double maskSrcDistance = ms/10;
+    double maskDetDistance = (detectorsource-masksource)/10;
+    double maskSrcDistance = masksource/10;
     int energy = opt_energy.GetIntValue();
     auto material = MaterialManager::get()->LuAGCe();
 
     MuraMask mask(
-        mord, {mw/10 * cm, ml/10. * cm, mt/10. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
+        mord, {maskwidth/10 * cm, masklength/10. * cm, maskthick/10. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
     DetectorBlock detector(
-        50,                  // number of layers
+        50,                 // number of layers
         FibreLayer(          //
-            dn,             // number of fibres in layer
-            Fibre({dl/10. * cm, // fibre length
-                   dw/10. * cm, // fibre width
+            fibrenum,             // number of fibres in layer
+            Fibre({fibrelength/10. * cm, // fibre length
+                   fibrewidth/10. * cm, // fibre width
                    0.1 * cm, // thickness (z-axis)
                    material,
                    material,
@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
 
     storage.newSimulation(
         TString::Format(
-            "%d_%d_%d_%d_%d", sPosX, sPosY, maskDetDistance, maskSrcDistance, energy),
+            "%g_%g_%g_%g_%d", sPosX, sPosY, maskDetDistance, maskSrcDistance, energy),
         true);
 
     storage.writeMetadata("sourcePosX", sPosX * cm);
