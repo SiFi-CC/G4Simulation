@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
     Float_t minTheta = 170., maxTheta = 180;
 
-    Float_t xDimSource = 2.2 * cm, yDimSource = 2.2 * cm;
+    Float_t xDimSource = 22, yDimSource = 22;
     Int_t maxBinX = 100, maxBinY = 100;
 
     if (opt_det.GetArraySize() == 4) {
@@ -80,8 +80,8 @@ int main(int argc, char** argv) {
         abort();
     }
     if (opt_source.GetArraySize() == 4) {
-        xDimSource = opt_source.GetDoubleArrayValue(1)/10. * cm;
-        yDimSource = opt_source.GetDoubleArrayValue(2)/10. * cm;
+        xDimSource = opt_source.GetDoubleArrayValue(1);
+        yDimSource = opt_source.GetDoubleArrayValue(2);
         maxBinX = opt_source.GetIntArrayValue(3);
         maxBinY = opt_source.GetIntArrayValue(4);
     } else if (opt_source.GetArraySize() != 0) {
@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
 
     storage.newSimulation(
             TString::Format(
-                "%d_%d_%d", maskDetDistance, maskSrcDistance, energy),false);
+                "%g_%g_%d", maskDetDistance, maskSrcDistance, energy),false);
     
     storage.writeMetadata("energy", energy * keV);
     storage.writeMetadata(
@@ -165,6 +165,9 @@ int main(int argc, char** argv) {
     runManager.DefineWorldVolume(construction->Construct());
     runManager.GeometryHasBeenModified();
 
+    xDimSource *= 0.1; //cm
+    yDimSource *= 0.1; //cm
+
 
     for (int binX = 0; binX < maxBinX; binX += 1) {
         for (int binY = 0; binY < maxBinY; binY += 1) {
@@ -175,8 +178,8 @@ int main(int argc, char** argv) {
                     "Starting simulation source({}, {}), "
                     "maskToDetectorDistance={}, sourceToMaskDistance={}, "
                     "baseEnergy={}",
-                    sPosX,
-                    sPosY,
+                    sPosX * cm,
+                    sPosY * cm,
                     maskDetDistance * cm,
                     maskSrcDistance * cm,
                     energy_it * keV);
