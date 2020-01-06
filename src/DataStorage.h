@@ -51,12 +51,13 @@ class DataStorage {
 
     void setCurrentBins(int binX, int binY);
 
-    void setBinnedSize(int sourceBinX, int sourceBinY, int detectorBinX, int detectorBinY);
+    void setBinnedSize(int sourceBinX, int sourceBinY, int detectorBinX, int detectorBinY, double detectorBinSize);
 
   protected:
     TFile* fFile;
 
-    int fBinX, fBinY,fMaxBinX, fMaxBinY, fDetBinsX,fDetBinsY; //VU MAKE private! 
+    int fBinX, fBinY,fMaxBinX, fMaxBinY, fDetBinsX,fDetBinsY;
+    double fDetBinSize;
     TMatrixT<Double_t> fMatrixH;
 
     struct {

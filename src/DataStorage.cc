@@ -131,14 +131,15 @@ void DataStorage::setHmatrix(double DetX,double DetY, int sourceBinX, int source
 
         double x = DetX;
         double y = DetY;
-    auto nBinX = static_cast<int>((x + fDetBinsX/2) / 1) + 1;
-    auto nBinY = static_cast<int>((y + fDetBinsY/2) / 1) + 1;
-    // spdlog::info("y = {}, nbin = {}", y,nBinY);//nBinY - HISTOBIN
-    nBinX = nBinX < 0 ? 0 : nBinX;
+    auto nBinX = static_cast<int>((x + fDetBinsX*fDetBinSize/2) / fDetBinSize) + 1;
+    auto nBinY = static_cast<int>((y + fDetBinsX*fDetBinSize/2) / fDetBinSize) + 1;
+    nBinX = nBinX < 1 ? 1 : nBinX;
     nBinX = nBinX > fDetBinsX-1 ? fDetBinsX : nBinX;
-    nBinY = nBinY < 0 ? 0 : nBinY;
+    nBinY = nBinY < 1 ? 1 : nBinY;
     nBinY = nBinY > fDetBinsY - 1 ? fDetBinsY : nBinY;
     int rowIndexMatrixH = (nBinX-1) * fDetBinsY + fDetBinsY-nBinY;
+    // spdlog::info("x = {}, y = {}", x, y);//nBinY - HISTOBIN
+    // spdlog::info("rowIndexMatrixH = {}, nBinX = {}, nBinY = {}", rowIndexMatrixH, nBinX,nBinY);//nBinY - HISTOBIN
     fMatrixH(rowIndexMatrixH,colIndexMatrixH)++;
 }
 
@@ -175,11 +176,13 @@ void DataStorage::setCurrentBins(int binX, int binY){
     fBinY = binY;
 }
 
-void DataStorage::setBinnedSize(int sourceBinX, int sourceBinY, int detectorBinX, int detectorBinY){
+void DataStorage::setBinnedSize(int sourceBinX, int sourceBinY,
+                             int detectorBinX, int detectorBinY, double detectorBinSize){
     fMaxBinX = sourceBinX;
     fMaxBinY = sourceBinY;
     fDetBinsX = detectorBinX;
     fDetBinsY = detectorBinY;
+    fDetBinSize = detectorBinSize;
 }
 
 

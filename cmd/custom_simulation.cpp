@@ -20,10 +20,10 @@ int main(int argc, char** argv) {
 
     CmdLineOption opt_det(
       "Plane", "-det",
-      "Detector: detector-source:fibre_length:nFibres:fibre_width, default: 175.4:1:22:22", 0, 0);
+      "Detector: detector-source:nFibres:fibre_width, default: 175.4:1:22:22", 0, 0);
     CmdLineOption opt_mask(
       "Mask", "-mask",
-      "Mask: order:mask-source:width:length:thickness [mm], default: 37:100:22:22:20", 0, 0);
+      "Mask: order:mask-source:width:length:thickness [mm], default: 37:100:22:20", 0, 0);
     CmdLineOption opt_events("Events", "-n",
                                "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e",
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t detectorsource = 175.4, fibrewidth = 1., fibrelength = 22.; 
+    Float_t detectorsource = 175.4, fibrewidth = 1.; 
     Int_t fibrenum = 22;
 
     Int_t mord = 37;
@@ -51,13 +51,12 @@ int main(int argc, char** argv) {
 
     Float_t sPosX = -0.2, sPosY = 0.2;
 
-    if (opt_det.GetArraySize() == 4) {
+    if (opt_det.GetArraySize() == 3) {
         detectorsource = opt_det.GetDoubleArrayValue(1);
-        fibrelength = opt_det.GetDoubleArrayValue(2);
-        fibrenum = opt_det.GetIntArrayValue(3);
-        fibrewidth = opt_det.GetDoubleArrayValue(4);
+        fibrenum = opt_det.GetIntArrayValue(2);
+        fibrewidth = opt_det.GetDoubleArrayValue(3);
     } else if (opt_det.GetArraySize() != 0) {
-        spdlog::error("Detector plane - 4 parameters required, {} given",
+        spdlog::error("Detector plane - 3 parameters required, {} given",
                       opt_det.GetArraySize());
         abort();
     }
@@ -90,7 +89,7 @@ int main(int argc, char** argv) {
         abort();
     }
 
-    printf("Detector : %g %g %i %g [mm]\n", detectorsource, fibrelength, fibrenum, fibrewidth);
+    printf("Detector : %g %i %g [mm]\n", detectorsource, fibrenum, fibrewidth);
     printf("Mask     : %g %g %g %g [mm]\n", masksource, maskwidth, masklength, maskthick);
     printf("Mask order      : %i\n", mord);
     printf("No. of events  : %i\n", opt_events.GetIntValue());
@@ -109,7 +108,7 @@ int main(int argc, char** argv) {
         50,                 // number of layers
         FibreLayer(          //
             fibrenum,             // number of fibres in layer
-            Fibre({fibrelength/10. * cm, // fibre length
+            Fibre({fibrewidth*fibrenum/10. * cm, // fibre length
                    fibrewidth/10. * cm, // fibre width
                    0.1 * cm, // thickness (z-axis)
                    material,
