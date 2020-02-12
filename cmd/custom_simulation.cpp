@@ -20,10 +20,10 @@ int main(int argc, char** argv) {
 
     CmdLineOption opt_det(
       "Plane", "-det",
-      "Detector: detector-source:nFibres:fibre_width, default: 175.4:1:22:22", 0, 0);
+      "Detector: detector-source:nFibres:fibre_width, default: 200:1:22:22", 0, 0);
     CmdLineOption opt_mask(
       "Mask", "-mask",
-      "Mask: order:mask-source:width:length:thickness [mm], default: 37:100:22:20", 0, 0);
+      "Mask: order:mask-source:width:length:thickness [mm], default: 31:150:22:20", 0, 0);
     CmdLineOption opt_events("Events", "-n",
                                "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e",
@@ -41,11 +41,11 @@ int main(int argc, char** argv) {
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t detectorsource = 175.4, fibrewidth = 1.; 
+    Float_t detectorsource = 200, fibrewidth = 1.; 
     Int_t fibrenum = 22;
 
-    Int_t mord = 37;
-    Float_t masksource = 100., maskwidth = 22., masklength = 22., maskthick = 20.;
+    Int_t mord = 31;
+    Float_t masksource = 150., maskwidth = 22., masklength = 22., maskthick = 20.;
 
     Float_t minTheta = 170., maxTheta = 180;
 
@@ -60,14 +60,14 @@ int main(int argc, char** argv) {
                       opt_det.GetArraySize());
         abort();
     }
-    if (opt_mask.GetArraySize() == 5) {
+    if (opt_mask.GetArraySize() == 4) {
         mord = opt_mask.GetIntArrayValue(1);
         masksource = opt_mask.GetDoubleArrayValue(2);
         maskwidth = opt_mask.GetDoubleArrayValue(3);
-        masklength = opt_mask.GetDoubleArrayValue(4);
-        maskthick = opt_mask.GetDoubleArrayValue(5);
+        masklength = maskwidth;
+        maskthick = opt_mask.GetDoubleArrayValue(4);
     } else if (opt_mask.GetArraySize() != 0) {
-        spdlog::error("Mask plane - 5 parameters required, {} given",
+        spdlog::error("Mask plane - 4 parameters required, {} given",
                       opt_mask.GetArraySize());
         abort();
     }
@@ -104,20 +104,21 @@ int main(int argc, char** argv) {
 
     MuraMask mask(
         mord, {maskwidth/10 * cm, masklength/10. * cm, maskthick/10. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
+    int nLayer = 50;
     DetectorBlock detector(
-        50,                 // number of layers
+        nLayer,                 // number of layers
         FibreLayer(          //
             fibrenum,             // number of fibres in layer
             Fibre({fibrewidth*fibrenum/10. * cm, // fibre length
                    fibrewidth/10. * cm, // fibre width
-                   0.1 * cm, // thickness (z-axis)
+                   fibrewidth/10. * cm, // thickness (z-axis)
                    material,
                    material,
                    material})));
 
     auto construction = new DetectorConstruction(&mask, &detector);
     construction->setMaskPos(maskSrcDistance * cm);
-    construction->setDetectorPos(maskSrcDistance * cm + maskDetDistance * cm);
+    construction->setDetectorPos(maskSrcDistance * cm + maskDetDistance * cm + nLayer*fibrewidth/10/2 *cm);
 
     G4RunManager runManager;
     runManager.SetUserInitialization(construction);
