@@ -3,6 +3,7 @@
 #include "PhysicsList.h"
 #include "PrimaryGeneratorAction.h"
 #include "tracking/SteppingAction.h"
+#include "Source.hh"
 
 #include <TParameter.h>
 #include <TFile.h>
@@ -11,7 +12,7 @@
 #include <G4RunManager.hh>
 #include <CmdLineConfig.hh>
 
-#include "Source.hh"
+#include <math.h>
 
 using namespace SiFi;
 
@@ -89,6 +90,9 @@ int main(int argc, char** argv) {
         abort();
     }
 
+    minTheta = atan(-(maskwidth+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
+
+
     printf("Detector : %g %i %g [mm]\n", detectorsource, fibrenum, fibrewidth);
     printf("Mask     : %g %g %g %g [mm]\n", masksource, maskwidth, masklength, maskthick);
     printf("Mask order      : %i\n", mord);
@@ -162,5 +166,18 @@ int main(int argc, char** argv) {
     storage.init(); 
 
     runManager.BeamOn(nIter);
+
+    // printf("Iter");
+
+    // source.SetPos(TVector3(-2, -2, 0));
+    // runManager.GeometryHasBeenModified();
+    // runManager.BeamOn(nIter);
+
+    // printf("Iter");
+
+    //  source.SetPos(TVector3(0, 1, 0));
+    // runManager.GeometryHasBeenModified();
+    // runManager.BeamOn(nIter);
+
     storage.cleanup();
 }
