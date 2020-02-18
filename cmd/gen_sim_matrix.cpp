@@ -8,16 +8,19 @@
 #include "PhysicsList.h"
 #include "PrimaryGeneratorAction.h"
 #include "tracking/SteppingAction.h"
+#include "Source.hh"
+
+#include <math.h>
 
 using namespace SiFi;
 
 int main(int argc, char** argv) {
      CmdLineOption opt_det(
       "Plane", "-det",
-      "Detector: detector-source:fibre_length:nFibres:fibre_width, default: 175.4:1:22:22", 0, 0);
+      "Detector: detector-source:nFibres:fibre_width[mm], default: 175.5:22:1", 0, 0);
     CmdLineOption opt_mask(
       "Mask", "-mask",
-      "Mask: order:mask-source:width:length:thickness [mm], default: 37:100:22:22:20", 0, 0);
+      "Mask: order:mask-source:width:length:thickness [mm], default: 37:100:22:20", 0, 0);
     CmdLineOption opt_events("Events", "-n",
                                "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e",
@@ -26,7 +29,7 @@ int main(int argc, char** argv) {
     CmdLineOption opt_theta("Theta", "-theta",
                                "Min and max Theta [Deg], default: 170:180", 0);
     CmdLineOption opt_source("Source", "-source",
-                               "Source plane size and number of bins [mm], default: 22:22:100:100", 0);
+                               "Source plane size and number of bins [mm], default: 22:100", 0);
 
     CmdLineArg cmdarg_output("output", "Output file", CmdLineArg::kString);
 
@@ -37,33 +40,32 @@ int main(int argc, char** argv) {
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t ds = 175.4, dw = 1., dl = 22.; 
-    Int_t dn = 22;
+    Float_t detectorsource = 175.4, fibrewidth = 1.; 
+    Int_t fibrenum = 22;
 
     Int_t mord = 37;
-    Float_t ms = 100., mw = 22., ml = 22., mt = 20.;
+    Float_t masksource = 100., maskwidth = 22., masklength = 22., maskthick = 20.;
 
     Float_t minTheta = 170., maxTheta = 180;
 
-    Float_t xDimSource = 2.2 * cm, yDimSource = 2.2 * cm;
+    Float_t xDimSource = 22, yDimSource = 22;
     Int_t maxBinX = 100, maxBinY = 100;
 
-    if (opt_det.GetArraySize() == 4) {
-        ds = opt_det.GetDoubleArrayValue(1);
-        dl = opt_det.GetDoubleArrayValue(2);
-        dn = opt_det.GetIntArrayValue(3);
-        dw = opt_det.GetDoubleArrayValue(4);
+    if (opt_det.GetArraySize() == 3) {
+        detectorsource = opt_det.GetDoubleArrayValue(1);
+        fibrenum = opt_det.GetIntArrayValue(2);
+        fibrewidth = opt_det.GetDoubleArrayValue(3);
     } else if (opt_det.GetArraySize() != 0) {
-        spdlog::error("Detector plane - 4 parameters required, {} given",
+        spdlog::error("Detector plane - 3 parameters required, {} given",
                       opt_det.GetArraySize());
         abort();
     }
-    if (opt_mask.GetArraySize() == 5) {
+    if (opt_mask.GetArraySize() == 4) {
         mord = opt_mask.GetIntArrayValue(1);
-        ms = opt_mask.GetDoubleArrayValue(2);
-        mw = opt_mask.GetDoubleArrayValue(3);
-        ml = opt_mask.GetDoubleArrayValue(4);
-        mt = opt_mask.GetDoubleArrayValue(5);
+        masksource = opt_mask.GetDoubleArrayValue(2);
+        maskwidth = opt_mask.GetDoubleArrayValue(3);
+        masklength = maskwidth;
+        maskthick = opt_mask.GetDoubleArrayValue(4);
     } else if (opt_mask.GetArraySize() != 0) {
         spdlog::error("Mask plane - 5 parameters required, {} given",
                       opt_mask.GetArraySize());
@@ -75,42 +77,46 @@ int main(int argc, char** argv) {
         maxTheta = opt_theta.GetDoubleArrayValue(2);
     } else if (opt_theta.GetArraySize() != 0) {
         spdlog::error("Theta angles - 2 parameters required: min and max values, {} given",
-                      opt_mask.GetArraySize());
+                      opt_theta.GetArraySize());
         abort();
     }
-    if (opt_source.GetArraySize() == 4) {
-        xDimSource = opt_source.GetDoubleArrayValue(1)/10. * cm;
-        yDimSource = opt_source.GetDoubleArrayValue(2)/10. * cm;
-        maxBinX = opt_source.GetIntArrayValue(3);
-        maxBinY = opt_source.GetIntArrayValue(4);
-    } else if (opt_theta.GetArraySize() != 0) {
+    if (opt_source.GetArraySize() == 2) {
+        xDimSource = opt_source.GetDoubleArrayValue(1);
+        yDimSource = xDimSource;
+        maxBinX = opt_source.GetIntArrayValue(2);
+        maxBinY = maxBinX;
+    } else if (opt_source.GetArraySize() != 0) {
         spdlog::error("Source position - 2 parameters required, {} given",
-                      opt_mask.GetArraySize());
+                      opt_source.GetArraySize());
         abort();
     }
 
-    printf("Detector : %g %g %i %g [mm]\n", ds, dl, dn, dw);
-    printf("Mask     : %g %g %g %g [mm]\n", ms, mw, ml, mt);
+    minTheta = atan(-(maskwidth+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
+
+
+    printf("Detector : %g %i %g [mm]\n", detectorsource, fibrenum, fibrewidth);
+    printf("Mask     : %g %g %g %g [mm]\n", masksource, maskwidth, masklength, maskthick);
     printf("Mask order      : %i\n", mord);
     printf("No. of events  : %i\n", opt_events.GetIntValue());
     printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
     printf("Theta [Deg] : %g %g\n", minTheta, maxTheta);
     printf("Source plane [mm] : %g %g Number of bins: %i %i\n", xDimSource, yDimSource, maxBinX, maxBinY);
 
-    double maskDetDistance = (ds-ms)/10;
-    double maskSrcDistance = ms/10;
+    double maskDetDistance = (detectorsource-masksource)/10;
+    double maskSrcDistance = masksource/10;
     int energy = opt_energy.GetIntValue();
     auto material = MaterialManager::get()->LuAGCe();
 
     MuraMask mask(
-        mord, {mw/10 * cm, ml/10. * cm, mt/10. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
+        mord, {maskwidth/10 * cm, masklength/10. * cm, maskthick/10. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
+	int nLayer = 50;
     DetectorBlock detector(
-        50,                  // number of layers
+        nLayer,                 // number of layers
         FibreLayer(          //
-            dn,             // number of fibres in layer
-            Fibre({dl/10. * cm, // fibre length
-                   dw/10. * cm, // fibre width
-                   0.1 * cm, // thickness (z-axis)
+            fibrenum,             // number of fibres in layer
+            Fibre({fibrewidth*fibrenum/10. * cm, // fibre length
+                   fibrewidth/10. * cm, // fibre width
+                   fibrewidth/10. * cm, // thickness (z-axis)
                    material,
                    material,
                    material})));
@@ -121,81 +127,75 @@ int main(int argc, char** argv) {
     runManager.SetUserInitialization(construction);
     auto physicsList = new PhysicsList();
     runManager.SetUserInitialization(physicsList);
-    G4GeneralParticleSource source;
-    source.GetCurrentSource()->GetPosDist()->SetPosDisType("Point");
-    source.GetCurrentSource()->GetAngDist()->SetAngDistType("iso");
-    source.GetCurrentSource()->GetAngDist()->SetMinTheta(minTheta * deg);
-    source.GetCurrentSource()->GetAngDist()->SetMaxTheta(maxTheta * deg);
-    source.GetCurrentSource()->GetEneDist()->SetEnergyDisType("Mono");
 
-    runManager.SetUserAction(new PrimaryGeneratorAction(&source));
+    Source source(energy,minTheta,maxTheta);
+    
+    runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource()));
     runManager.SetUserAction(new SteppingAction(&storage));
     runManager.SetUserAction(new EventAction(&storage));
     runManager.Initialize();
 
-    // const int nIter = 100;
     const int nIter = opt_events.GetIntValue();
+
+    storage.setBinnedSize(maxBinX, maxBinY, fibrenum, fibrenum, fibrewidth);
+    storage.resizeHmatrix();
+
+    storage.newSimulation(
+            TString::Format(
+                "%g_%g_%d", maskDetDistance, maskSrcDistance, energy),false);
+    
+    storage.writeMetadata("energy", energy * keV);
+    storage.writeMetadata(
+        "sourceToMaskDistance", maskSrcDistance * cm);
+    storage.writeMetadata(
+        "maskToDetectorDistance", maskDetDistance * cm);
+    detector.writeMetadata(&storage);
+    mask.writeMetadata(&storage);
+    storage.writeMetadata("sourceMinX", - xDimSource / 2);
+    storage.writeMetadata("sourceMaxX", xDimSource / 2);
+    storage.writeMetadata("sourceMinY", - yDimSource / 2);
+    storage.writeMetadata("sourceMaxY", yDimSource / 2);
+    storage.writeMetadata("sourceBinX", maxBinX);
+    storage.writeMetadata("sourceBinY", maxBinY);
+    storage.init();
 
     //
     // Easiest way to use this part of code is to add break statements
     // at the end of loops that are parametrising values that we don't
     // want to change and override initial value at the begining
     //
-    // for (int maskDetDistance = 10; maskDetDistance <= 20; maskDetDistance += 2) {
-        // for (int maskSrcDistance = 50; maskSrcDistance <= 80; maskSrcDistance += 10) {
-            log::info("maskDetDistance {}, maskSrcDistance {}",maskDetDistance * cm,maskSrcDistance * cm);
-            construction->setMaskPos(maskSrcDistance * cm);
-            construction->setDetectorPos(maskSrcDistance * cm + maskDetDistance * cm);
-            runManager.DefineWorldVolume(construction->Construct());
-            runManager.GeometryHasBeenModified();
+    log::info("maskDetDistance {}, maskSrcDistance {}",maskDetDistance * cm,maskSrcDistance * cm);
+    construction->setMaskPos(maskSrcDistance * cm);
+    construction->setDetectorPos(maskSrcDistance * cm + maskDetDistance * cm + nLayer*fibrewidth/10/2 *cm);
+    runManager.DefineWorldVolume(construction->Construct());
+    runManager.GeometryHasBeenModified();
 
-            for (int binX = 0; binX < maxBinX; binX += 1) {
-                for (int binY = 0; binY < maxBinY; binY += 1) {
-                    double sPosX = - xDimSource / 2. + (0.5 + binX) * (xDimSource / maxBinX);
-                    double sPosY = - yDimSource / 2. + (0.5 + binY) * (yDimSource / maxBinY);
-                    for (int energy_it = energy; energy_it > 50; energy_it /= 4) {
-                        log::info(
-                            "Starting simulation source({}, {}), "
-                            "maskToDetectorDistance={}, sourceToMaskDistance={}, "
-                            "baseEnergy={}",
-                            sPosX,
-                            sPosY,
-                            maskDetDistance * cm,
-                            maskSrcDistance * cm,
-                            energy_it * keV);
-                        auto simName = TString::Format(
-                            "%f_%f_%d_%d_%d",
-                            sPosX,
-                            sPosY,
-                            maskDetDistance,
-                            maskSrcDistance,
-                            energy_it);
+    xDimSource *= 0.1; //cm
+    yDimSource *= 0.1; //cm
 
-                        storage.newSimulation(simName);
-                        storage.writeMetadata("sourcePosX", sPosX);
-                        storage.writeMetadata("sourcePosY", sPosY);
-                        storage.writeMetadata("sourcePosZ", 0 * cm);
-                        storage.writeMetadata("energy", energy_it * keV);
-                        storage.writeMetadata(
-                            "sourceToMaskDistance", maskSrcDistance * cm);
-                        storage.writeMetadata(
-                            "maskToDetectorDistance", maskDetDistance * cm);
-                        detector.writeMetadata(&storage);
-                        mask.writeMetadata(&storage);
-                        storage.init();
 
-                        source.GetCurrentSource()->GetPosDist()->SetCentreCoords(
-                            G4ThreeVector(sPosX * mm, sPosY * mm, 0));
-                        source.GetCurrentSource()->GetEneDist()->SetMonoEnergy(
-                            energy_it * keV);
-                        runManager.BeamOn(nIter);
-                        storage.cleanup();
-                        break;
-                    }
-                }
+    for (int binX = 0; binX < maxBinX; binX += 1) {
+        for (int binY = 0; binY < maxBinY; binY += 1) {
+            double sPosX = - xDimSource / 2. + (0.5 + binX) * (xDimSource / maxBinX);
+            double sPosY = - yDimSource / 2. + (0.5 + binY) * (yDimSource / maxBinY);
+            for (int energy_it = energy; energy_it > 50; energy_it /= 4) {
+                log::info(
+                    "Starting simulation source({}, {}), "
+                    "maskToDetectorDistance={}, sourceToMaskDistance={}, "
+                    "baseEnergy={}",
+                    sPosX * cm,
+                    sPosY * cm,
+                    maskDetDistance * cm,
+                    maskSrcDistance * cm,
+                    energy_it * keV);
+                storage.setCurrentBins(binX, binY);
+
+                source.SetPos(TVector3(sPosX, sPosY, 0));
+                runManager.BeamOn(nIter);
+                break;
             }
-            // break;
-        // }
-        // break;
-    // }
+        }
+    }
+    storage.writeHmatrix();
+    storage.cleanup();
 }

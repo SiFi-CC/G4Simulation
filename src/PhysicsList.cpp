@@ -39,5 +39,5 @@ void PhysicsList::ConstructParticle() {
     G4VModularPhysicsList::ConstructParticle();
     PhysicsList::DumpList();
     log->debug("ConstructParticle()");
-};
+}
 } // namespace SiFi

@@ -37,11 +37,16 @@ add_code_coverage()
 
 # libraries and bianries
 
+# include_directories(BEFORE src)
+
 add_library(g4sim
     ./src/Defaults.cpp
     ./src/PhysicsList.cpp
     ./src/EventAction.cpp
     ./src/MaterialManager.cpp
+    ./src/DataStructConvert.cc
+    ./src/DataStorage.cc
+    ./src/Source.cc
 
     ./src/geometry/DetectorBlock.cpp
     ./src/geometry/FibreLayer.cpp
