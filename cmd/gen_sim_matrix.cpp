@@ -10,6 +10,8 @@
 #include "tracking/SteppingAction.h"
 #include "Source.hh"
 
+#include <math.h>
+
 using namespace SiFi;
 
 int main(int argc, char** argv) {
@@ -88,6 +90,9 @@ int main(int argc, char** argv) {
                       opt_source.GetArraySize());
         abort();
     }
+
+    minTheta = atan(-(maskwidth+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
+
 
     printf("Detector : %g %i %g [mm]\n", detectorsource, fibrenum, fibrewidth);
     printf("Mask     : %g %g %g %g [mm]\n", masksource, maskwidth, masklength, maskthick);
