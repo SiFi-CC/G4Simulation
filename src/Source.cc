@@ -24,7 +24,7 @@ void Source::Init(const TVector3& position){
     fSourceGeant->GetCurrentSource()->GetAngDist()->SetMaxTheta(fMaxTheta * deg);
     fSourceGeant->GetCurrentSource()->GetEneDist()->SetEnergyDisType("Mono");
     fSourceGeant->GetCurrentSource()->GetPosDist()->SetCentreCoords(
-        G4ThreeVector(fPosition.X() * cm, fPosition.Y() * cm, fPosition.Z() * cm));
+        G4ThreeVector(fPosition.X() * mm, fPosition.Y() * mm, fPosition.Z() * mm));
     fSourceGeant->GetCurrentSource()->GetEneDist()->SetMonoEnergy(fEnergy * keV);
 }
 
@@ -32,7 +32,7 @@ void Source::SetPos(const TVector3& position){
     fPosition = position;
     // fPosition = TVector2(2,1);
     fSourceGeant->GetCurrentSource()->GetPosDist()->SetCentreCoords(
-        G4ThreeVector(fPosition.X() * cm, fPosition.Y() * cm, fPosition.Z() * cm));
+        G4ThreeVector(fPosition.X() * mm, fPosition.Y() * mm, fPosition.Z() * mm));
 }
 
 }

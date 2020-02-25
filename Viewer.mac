@@ -1,0 +1,81 @@
+# create empty scene
+#
+#/vis/open OGLX
+/vis/open OGL
+/vis/scene/create
+############## GUI commands
+/gui/addMenu g4file G4File
+/gui/addButton g4file Continue continue
+/gui/addButton g4file Exit "exit"
+
+#open/save icons
+/gui/addIcon "Open macro file" open /control/execute
+/gui/addIcon "Save viewer state" save /vis/viewer/save
+
+
+# Cursors style icons 
+/gui/addIcon "Move" move 
+/gui/addIcon "Pick" pick 
+/gui/addIcon "Zoom out" zoom_out 
+/gui/addIcon "Zoom in" zoom_in 
+/gui/addIcon "Rotate" rotate 
+
+# Surface Style icons
+/gui/addIcon "Hidden line removal" hidden_line_removal 
+/gui/addIcon "Hidden line and hidden surface removal" hidden_line_and_surface_removal 
+/gui/addIcon "Surfaces" solid 
+/gui/addIcon "Wireframe" wireframe 
+
+# Perspective/Ortho icons
+/gui/addIcon "Perspective" perspective 
+/gui/addIcon "Orthographic" ortho 
+
+
+
+/vis/viewer/set/viewpointThetaPhi 150 35.0
+#/vis/viewer/set/viewpointThetaPhi 130 150.0
+#/vis/viewer/set/viewpointThetaPhi 120 20.0
+#/vis/viewer/set/viewpointThetaPhi 90 270.05
+#/vis/viewer/set/viewpointThetaPhi 90 90		#topview
+#/vis/viewer/set/viewpointThetaPhi 90 -60
+/vis/viewer/set/background 1 1 1 		#background white instead of black
+
+#/vis/modeling/trajectories/create/drawByCharge
+#/vis/modeling/trajectories/drawByCharge-0/set 1 blue
+#/vis/modeling/trajectories/drawByCharge-0/set -1 red
+#/vis/modeling/trajectories/drawByCharge-0/set 0 Green
+
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set gamma green
+/vis/modeling/trajectories/drawByParticleID-0/setRGBA e+ 1 0 0 0
+/vis/modeling/trajectories/drawByParticleID-0/setRGBA opticalphoton 0 0 0 0
+
+
+
+/vis/drawVolume
+
+/vis/scene/add/trajectories
+/vis/scene/add/hits
+
+/vis/scene/add/axes 0 0 0 10 mm
+
+#Mura
+/vis/viewer/set/targetPoint 0 0 20.0 cm
+/vis/viewer/zoom 2.1
+
+/vis/viewer/set/style s
+/vis/viewer/set/edge 0
+/vis/viewer/set/hiddenEdge 1
+
+
+
+#/vis/viewer/flush
+
+
+#/vis/viewer/flush
+
+
+
+
+
+

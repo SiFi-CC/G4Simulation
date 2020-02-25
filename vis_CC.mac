@@ -1,0 +1,42 @@
+################ Setup changes
+
+#/CCSetUp/det/SelectDetectorBlock 1
+#/CCSetUp/det/FibreLA 36
+#/CCSetUp/det/VAScin 1
+#/CCSetUp/det/SASiPM 1
+#/CCSetUp/det/PASiPM 1
+#/CCSetUp/det/LayerThickness 2
+#/CCSetUp/det/VoxelThickness 2
+#/CCSetUp/det/SiPMPixelSize 2
+
+#/CCSetUp/UpdateGeometry
+
+
+####################Sets some default verbose
+#
+/control/verbose 2
+/control/saveHistory
+/run/verbose 2
+#
+/control/execute Viewer.mac
+#
+#/vis/scene/add/axes 0 0 0 500 mm
+#/vis/viewer/set/style s
+
+################### Visualization commands
+/tracking/storeTrajectory 1
+/vis/scene/add/trajectories
+/vis/scene/endOfEventAction accumulate
+/vis/scene/endOfRunAction accumulate
+
+
+
+################### source specifications
+#/vis/disable
+#/control/execute macros/gamma_point_sp.mac
+#/control/execute macros/line_gamma.mac
+#/control/execute macros/optical_photons.mac
+#/run/beamOn 0
+#/vis/enable
+#/vis/ogl/set/displayListLimit 1000000
+#/vis/reviewKeptEvents

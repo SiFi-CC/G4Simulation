@@ -17,10 +17,10 @@ using namespace SiFi;
 int main(int argc, char** argv) {
      CmdLineOption opt_det(
       "Plane", "-det",
-      "Detector: detector-source:nFibres:fibre_width[mm], default: 175.5:22:1", 0, 0);
+      "Detector: detector-source:nFibres:fibre_width[mm], default: 175.5:22:1.3", 0, 0);
     CmdLineOption opt_mask(
       "Mask", "-mask",
-      "Mask: order:mask-source:width:length:thickness [mm], default: 37:100:22:20", 0, 0);
+      "Mask: order:mask-source:width:length:thickness [mm], default: 37:100:64:20", 0, 0);
     CmdLineOption opt_events("Events", "-n",
                                "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e",
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     CmdLineOption opt_theta("Theta", "-theta",
                                "Min and max Theta [Deg], default: 170:180", 0);
     CmdLineOption opt_source("Source", "-source",
-                               "Source plane size and number of bins [mm], default: 22:100", 0);
+                               "Source plane size and number of bins [mm], default: 64:100", 0);
 
     CmdLineArg cmdarg_output("output", "Output file", CmdLineArg::kString);
 
@@ -40,15 +40,15 @@ int main(int argc, char** argv) {
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t detectorsource = 175.4, fibrewidth = 1.; 
+    Float_t detectorsource = 175.4, fibrewidth = 1.3; 
     Int_t fibrenum = 22;
 
     Int_t mord = 37;
-    Float_t masksource = 100., maskwidth = 22., masklength = 22., maskthick = 20.;
+    Float_t masksource = 100., maskwidth = 64., masklength = 64., maskthick = 20.;
 
     Float_t minTheta = 170., maxTheta = 180;
 
-    Float_t xDimSource = 22, yDimSource = 22;
+    Float_t xDimSource = 64, yDimSource = 64;
     Int_t maxBinX = 100, maxBinY = 100;
 
     if (opt_det.GetArraySize() == 3) {

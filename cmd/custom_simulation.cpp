@@ -10,6 +10,11 @@
 #include <TString.h>
 
 #include <G4RunManager.hh>
+#include <G4VisManager.hh>
+#include <G4VisExecutive.hh>
+#include <G4UIExecutive.hh>
+#include <G4UImanager.hh>
+
 #include <CmdLineConfig.hh>
 
 #include <math.h>
@@ -42,15 +47,15 @@ int main(int argc, char** argv) {
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t detectorsource = 200, fibrewidth = 1.; 
+    Float_t detectorsource = 200, fibrewidth = 1.3; 
     Int_t fibrenum = 22;
 
     Int_t mord = 31;
-    Float_t masksource = 150., maskwidth = 22., masklength = 22., maskthick = 20.;
+    Float_t masksource = 150., maskwidth = 64., masklength = 64., maskthick = 20.;
 
     Float_t minTheta = 170., maxTheta = 180;
 
-    Float_t sPosX = -0.2, sPosY = 0.2;
+    Float_t sPosX = 0, sPosY = 0;
 
     if (opt_det.GetArraySize() == 3) {
         detectorsource = opt_det.GetDoubleArrayValue(1);
@@ -82,8 +87,8 @@ int main(int argc, char** argv) {
         abort();
     }
     if (opt_source.GetArraySize() == 2) {
-        sPosX = opt_source.GetDoubleArrayValue(1)/10.;
-        sPosY = opt_source.GetDoubleArrayValue(2)/10.;
+        sPosX = opt_source.GetDoubleArrayValue(1);
+        sPosY = opt_source.GetDoubleArrayValue(2);
     } else if (opt_source.GetArraySize() != 0) {
         spdlog::error("Source position - 2 parameters required, {} given",
                       opt_source.GetArraySize());
@@ -99,26 +104,28 @@ int main(int argc, char** argv) {
     printf("No. of events  : %i\n", opt_events.GetIntValue());
     printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
     printf("Theta [Deg] : %g %g\n", minTheta, maxTheta);
-    printf("Source position [mm] : %g %g\n", sPosX*10., sPosY*10.);
+    printf("Source position [mm] : %g %g\n", sPosX, sPosY);
 
     double maskDetDistance = (detectorsource-masksource)/10;
     double maskSrcDistance = masksource/10;
     int energy = opt_energy.GetIntValue();
     auto material = MaterialManager::get()->LuAGCe();
+    auto wrappingmaterial = MaterialManager::get()->GetMaterial("G4_Al");
+    auto airmaterial = MaterialManager::get()->GetMaterial("G4_AIR");
 
     MuraMask mask(
         mord, {maskwidth/10 * cm, masklength/10. * cm, maskthick/10. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
-    int nLayer = 50;
+    int nLayer = 10;
     DetectorBlock detector(
         nLayer,                 // number of layers
         FibreLayer(          //
             fibrenum,             // number of fibres in layer
-            Fibre({fibrewidth*fibrenum/10. * cm, // fibre length
-                   fibrewidth/10. * cm, // fibre width
-                   fibrewidth/10. * cm, // thickness (z-axis)
+            Fibre({fibrewidth*fibrenum *mm, // fibre length
+                   fibrewidth *mm, // fibre width
+                   fibrewidth *mm, // thickness (z-axis)
                    material,
-                   material,
-                   material})));
+                   wrappingmaterial,
+                   airmaterial})));
 
     auto construction = new DetectorConstruction(&mask, &detector);
     construction->setMaskPos(maskSrcDistance * cm);
@@ -165,8 +172,21 @@ int main(int argc, char** argv) {
     mask.writeMetadata(&storage);
     storage.init(); 
 
-    runManager.BeamOn(nIter);
+    // runManager.BeamOn(nIter);
+    
+    //VISUALISATION:
+    G4VisManager* visManager = new G4VisExecutive;
+        visManager->Initialize();
 
+    G4UImanager* UI = G4UImanager::GetUIpointer();
+
+    G4UIExecutive* UI2 = new G4UIExecutive(argc, argv);
+                UI->ApplyCommand("/control/execute vis_CC.mac");
+                UI2->SessionStart();
+                delete UI2;
+    delete visManager;
+
+    //MULTIPLE POINTS:
     // printf("Iter");
 
     // source.SetPos(TVector3(-2, -2, 0));

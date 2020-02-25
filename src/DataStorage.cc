@@ -75,7 +75,7 @@ void DataStorage::init() {
 
 void DataStorage::registerDepositScoring(
     const G4String& volume, const G4ThreeVector& pos, double energy) {
-    if (volume == "fibreLayerRepFibre") {
+    if (volume == "fibrephysical") {
         if(fEnable.depositScoring){
             fEnergyDeposits.eventId = fSourceRecord.eventId;
             fEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
