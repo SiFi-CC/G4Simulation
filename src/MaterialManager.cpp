@@ -37,4 +37,16 @@ G4Material* MaterialManager::LuAGCe() {
     return fLuAGCe;
 }
 
+G4Material* MaterialManager::LYSO() {
+    if (fLYSO == nullptr) {
+        fLYSO = new G4Material("LYSO", 7.1 * g / cm3, 5);
+        fLYSO->AddElement(fElements["Lutetium"], 55.04 * perCent);
+        fLYSO->AddElement(fElements["Yttrium"], 27.97 * perCent);
+        fLYSO->AddElement(fElements["Silicon"], 4.4 * perCent);
+        fLYSO->AddElement(fElements["Oxygen"], 12.49 * perCent);
+        fLYSO->AddElement(fElements["Cerium"], 0.1 * perCent);
+    }
+    return fLYSO;
+}
+
 } // namespace SiFi

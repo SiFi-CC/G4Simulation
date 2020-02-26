@@ -17,10 +17,10 @@ using namespace SiFi;
 int main(int argc, char** argv) {
      CmdLineOption opt_det(
       "Plane", "-det",
-      "Detector: detector-source:nFibres:fibre_width[mm], default: 175.5:22:1.3", 0, 0);
+      "Detector: detector-source:nFibres:fibre_width[mm], default: 200:22:1.3", 0, 0);
     CmdLineOption opt_mask(
       "Mask", "-mask",
-      "Mask: order:mask-source:width:length:thickness [mm], default: 37:100:64:20", 0, 0);
+      "Mask: order:mask-source:width:length:thickness [mm], default: 31:150:64:20", 0, 0);
     CmdLineOption opt_events("Events", "-n",
                                "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e",
@@ -40,11 +40,11 @@ int main(int argc, char** argv) {
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t detectorsource = 175.4, fibrewidth = 1.3; 
+    Float_t detectorsource = 200, fibrewidth = 1.3; 
     Int_t fibrenum = 22;
 
-    Int_t mord = 37;
-    Float_t masksource = 100., maskwidth = 64., masklength = 64., maskthick = 20.;
+    Int_t mord = 31;
+    Float_t masksource = 150., masklength = 64., maskthick = 20.;
 
     Float_t minTheta = 170., maxTheta = 180;
 
@@ -63,8 +63,7 @@ int main(int argc, char** argv) {
     if (opt_mask.GetArraySize() == 4) {
         mord = opt_mask.GetIntArrayValue(1);
         masksource = opt_mask.GetDoubleArrayValue(2);
-        maskwidth = opt_mask.GetDoubleArrayValue(3);
-        masklength = maskwidth;
+        masklength = opt_mask.GetDoubleArrayValue(3);
         maskthick = opt_mask.GetDoubleArrayValue(4);
     } else if (opt_mask.GetArraySize() != 0) {
         spdlog::error("Mask plane - 5 parameters required, {} given",
@@ -72,6 +71,7 @@ int main(int argc, char** argv) {
         abort();
     }
 
+    minTheta = atan(-(masklength+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
     if (opt_theta.GetArraySize() == 2) {
         minTheta = opt_theta.GetDoubleArrayValue(1);
         maxTheta = opt_theta.GetDoubleArrayValue(2);
@@ -91,35 +91,32 @@ int main(int argc, char** argv) {
         abort();
     }
 
-    minTheta = atan(-(maskwidth+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
-
-
-    printf("Detector : %g %i %g [mm]\n", detectorsource, fibrenum, fibrewidth);
-    printf("Mask     : %g %g %g %g [mm]\n", masksource, maskwidth, masklength, maskthick);
+    printf("Detector : %g %g %i %g [mm]\n", detectorsource, fibrenum*fibrewidth, fibrenum, fibrewidth);
+    printf("Mask     : %g %g %g %g [mm]\n", masksource, masklength, masklength, maskthick);
     printf("Mask order      : %i\n", mord);
     printf("No. of events  : %i\n", opt_events.GetIntValue());
     printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
     printf("Theta [Deg] : %g %g\n", minTheta, maxTheta);
     printf("Source plane [mm] : %g %g Number of bins: %i %i\n", xDimSource, yDimSource, maxBinX, maxBinY);
 
-    double maskDetDistance = (detectorsource-masksource)/10;
-    double maskSrcDistance = masksource/10;
+    double maskdetector = detectorsource-masksource;
     int energy = opt_energy.GetIntValue();
     auto material = MaterialManager::get()->LuAGCe();
+    auto wrappingmaterial = MaterialManager::get()->GetMaterial("G4_Al");
+    auto airmaterial = MaterialManager::get()->GetMaterial("G4_AIR");
 
     MuraMask mask(
-        mord, {maskwidth/10 * cm, masklength/10. * cm, maskthick/10. * cm}, MaterialManager::get()->GetMaterial("G4_W"));
-	int nLayer = 50;
+        mord, {masklength * mm, masklength * mm, maskthick * mm}, MaterialManager::get()->GetMaterial("G4_W"));
+	int nLayer = 10;
     DetectorBlock detector(
         nLayer,                 // number of layers
         FibreLayer(          //
             fibrenum,             // number of fibres in layer
-            Fibre({fibrewidth*fibrenum/10. * cm, // fibre length
-                   fibrewidth/10. * cm, // fibre width
-                   fibrewidth/10. * cm, // thickness (z-axis)
+            Fibre({fibrewidth*fibrenum * mm, // fibre length
+                   fibrewidth * mm, // fibre width and thickness
                    material,
-                   material,
-                   material})));
+                   wrappingmaterial,
+                   airmaterial})));
 
     auto construction = new DetectorConstruction(&mask, &detector);
 
@@ -142,13 +139,13 @@ int main(int argc, char** argv) {
 
     storage.newSimulation(
             TString::Format(
-                "%g_%g_%d", maskDetDistance, maskSrcDistance, energy),false);
+                "%g_%g_%d", maskdetector, masksource, energy),false);
     
     storage.writeMetadata("energy", energy * keV);
     storage.writeMetadata(
-        "sourceToMaskDistance", maskSrcDistance * cm);
+        "sourceToMaskDistance", masksource * mm);
     storage.writeMetadata(
-        "maskToDetectorDistance", maskDetDistance * cm);
+        "maskToDetectorDistance", maskdetector * mm);
     detector.writeMetadata(&storage);
     mask.writeMetadata(&storage);
     storage.writeMetadata("sourceMinX", - xDimSource / 2);
@@ -159,20 +156,11 @@ int main(int argc, char** argv) {
     storage.writeMetadata("sourceBinY", maxBinY);
     storage.init();
 
-    //
-    // Easiest way to use this part of code is to add break statements
-    // at the end of loops that are parametrising values that we don't
-    // want to change and override initial value at the begining
-    //
-    log::info("maskDetDistance {}, maskSrcDistance {}",maskDetDistance * cm,maskSrcDistance * cm);
-    construction->setMaskPos(maskSrcDistance * cm);
-    construction->setDetectorPos(maskSrcDistance * cm + maskDetDistance * cm + nLayer*fibrewidth/10/2 *cm);
+    log::info("maskDetDistance {}, maskSrcDistance {}",maskdetector * mm, masksource * mm);
+    construction->setMaskPos(masksource * mm);
+    construction->setDetectorPos(detectorsource * mm + nLayer*fibrewidth/2 * mm);
     runManager.DefineWorldVolume(construction->Construct());
     runManager.GeometryHasBeenModified();
-
-    xDimSource *= 0.1; //cm
-    yDimSource *= 0.1; //cm
-
 
     for (int binX = 0; binX < maxBinX; binX += 1) {
         for (int binY = 0; binY < maxBinY; binY += 1) {
@@ -182,11 +170,11 @@ int main(int argc, char** argv) {
                 log::info(
                     "Starting simulation source({}, {}), "
                     "maskToDetectorDistance={}, sourceToMaskDistance={}, "
-                    "baseEnergy={}",
-                    sPosX * cm,
-                    sPosY * cm,
-                    maskDetDistance * cm,
-                    maskSrcDistance * cm,
+                    "baseEnerg{}",
+                    sPosX * mm,
+                    sPosY * mm,
+                    maskdetector * mm,
+                    masksource * mm,
                     energy_it * keV);
                 storage.setCurrentBins(binX, binY);
 

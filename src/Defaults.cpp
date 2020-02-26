@@ -9,7 +9,6 @@ namespace geometry {
 Fibre simpleFibre() {
     return Fibre({20. * cm,
                   1. * cm,
-                  1. * cm, // thickness
                   material::fibre(),
                   material::wrapping(),
                   material::coupling()});

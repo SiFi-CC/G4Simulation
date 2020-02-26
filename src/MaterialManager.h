@@ -19,6 +19,7 @@ class MaterialManager {
     G4Material* GetMaterial(const G4String& materialName);
     G4Material* Vacuum();
     G4Material* LuAGCe();
+    G4Material* LYSO();
 
   private:
     static MaterialManager* instance;
@@ -26,6 +27,7 @@ class MaterialManager {
 
     G4Material* fVacuum = nullptr;
     G4Material* fLuAGCe = nullptr;
+    G4Material* fLYSO = nullptr;
     std::unordered_map<std::string, G4Material*> fMaterial = {};
     std::unordered_map<std::string, G4Element*> fElements = {
         {"Hydrogen", new G4Element("Hydrogen", "H", 1., 1.00794 * g / mole)},
@@ -41,7 +43,9 @@ class MaterialManager {
         {"Praseodym", new G4Element("Praseodym", "Praseodym", 59., 140.907 * g / mole)},
         {"Gadolinium", new G4Element("Gadolinium", "Gadolinium", 64., 157.25 * g / mole)},
         {"Gallium", new G4Element("Gallium", "Gallium", 31., 69.723 * g / mole)},
-        {"Magnesium", new G4Element("Magnesium", "Magnesium", 12., 24.305 * g / mole)}};
+        {"Magnesium", new G4Element("Magnesium", "Magnesium", 12., 24.305 * g / mole)},
+        {"Yttrium", new G4Element("Yttrium", "Yttrium", 39., 88.905 * g / mole)},
+        {"Silicon", new G4Element("Silicon", "Silicon", 14., 28.085 * g / mole)}};
 }; // namespace SiFi
 
 } // namespace SiFi

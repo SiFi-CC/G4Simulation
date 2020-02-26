@@ -14,6 +14,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
         auto pos = step->GetPostStepPoint()->GetPosition();
 
         log->debug("hit in volume {}", name);
+        // log->info("dfs{}",1);
+
 
         fStorage->registerDepositScoring(name, pos, deposit);
     }

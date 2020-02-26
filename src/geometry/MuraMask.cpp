@@ -34,8 +34,12 @@ int MuraMask::isQuaResidue(int q, int p) {
 G4LogicalVolume* MuraMask::Construct() {
     auto mask = new G4LogicalVolume(
         new G4Box("mask", fSize.x() / 2, fSize.y() / 2, fSize.z() / 2),
-        MaterialManager::get()->Vacuum(),
+        MaterialManager::get()->GetMaterial("G4_AIR"),
         "mask");
+    // auto mask = new G4LogicalVolume(
+    //     new G4Box("mask", fSize.x() / 2, fSize.y() / 2, fSize.z() / 2),
+    //     fMaterial,
+    //     "mask");
 
     auto segX = fSize.x() / fMaskOrder;
     auto segY = fSize.y() / fMaskOrder;
@@ -43,8 +47,13 @@ G4LogicalVolume* MuraMask::Construct() {
         new G4Box("maskSegment", segX / 2, segY / 2, fSize.z() / 2),
         fMaterial,
         "maskSegment");
+    // auto maskSegment = new G4LogicalVolume(
+    //     new G4Tubs("maskSegment", 0, segX / 2, fSize.z() / 2, 0 * deg, 360 * deg),
+    //     MaterialManager::get()->GetMaterial("G4_AIR"),
+    //     "maskSegment");
     maskSegment->SetVisAttributes(G4VisAttributes(G4Colour::Blue()));
     mask->SetVisAttributes(G4VisAttributes::Invisible);
+
 
     int placementId = 1;
 
@@ -66,6 +75,8 @@ G4LogicalVolume* MuraMask::Construct() {
             }
         }
     }
+    // mask->SetVisAttributes(G4VisAttributes(G4Colour::Blue()));
+    // maskSegment->SetVisAttributes(G4VisAttributes(G4Colour::Red()));;
     return mask;
 }
 

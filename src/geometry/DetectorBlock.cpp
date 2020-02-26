@@ -27,7 +27,6 @@ G4LogicalVolume* DetectorBlock::Construct() {
     rotMatrix->rotateY(0);
     rotMatrix->rotateZ(90*deg);
     for (int i = 0; i < fNumberOfLayers; i++){
-        // std::cout<<(i+0.5-0.5*fNumberOfLayers)*fLayer.getThickness()<<std::endl;
         if(i % 2 == 0){
             new G4PVPlacement(rotMatrix,G4ThreeVector(0,0,(i+0.5-0.5*fNumberOfLayers)*fLayer.getThickness()),
                 layer,"detectorBlockRepLayers",block,0,i,0);
