@@ -4,10 +4,17 @@
 namespace SiFi{
 
 DataStorage::DataStorage(const TString& filename)
-					:fFile(new TFile(filename, "RECREATE")){}
+                :fFile(new TFile(filename, "RECREATE")){}
+
+DataStorage::DataStorage(const TString& filename, int rank){
+    if(rank == 0){
+        fFile = new TFile(filename, "RECREATE");
+    }
+}
+
 
 DataStorage::~DataStorage() {
-        fFile->Close();
+        // fFile->Close();
         delete fFile;
     }
 
@@ -20,7 +27,7 @@ void DataStorage::writeMetadata(const TString& key, double value) {
 double DataStorage::getMetadataNumber(const TString& key) { return fMetadata.data[key.Data()]; }
 
 void DataStorage::newSimulation(const TString& name, bool deposits) {
-    fFile->cd(name);
+    // fFile->cd(name);
     fMetadata.tree = new TTree("metadata", "metadata");
     if (!deposits){
         fEnable.depositScoring = false;
@@ -139,12 +146,11 @@ void DataStorage::setHmatrix(double DetX,double DetY, int sourceBinX, int source
     nBinY = nBinY > fDetBinsY - 1 ? fDetBinsY : nBinY;
     int rowIndexMatrixH = (nBinX-1) * fDetBinsY + fDetBinsY-nBinY;
     // spdlog::info("x = {}, y = {}", x, y);//nBinY - HISTOBIN
-    // spdlog::info("rowIndexMatrixH = {}, nBinX = {}, nBinY = {}", rowIndexMatrixH, nBinX,nBinY);//nBinY - HISTOBIN
+    spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH, colIndexMatrixH);//nBinY - HISTOBIN
     fMatrixH(rowIndexMatrixH,colIndexMatrixH)++;
 }
 
 void DataStorage::writeHmatrix(){
-
     for(int i = 0; i < fMatrixH.GetNcols(); i ++){
         double sum = 0.0;
         for(int j = 0; j < fMatrixH.GetNrows(); j ++){
@@ -155,6 +161,39 @@ void DataStorage::writeHmatrix(){
         }
     }
     fMatrixH.Write("matrixH");
+}
+
+
+void DataStorage::writeHmatrix(TString str){
+    for(int i = 0; i < fMatrixH.GetNcols(); i ++){
+        double sum = 0.0;
+        for(int j = 0; j < fMatrixH.GetNrows(); j ++){
+            sum += fMatrixH(j,i);
+        }
+        for(int j = 0; j < fMatrixH.GetNrows(); j ++){
+             fMatrixH(j,i) = fMatrixH(j,i) == 0 ? 1e-9 : fMatrixH(j,i)/sum;
+        }
+    }
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    if(world_rank !=0){
+        for (int i = 0; i < fMatrixH.GetNrows(); i++){
+            for (int j = 0; j < fMatrixH.GetNcols(); j++){
+                MPI_Send(&fMatrixH(i,j), 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+            }
+        }
+    } else {
+        TMatrixT<Double_t> fMatrixH2;
+        fMatrixH2.ResizeTo(fDetBinsX*fDetBinsY, fMaxBinX*fMaxBinY);
+        for (int i = 0; i < fMatrixH2.GetNrows(); i++){
+            for (int j = 0; j < fMatrixH2.GetNcols(); j++){
+                MPI_Recv(&fMatrixH2(i,j), 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD,
+                     MPI_STATUS_IGNORE);
+            }
+        }
+        fMatrixH2 += fMatrixH;
+        fMatrixH2.Write("matrixH");
+    }
 }
 
 void DataStorage::cleanup() {

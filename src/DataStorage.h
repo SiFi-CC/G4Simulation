@@ -12,6 +12,9 @@
 #include <unordered_map>
 #include <math.h>
 
+#include <mpi.h>
+
+
 #include "DataStructConvert.hh"
 
 
@@ -20,6 +23,7 @@ namespace SiFi {
 
 class DataStorage {
   public:
+    explicit DataStorage(const TString& filename, int rank);
     explicit DataStorage(const TString& filename);
 
     virtual ~DataStorage();
@@ -44,6 +48,7 @@ class DataStorage {
     void setHmatrix(double DetX,double DetY, int sourceBinX, int sourceBinY);
 
     void writeHmatrix();
+    void writeHmatrix(TString str);
     
     void cleanup();
 
@@ -54,7 +59,7 @@ class DataStorage {
     void setBinnedSize(int sourceBinX, int sourceBinY, int detectorBinX, int detectorBinY, double detectorBinSize);
 
   protected:
-    TFile* fFile;
+    TFile* fFile = nullptr;
 
     int fBinX, fBinY,fMaxBinX, fMaxBinY, fDetBinsX,fDetBinsY;
     double fDetBinSize;
