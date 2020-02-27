@@ -6,3 +6,6 @@ target_link_libraries(gen_sim_matrix g4sim CmdLineArgs)
 
 add_executable(custom_simulation custom_simulation.cpp)
 target_link_libraries(custom_simulation g4sim CmdLineArgs)
+
+add_executable(mpi_custom_simulation mpi_custom_simulation.cpp)
+target_link_libraries(mpi_custom_simulation g4sim CmdLineArgs)

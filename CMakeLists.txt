@@ -16,9 +16,11 @@ list(APPEND CMAKE_MODULE_PATH
 find_package(Geant4 REQUIRED ui_all vis_all)
 find_package(ROOT REQUIRED RIO Geom MathCore Physics Gui Tree)
 find_package(CmdLineArgs 2.0.0 REQUIRED)
+find_package(MPI REQUIRED)
 message(STATUS "Found Geant4 version " ${Geant4_VERSION} )
 message(STATUS "Found ROOT version " ${ROOT_VERSION} ) 
 message(STATUS "Found CmdLineArgs version " ${CmdLineArgs_VERSION} ) 
+# message(STATUS "Found MPI version " ${MPI_VERSION} ) 
 
 add_subdirectory(third_party/spdlog)
 include_directories(SYSTEM third_party/spdlog/include)
@@ -26,6 +28,8 @@ include_directories(SYSTEM third_party/spdlog/include)
 include(${Geant4_USE_FILE})
 include(${ROOT_USE_FILE})
 include_directories(SYSTEM ${ROOT_INCLUDE_DIRS})
+
+include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 
 # load macros
 include(c++-standards)
