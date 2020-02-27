@@ -8,4 +8,4 @@ add_executable(custom_simulation custom_simulation.cpp)
 target_link_libraries(custom_simulation g4sim CmdLineArgs)
 
 add_executable(mpi_custom_simulation mpi_custom_simulation.cpp)
-target_link_libraries(mpi_custom_simulation g4sim CmdLineArgs)
+target_link_libraries(mpi_custom_simulation g4sim CmdLineArgs ${MPI_LIBRARIES})

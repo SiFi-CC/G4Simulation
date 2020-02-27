@@ -39,6 +39,12 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     spdlog::info("processor {}",world_rank);
 
+        //choose the Random engine
+    CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine());
+    //set random seed with system time
+    G4long seed = time(NULL);
+    CLHEP::HepRandom::setTheSeed((world_rank+1)*seed);
+
 
     TString output("mpi"+std::to_string(world_rank)+".root");
     // TString output("mpi.root");
@@ -55,13 +61,6 @@ int main(int argc, char** argv) {
     Float_t sPosX = 0, sPosY = 0;
 
 
-    //choose the Random engine
-    CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine());
-    //set random seed with system time
-    G4long seed = time(NULL);
-    spdlog::info("seed = {}",seed);
-    CLHEP::HepRandom::setTheSeed((world_rank+1)*seed);
-    
     printf("Detector : %g %g %i %g [mm]\n", detectorsource, fibrenum*fibrewidth, fibrenum, fibrewidth);
     printf("Mask     : %g %g %g %g [mm]\n", masksource, masklength, masklength, maskthick);
     printf("Mask order      : %i\n", mord);
@@ -101,6 +100,8 @@ int main(int argc, char** argv) {
     Source source(energy,minTheta,maxTheta);
 
     source.SetPos(TVector3(sPosX, sPosY, 0));
+    // spdlog::info("seed = {}, Random = {}",seed,G4UniformRand());
+    // exit(0);
 
     runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource()));
     runManager.SetUserAction(new SteppingAction(&storage));
@@ -135,7 +136,7 @@ int main(int argc, char** argv) {
     mask.writeMetadata(&storage);
     storage.init(); 
 
-    
+
     // if (CmdLineOption::GetFlagValue("Visualization")){
     //     //VISUALISATION:
     //     G4VisManager* visManager = new G4VisExecutive;

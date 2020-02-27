@@ -21,6 +21,8 @@ message(STATUS "Found Geant4 version " ${Geant4_VERSION} )
 message(STATUS "Found ROOT version " ${ROOT_VERSION} ) 
 message(STATUS "Found CmdLineArgs version " ${CmdLineArgs_VERSION} ) 
 # message(STATUS "Found MPI version " ${MPI_VERSION} ) 
+set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
+set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
 
 add_subdirectory(third_party/spdlog)
 include_directories(SYSTEM third_party/spdlog/include)
