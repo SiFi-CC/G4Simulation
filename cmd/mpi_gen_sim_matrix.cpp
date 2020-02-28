@@ -121,17 +121,12 @@ int main(int argc, char** argv) {
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     spdlog::info("processor {}",world_rank);
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
     TString output("o"+std::to_string(world_rank)+".root");
     DataStorage storage(output, world_rank);
-    // DataStorage storage;
-    // if(world_rank != 0){
-    //     spdlog::info("processor {} creates storage",world_rank);
-    //     storage = DataStorage(output);
-    // } else {
-    //     // DataStorage storage;
-    //     spdlog::info("processor {} creates storage",world_rank);
-    // };
+
         //choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine());
     //set random seed with system time
@@ -196,6 +191,7 @@ int main(int argc, char** argv) {
     construction->setDetectorPos(detectorsource * mm + nLayer*fibrewidth/2 * mm);
     runManager.DefineWorldVolume(construction->Construct());
     runManager.GeometryHasBeenModified();
+    log::info("world_size = {}",world_size);
 
 
     for (int binX = 0; binX < maxBinX; binX += 1) {
@@ -203,17 +199,18 @@ int main(int argc, char** argv) {
             double sPosX = - xDimSource / 2. + (0.5 + binX) * (xDimSource / maxBinX);
             double sPosY = - yDimSource / 2. + (0.5 + binY) * (yDimSource / maxBinY);
             for (int energy_it  = energy; energy_it > 50; energy_it /= 4) {
-                if(binX % 2 == world_rank){
-                    log::info(
-                        "Starting simulation source({}, {}), "
-                        "maskToDetectorDistance={}, sourceToMaskDistance={}, "
-                        "binX{}, processor {}",
-                        sPosX * mm,
-                        sPosY * mm,
-                        maskdetector * mm,
-                        masksource * mm,
-                        binX,
-                        world_rank);
+                if(binX % world_size == world_rank){
+                    // log::info(
+                    //     "Starting simulation source({}, {}), "
+                    //     "maskToDetectorDistance={}, sourceToMaskDistance={}, "
+                    //     "binX{}, processor {}",
+                    //     sPosX * mm,
+                    //     sPosY * mm,
+                    //     maskdetector * mm,
+                    //     masksource * mm,
+                    //     binX,
+                    //     world_rank);
+                    log::info("processor {} calculates column {}", world_rank, binX);
                     storage.setCurrentBins(binX, binY);
 
                     source.SetPos(TVector3(sPosX, sPosY, 0));

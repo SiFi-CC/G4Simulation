@@ -176,23 +176,31 @@ void DataStorage::writeHmatrix(TString str){
     }
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     if(world_rank !=0){
+        spdlog::info("sending from {} ...", world_rank);
         for (int i = 0; i < fMatrixH.GetNrows(); i++){
             for (int j = 0; j < fMatrixH.GetNcols(); j++){
                 MPI_Send(&fMatrixH(i,j), 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
             }
         }
+        spdlog::info("sent from {}",world_rank);
     } else {
         TMatrixT<Double_t> fMatrixH2;
         fMatrixH2.ResizeTo(fDetBinsX*fDetBinsY, fMaxBinX*fMaxBinY);
-        for (int i = 0; i < fMatrixH2.GetNrows(); i++){
-            for (int j = 0; j < fMatrixH2.GetNcols(); j++){
-                MPI_Recv(&fMatrixH2(i,j), 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD,
-                     MPI_STATUS_IGNORE);
+        for (int rank = 1; rank < world_size; rank++){
+        spdlog::info("receiving from {} ...",rank);
+            for (int i = 0; i < fMatrixH2.GetNrows(); i++){
+                for (int j = 0; j < fMatrixH2.GetNcols(); j++){
+                    MPI_Recv(&fMatrixH2(i,j), 1, MPI_DOUBLE, rank, 0, MPI_COMM_WORLD,
+                         MPI_STATUS_IGNORE);
+                }
             }
+            fMatrixH += fMatrixH2;
+        spdlog::info("received from {} ...",rank);
         }
-        fMatrixH2 += fMatrixH;
-        fMatrixH2.Write("matrixH");
+        fMatrixH.Write("matrixH");
     }
 }
 
