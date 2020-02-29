@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
                     //     masksource * mm,
                     //     binX,
                     //     world_rank);
-                    log::info("processor {} calculates column {}", world_rank, binX);
+                    // log::info("processor {} calculates column {}", world_rank, binX);
                     storage.setCurrentBins(binX, binY);
 
                     source.SetPos(TVector3(sPosX, sPosY, 0));
@@ -218,6 +218,11 @@ int main(int argc, char** argv) {
                     break;
                 }
             }
+        }
+    }
+    for (int i = 0; i < world_size; i++){
+        if(world_rank == i){
+            spdlog::info("processor {} finished", i);
         }
     }
     storage.writeHmatrix("MPI");

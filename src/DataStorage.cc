@@ -146,7 +146,7 @@ void DataStorage::setHmatrix(double DetX,double DetY, int sourceBinX, int source
     nBinY = nBinY > fDetBinsY - 1 ? fDetBinsY : nBinY;
     int rowIndexMatrixH = (nBinX-1) * fDetBinsY + fDetBinsY-nBinY;
     // spdlog::info("x = {}, y = {}", x, y);//nBinY - HISTOBIN
-    spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH, colIndexMatrixH);//nBinY - HISTOBIN
+    // spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH, colIndexMatrixH);//nBinY - HISTOBIN
     fMatrixH(rowIndexMatrixH,colIndexMatrixH)++;
 }
 
@@ -178,30 +178,50 @@ void DataStorage::writeHmatrix(TString str){
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    if(world_rank !=0){
-        spdlog::info("sending from {} ...", world_rank);
-        for (int i = 0; i < fMatrixH.GetNrows(); i++){
-            for (int j = 0; j < fMatrixH.GetNcols(); j++){
-                MPI_Send(&fMatrixH(i,j), 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-            }
-        }
-        spdlog::info("sent from {}",world_rank);
-    } else {
+    // if(world_rank !=0){
+    //     spdlog::info("sending from {} ...", world_rank);
+    //     // for (int i = 0; i < fMatrixH.GetNrows(); i++){
+    //     //     for (int j = 0; j < fMatrixH.GetNcols(); j++){
+    //     //         MPI_Send(&fMatrixH(i,j), 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+    //     //     }
+    //     // }
+    //     spdlog::info("sent from {}",world_rank);
+    // } else {
         TMatrixT<Double_t> fMatrixH2;
+        double* gathered =  (double *)malloc(sizeof(double) * world_size);
+        // double gathered[world_size];
         fMatrixH2.ResizeTo(fDetBinsX*fDetBinsY, fMaxBinX*fMaxBinY);
-        for (int rank = 1; rank < world_size; rank++){
-        spdlog::info("receiving from {} ...",rank);
+        // for (int rank = 1; rank < world_size; rank++){
+        // spdlog::info("receiving from {} ...",rank);
+        // if(world_rank == 0){
+        spdlog::info("gathering ...");
             for (int i = 0; i < fMatrixH2.GetNrows(); i++){
-                for (int j = 0; j < fMatrixH2.GetNcols(); j++){
-                    MPI_Recv(&fMatrixH2(i,j), 1, MPI_DOUBLE, rank, 0, MPI_COMM_WORLD,
-                         MPI_STATUS_IGNORE);
+                // for (int j = 0; j < fMatrixH2.GetNcols(); j++){
+                    MPI_Gather(&fMatrixH(i,j), 1, MPI_DOUBLE, gathered, 1, MPI_DOUBLE, 0,
+                       MPI_COMM_WORLD);
+                    if(world_rank == 0){
+                        fMatrixH2(i,j) = 0.0;
+                        for(int rank = 0; rank < world_size; rank++){
+                            fMatrixH2(i,j) += gathered[rank];
+                        }
+                        // if(world_rank == 0){
+                            // spdlog::info("gathered {} {} {}", i, j, fMatrixH2(i,j));
+                    }
+                    // MPI_Recv(&fMatrixH2(i,j), 1, MPI_DOUBLE, rank, 0, MPI_COMM_WORLD,
+                    //      MPI_STATUS_IGNORE);
+                    // break;
                 }
             }
-            fMatrixH += fMatrixH2;
-        spdlog::info("received from {} ...",rank);
+        spdlog::info("gathered {}",world_rank);
+
+        // }
+            // fMatrixH += fMatrixH2;
+        // spdlog::info("received from {} ...",rank);
+        // }
+        if(world_rank == 0){
+            fMatrixH2.Write("matrixH");
         }
-        fMatrixH.Write("matrixH");
-    }
+    // }
 }
 
 void DataStorage::cleanup() {
