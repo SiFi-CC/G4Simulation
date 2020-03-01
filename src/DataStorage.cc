@@ -161,8 +161,8 @@ void DataStorage::writeHmatrix(){
         }
     }
     fMatrixH.Write("matrixH");
+    // fFile->Close();
 }
-
 
 void DataStorage::writeHmatrix(TString str){
     for(int i = 0; i < fMatrixH.GetNcols(); i ++){
@@ -178,33 +178,61 @@ void DataStorage::writeHmatrix(TString str){
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    if(world_rank !=0){
-        spdlog::info("sending from {} ...", world_rank);
-        for (int i = 0; i < fMatrixH.GetNrows(); i++){
-            for (int j = 0; j < fMatrixH.GetNcols(); j++){
-                MPI_Send(&fMatrixH(i,j), 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-            }
-        }
-        spdlog::info("sent from {}",world_rank);
-    } else {
-        TMatrixT<Double_t> fMatrixH2;
-        fMatrixH2.ResizeTo(fDetBinsX*fDetBinsY, fMaxBinX*fMaxBinY);
-        for (int rank = 1; rank < world_size; rank++){
-        spdlog::info("receiving from {} ...",rank);
-            for (int i = 0; i < fMatrixH2.GetNrows(); i++){
-                for (int j = 0; j < fMatrixH2.GetNcols(); j++){
-                    MPI_Recv(&fMatrixH2(i,j), 1, MPI_DOUBLE, rank, 0, MPI_COMM_WORLD,
-                         MPI_STATUS_IGNORE);
+    
+    TMatrixT<Double_t> fMatrixH2;
+    double* gathered =  (double *)malloc(sizeof(double) * world_size);
+    
+    fMatrixH2.ResizeTo(fDetBinsX*fDetBinsY, fMaxBinX*fMaxBinY);
+    spdlog::info("gathering ...");
+        for (int i = 0; i < fMatrixH2.GetNrows(); i++){
+            for (int j = 0; j < fMatrixH2.GetNcols(); j++){
+                MPI_Gather(&fMatrixH(i,j), 1, MPI_DOUBLE, gathered, 1, MPI_DOUBLE, 0,
+                   MPI_COMM_WORLD);
+                if(world_rank == 0){
+                    fMatrixH2(i,j) = 0.0;
+                    for(int rank = 0; rank < world_size; rank++){
+                        fMatrixH2(i,j) += gathered[rank];
+                    }
                 }
             }
-            fMatrixH += fMatrixH2;
-        spdlog::info("received from {} ...",rank);
         }
-        fMatrixH.Write("matrixH");
+    spdlog::info("gathered {}",world_rank);
+    if(world_rank == 0){
+        fMatrixH2.Write("matrixH");
     }
 }
 
+void DataStorage::gather(TString output){
+    TFile* file = new TFile(output,"UPDATE");
+    file->cd();
+    TMatrixT<Double_t> matrixH, matrixHtmp;
+    matrixH.Read("matrixH");
+    file->Close();
+
+    TFile* filetmp;
+
+    int world_size = 2;
+    // MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    for (int i = 1; i < world_size; i++){
+        filetmp = new TFile(TString("outputMPI"+std::to_string(i)+".root"), "READ");
+        // filetmp = new TFile("outputMPI1.root", "READ");
+        filetmp->cd();
+        matrixHtmp.Read("matrixH");
+        filetmp->Close();
+        // remove("outputMPI"+std::to_string(i)+".root");
+        matrixH += matrixHtmp;
+    }
+    spdlog::info("hmat {}", matrixH(1,1));
+    file = new TFile("new.root","UPDATE");
+    file->cd();
+    matrixH.Write("matrixH");
+    file->Close();
+}
+
+
 void DataStorage::cleanup() {
+    // fMatrixH.Write("matrixH");
     fFile->Write();
     delete fEnergyDeposits.hits;
     delete fSourceRecord.events;

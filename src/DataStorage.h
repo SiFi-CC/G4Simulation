@@ -49,6 +49,8 @@ class DataStorage {
 
     void writeHmatrix();
     void writeHmatrix(TString str);
+
+    void gather(TString output);
     
     void cleanup();
 
