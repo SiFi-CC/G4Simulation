@@ -146,7 +146,7 @@ void DataStorage::setHmatrix(double DetX,double DetY, int sourceBinX, int source
     nBinY = nBinY > fDetBinsY - 1 ? fDetBinsY : nBinY;
     int rowIndexMatrixH = (nBinX-1) * fDetBinsY + fDetBinsY-nBinY;
     // spdlog::info("x = {}, y = {}", x, y);//nBinY - HISTOBIN
-    spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH, colIndexMatrixH);//nBinY - HISTOBIN
+    // spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH, colIndexMatrixH);//nBinY - HISTOBIN
     fMatrixH(rowIndexMatrixH,colIndexMatrixH)++;
 }
 
@@ -205,6 +205,7 @@ void DataStorage::writeHmatrix(TString str){
     if(world_rank == 0){
         fMatrixH.Write("matrixH");
     }
+
 }
 
 void DataStorage::gather(TString output){
