@@ -125,15 +125,15 @@ int main(int argc, char** argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
     TString output;
-    // if (world_rank == 0){
+    if (world_rank == 0){
         // TString output(args.at("output")->GetStringValue());
         output = args.at("output")->GetStringValue();
-    // } else {
-        // TString output("outputMPI"+std::to_string(world_rank)+".root");
-        // output = "outputMPI"+std::to_string(world_rank)+".root";
-    // }
-        DataStorage storage(output);        
-        // DataStorage storage(output, world_rank);        
+    } else {
+        TString output("outputMPI"+std::to_string(world_rank)+".root");
+        output = "outputMPI"+std::to_string(world_rank)+".root";
+    }
+        // DataStorage storage(output);        
+        DataStorage storage(output, world_rank);        
 
         //choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine());
@@ -228,8 +228,8 @@ int main(int argc, char** argv) {
             }
         }
     }
-    storage.writeHmatrix();
-    // storage.writeHmatrix("MPI");
+    // storage.writeHmatrix();
+    storage.writeHmatrix("MPI");
     if(world_rank == 0){
         storage.cleanup();
     }

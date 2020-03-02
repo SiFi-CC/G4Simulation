@@ -180,25 +180,30 @@ void DataStorage::writeHmatrix(TString str){
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     
     TMatrixT<Double_t> fMatrixH2;
-    double* gathered =  (double *)malloc(sizeof(double) * world_size);
-    
     fMatrixH2.ResizeTo(fDetBinsX*fDetBinsY, fMaxBinX*fMaxBinY);
-    spdlog::info("gathering ...");
-        for (int i = 0; i < fMatrixH2.GetNrows(); i++){
-            for (int j = 0; j < fMatrixH2.GetNcols(); j++){
-                MPI_Gather(&fMatrixH(i,j), 1, MPI_DOUBLE, gathered, 1, MPI_DOUBLE, 0,
-                   MPI_COMM_WORLD);
+    for (int rank = 1; rank < world_size; rank++){
+    spdlog::info("gathering from {} ...",world_rank);
+        for (int i = 0; i < fMatrixH.GetNrows(); i++){
+            for (int j = 0; j < fMatrixH.GetNcols(); j++){
                 if(world_rank == 0){
-                    fMatrixH2(i,j) = 0.0;
-                    for(int rank = 0; rank < world_size; rank++){
-                        fMatrixH2(i,j) += gathered[rank];
-                    }
+                            // for (int i = 0; i < fMatrixH2.GetNrows(); i++){
+                    //     for (int j = 0; j < fMatrixH2.GetNcols(); j++){
+                            MPI_Recv(&fMatrixH2(i,j), 1, MPI_DOUBLE, rank, 0, MPI_COMM_WORLD,
+                                 MPI_STATUS_IGNORE);
+                    //     }
+                    // }
+                    fMatrixH(i,j) += fMatrixH2(i,j);
+                    // spdlog::info("receiving from {} ...", fMatrixH(i,j));
+                } else if (world_rank == rank) {
+                    // spdlog::info("sending from {} ...", world_rank);
+                    MPI_Ssend(&fMatrixH(i,j), 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
                 }
             }
-        }
+        }    
+    }
     spdlog::info("gathered {}",world_rank);
     if(world_rank == 0){
-        fMatrixH2.Write("matrixH");
+        fMatrixH.Write("matrixH");
     }
 }
 
