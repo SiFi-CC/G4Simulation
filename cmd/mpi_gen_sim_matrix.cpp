@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
 
 
     Float_t detectorsource = 200, fibrewidth = 1.3; 
-    Int_t fibrenum = 22;
+    Int_t fibrenum = 16;
 
     Int_t mord = 31;
     Float_t masksource = 150., masklength = 64., maskthick = 20.;
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
     Float_t minTheta = 170., maxTheta = 180;
 
     Float_t xDimSource = 64, yDimSource = 64;
-    Int_t maxBinX = 10, maxBinY = 10;
+    Int_t maxBinX = 100, maxBinY = 100;
 
     if (opt_det.GetArraySize() == 3) {
         detectorsource = opt_det.GetDoubleArrayValue(1);
@@ -82,7 +82,8 @@ int main(int argc, char** argv) {
         abort();
     }
 
-    minTheta = atan(-(masklength+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
+    // minTheta = atan(-(masklength+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
+    minTheta = atan(-(masklength+fibrewidth*fibrenum)/2/detectorsource)*180/M_PI+180.;
     if (opt_theta.GetArraySize() == 2) {
         minTheta = opt_theta.GetDoubleArrayValue(1);
         maxTheta = opt_theta.GetDoubleArrayValue(2);
@@ -208,16 +209,16 @@ int main(int argc, char** argv) {
             double sPosY = - yDimSource / 2. + (0.5 + binY) * (yDimSource / maxBinY);
             for (int energy_it  = energy; energy_it > 50; energy_it /= 4) {
                 if(binX % world_size == world_rank){
-                    // log::info(
-                    //     "Starting simulation source({}, {}), "
-                    //     "maskToDetectorDistance={}, sourceToMaskDistance={}, "
-                    //     "binX{}, processor {}",
-                    //     sPosX * mm,
-                    //     sPosY * mm,
-                    //     maskdetector * mm,
-                    //     masksource * mm,
-                    //     binX,
-                    //     world_rank);
+                    log::info(
+                        "Starting simulation source({}, {}), "
+                        "maskToDetectorDistance={}, sourceToMaskDistance={}, "
+                        "binX{}, processor {}",
+                        sPosX * mm,
+                        sPosY * mm,
+                        maskdetector * mm,
+                        masksource * mm,
+                        binX,
+                        world_rank);
                     // log::info("processor {} calculates column {}", world_rank, binX);
                     storage.setCurrentBins(binX, binY);
 
@@ -229,7 +230,7 @@ int main(int argc, char** argv) {
         }
     }
     // storage.writeHmatrix();
-    storage.writeHmatrix("MPI");
+    storage.writeHmatrix(world_rank, world_size);
     if(world_rank == 0){
         storage.cleanup();
     }

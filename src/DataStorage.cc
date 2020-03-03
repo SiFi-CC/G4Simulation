@@ -161,10 +161,9 @@ void DataStorage::writeHmatrix(){
         }
     }
     fMatrixH.Write("matrixH");
-    // fFile->Close();
 }
 
-void DataStorage::writeHmatrix(TString str){
+void DataStorage::writeHmatrix(int world_rank, int world_size){
     for(int i = 0; i < fMatrixH.GetNcols(); i ++){
         double sum = 0.0;
         for(int j = 0; j < fMatrixH.GetNrows(); j ++){
@@ -174,28 +173,20 @@ void DataStorage::writeHmatrix(TString str){
              fMatrixH(j,i) = fMatrixH(j,i) == 0 ? 1e-9 : fMatrixH(j,i)/sum;
         }
     }
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     
     TMatrixT<Double_t> fMatrixH2;
-    fMatrixH2.ResizeTo(fDetBinsX*fDetBinsY, fMaxBinX*fMaxBinY);
+    if (world_rank == 0){
+        fMatrixH2.ResizeTo(fDetBinsX*fDetBinsY, fMaxBinX*fMaxBinY);
+    }
     for (int rank = 1; rank < world_size; rank++){
-    spdlog::info("gathering from {} ...",world_rank);
+        spdlog::info("gathering from {} ...",world_rank);
         for (int i = 0; i < fMatrixH.GetNrows(); i++){
             for (int j = 0; j < fMatrixH.GetNcols(); j++){
                 if(world_rank == 0){
-                            // for (int i = 0; i < fMatrixH2.GetNrows(); i++){
-                    //     for (int j = 0; j < fMatrixH2.GetNcols(); j++){
-                            MPI_Recv(&fMatrixH2(i,j), 1, MPI_DOUBLE, rank, 0, MPI_COMM_WORLD,
-                                 MPI_STATUS_IGNORE);
-                    //     }
-                    // }
+                    MPI_Recv(&fMatrixH2(i,j), 1, MPI_DOUBLE, rank, 0, MPI_COMM_WORLD,
+                         MPI_STATUS_IGNORE);
                     fMatrixH(i,j) += fMatrixH2(i,j);
-                    // spdlog::info("receiving from {} ...", fMatrixH(i,j));
                 } else if (world_rank == rank) {
-                    // spdlog::info("sending from {} ...", world_rank);
                     MPI_Ssend(&fMatrixH(i,j), 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
                 }
             }
@@ -207,35 +198,6 @@ void DataStorage::writeHmatrix(TString str){
     }
 
 }
-
-void DataStorage::gather(TString output){
-    TFile* file = new TFile(output,"UPDATE");
-    file->cd();
-    TMatrixT<Double_t> matrixH, matrixHtmp;
-    matrixH.Read("matrixH");
-    file->Close();
-
-    TFile* filetmp;
-
-    int world_size = 2;
-    // MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-    for (int i = 1; i < world_size; i++){
-        filetmp = new TFile(TString("outputMPI"+std::to_string(i)+".root"), "READ");
-        // filetmp = new TFile("outputMPI1.root", "READ");
-        filetmp->cd();
-        matrixHtmp.Read("matrixH");
-        filetmp->Close();
-        // remove("outputMPI"+std::to_string(i)+".root");
-        matrixH += matrixHtmp;
-    }
-    spdlog::info("hmat {}", matrixH(1,1));
-    file = new TFile("new.root","UPDATE");
-    file->cd();
-    matrixH.Write("matrixH");
-    file->Close();
-}
-
 
 void DataStorage::cleanup() {
     // fMatrixH.Write("matrixH");

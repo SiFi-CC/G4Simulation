@@ -10,7 +10,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
     }
 
     double deposit = step->GetTotalEnergyDeposit();
-    if (deposit > 0) {
+    if (deposit > 0 && name == "fibrephysical") {
         auto pos = step->GetPostStepPoint()->GetPosition();
 
         log->debug("hit in volume {}", name);

@@ -48,7 +48,7 @@ class DataStorage {
     void setHmatrix(double DetX,double DetY, int sourceBinX, int sourceBinY);
 
     void writeHmatrix();
-    void writeHmatrix(TString str);
+    void writeHmatrix(int world_rank, int world_size);
 
     void gather(TString output);
     

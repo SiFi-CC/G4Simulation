@@ -81,7 +81,8 @@ int main(int argc, char** argv) {
             abort();
         }
 
-        minTheta = atan(-(masklength+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
+        // minTheta = atan(-(masklength+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
+        minTheta = atan(-(masklength+fibrewidth*fibrenum)/2/detectorsource)*180/M_PI+180.;
         if (opt_theta.GetArraySize() == 2) {
             minTheta = opt_theta.GetDoubleArrayValue(1);
             maxTheta = opt_theta.GetDoubleArrayValue(2);
