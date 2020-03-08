@@ -32,6 +32,8 @@ int main(int argc, char** argv) {
     CmdLineOption opt_mask(
       "Mask", "-mask",
       "Mask: order:mask-source:width:length:thickness [mm], default: 31:150:22:20", 0, 0);
+    CmdLineOption opt_masktype(
+      "MaskType", "-masktype", "MaskType: standart, round or pet", "standart");
     CmdLineOption opt_events("Events", "-n",
                                "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e",
@@ -52,7 +54,7 @@ int main(int argc, char** argv) {
     DataStorage storage(output);
 
     Float_t detectorsource = 200, fibrewidth = 1.3; 
-    Int_t fibrenum = 22;
+    Int_t fibrenum = 16;
 
     Int_t mord = 31;
     Float_t masksource = 150., masklength = 64., maskthick = 20.;
@@ -125,7 +127,8 @@ int main(int argc, char** argv) {
     auto airmaterial = MaterialManager::get()->GetMaterial("G4_AIR");
 
     MuraMask mask(
-        mord, {masklength * mm, masklength * mm, maskthick * mm}, MaterialManager::get()->GetMaterial("G4_W"));
+        mord, {masklength * mm, masklength * mm, maskthick * mm}, 
+        MaterialManager::get()->GetMaterial("G4_W"),opt_masktype.GetStringValue());
     int nLayer = 10;
     DetectorBlock detector(
         nLayer,                 // number of layers
@@ -193,7 +196,7 @@ int main(int argc, char** argv) {
         G4UIExecutive* UI2 = new G4UIExecutive(argc, argv);
                     UI->ApplyCommand("/control/execute vis_CC.mac");
                     UI2->SessionStart();
-                    delete UI2;
+                    // delete UI2;
         delete visManager;
     } else {
         runManager.BeamOn(nIter);
