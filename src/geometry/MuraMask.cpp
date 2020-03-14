@@ -78,7 +78,7 @@ G4LogicalVolume* MuraMask::Construct() {
             fMaterial, "mask");
 
         auto maskSegment = new G4LogicalVolume(
-            new G4Tubs("maskSegment", 0, segX / 2, fSize.z() / 2, 0 * deg, 360 * deg),
+            new G4Tubs("maskSegment", 0, segX / 2, 1.001*fSize.z() / 2, 0 * deg, 360 * deg),
             MaterialManager::get()->GetMaterial("G4_AIR"),
             "maskSegment");
         maskSegment->SetVisAttributes(G4VisAttributes(G4Colour::Blue()));
@@ -89,6 +89,11 @@ G4LogicalVolume* MuraMask::Construct() {
 
         int placementId = 1;
         int size = 1;
+        for (int i = 0; i < fMaskOrder; i++) {
+            for (int j = 0; j < fMaskOrder; j++) {
+                maskFlags[i][j] = 0;
+            }
+        }
 
         for (int i = 0; i < fMaskOrder; i++) {
             for (int j = 0; j < fMaskOrder; j++) {
@@ -119,7 +124,7 @@ G4LogicalVolume* MuraMask::Construct() {
                             }
                         }
                         maskSegmentTmp = new G4LogicalVolume(
-                            new G4Tubs("maskSegment", 0, size * segX / 2, fSize.z() / 2, 0 * deg, 360 * deg),
+                            new G4Tubs("maskSegment", 0, size * segX / 2, 1.001*fSize.z() / 2, 0 * deg, 360 * deg),
                             MaterialManager::get()->GetMaterial("G4_AIR"),
                             "maskSegment");
                         maskSegmentTmp->SetVisAttributes(G4VisAttributes(G4Colour::Blue()));
@@ -145,10 +150,10 @@ G4LogicalVolume* MuraMask::Construct() {
             petmaterial, "mask");
 
         auto maskSegmentTung = new G4LogicalVolume(
-            new G4Box("maskSegment", 0.9*segX / 2, 0.9*segY / 2, fSize.z() / 2),
+            new G4Box("maskSegment", 0.9*segX / 2, 0.9*segY / 2, 1.001*fSize.z() / 2),
             fMaterial,"maskSegment");
         auto maskSegmentAir = new G4LogicalVolume(
-            new G4Box("maskSegment", 0.9*segX / 2, 0.9*segY / 2, fSize.z() / 2),
+            new G4Box("maskSegment", 0.9*segX / 2, 0.9*segY / 2, 1.001*fSize.z() / 2),
             MaterialManager::get()->GetMaterial("G4_AIR"), "maskSegment");
         maskSegmentTung->SetVisAttributes(G4VisAttributes(G4Colour::Red()));
         maskSegmentAir->SetVisAttributes(G4VisAttributes(G4Colour::Blue()));
