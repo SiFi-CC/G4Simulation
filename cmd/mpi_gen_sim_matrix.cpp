@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     
     CmdLineOption opt_det(
       "Plane", "-det",
-      "Detector: detector-source:nFibres:fibre_width[mm], default: 200:22:1.3", 0, 0);
+      "Detector: detector-source:nFibres:fibre_width[mm], default: 200:16:1.3", 0, 0);
     CmdLineOption opt_mask(
       "Mask", "-mask",
       "Mask: order:mask-source:width:length:thickness [mm], default: 31:150:64:20", 0, 0);
