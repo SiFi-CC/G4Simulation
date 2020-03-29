@@ -27,6 +27,8 @@ int main(int argc, char** argv) {
                                "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e",
                                "Energy of particles [keV], default: 4400 (integer)", 4400);
+    CmdLineOption opt_nlay("#layers", "-nlay",
+                               "Number of layers in detector, default: 4 (integer)", 4);
 
     CmdLineOption opt_theta("Theta", "-theta",
                                "Min and max Theta [Deg], default: 170:180", 0);

@@ -38,6 +38,8 @@ int main(int argc, char** argv) {
                                "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e",
                                "Energy of particles [keV], default: 4400 (integer)", 4400);
+    CmdLineOption opt_nlay("#layers", "-nlay",
+                               "Number of layers in detector, default: 4 (integer)", 4);
     CmdLineOption opt_theta("Theta", "-theta",
                                "Min and max Theta [Deg], default: 170:180", 0);
     CmdLineOption opt_source("Source", "-source",
@@ -62,6 +64,8 @@ int main(int argc, char** argv) {
     Float_t minTheta, maxTheta = 180;
 
     Float_t sPosX = 0, sPosY = 0;
+    int nLayer = opt_nlay.GetIntValue();
+
     { //CmdLine options 
         if (opt_det.GetArraySize() == 3) {
             detectorsource = opt_det.GetDoubleArrayValue(1);
@@ -129,7 +133,7 @@ int main(int argc, char** argv) {
     MuraMask mask(
         mord, {masklength * mm, masklength * mm, maskthick * mm}, 
         MaterialManager::get()->GetMaterial("G4_W"),opt_masktype.GetStringValue());
-    int nLayer = 10;
+
     DetectorBlock detector(
         nLayer,                 // number of layers
         FibreLayer(          //
