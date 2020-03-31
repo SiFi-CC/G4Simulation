@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
 
 
     printf("Detector : %g %g %i %g [mm]\n", detectorsource, fibrenum*fibrewidth, fibrenum, fibrewidth);
-    printf("Mask     : %g %g %g %g [mm]\n", masksource, masklength, masklength, maskthick);
+    printf("Mask     : %s, %g %g %g %g [mm]\n", opt_masktype.GetStringValue(), masksource, masklength, masklength, maskthick);
     printf("Mask order      : %i\n", mord);
     printf("No. of events  : %i\n", opt_events.GetIntValue());
     printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
