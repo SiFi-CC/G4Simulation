@@ -120,7 +120,7 @@ G4LogicalVolume* MuraMask::Construct() {
                     } else {
                         for (int icount = i; icount < i+size; icount++){
                             for (int jcount = j; jcount < j+size; jcount++){
-                                spdlog::info("Mask at {} {} size = {}", icount, jcount, size);
+                                // spdlog::info("Mask at {} {} size = {}", icount, jcount, size);
                                 maskFlags[icount][jcount] = 1;
                             }
                         }
@@ -181,7 +181,7 @@ G4LogicalVolume* MuraMask::Construct() {
                     if(size >= maskFlags[i][j]){
                         for (int icount = i; icount < i+size; icount++){
                             for (int jcount = j; jcount < j+size; jcount++){
-                                spdlog::info("Mask at {} {} size = {}", icount, jcount, size);
+                                // spdlog::info("Mask at {} {} size = {}", icount, jcount, size);
                                 maskFlags[icount][jcount] = size;
                             }
                         }
