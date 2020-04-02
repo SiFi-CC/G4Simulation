@@ -56,8 +56,8 @@ void DetectorBlock::writeMetadata(DataStorage* storage) {
     storage->writeMetadata("detectorMaxX", fLayer.getSizeX() / 2);
     storage->writeMetadata("detectorMinY", -fLayer.getSizeY() / 2);
     storage->writeMetadata("detectorMaxY", fLayer.getSizeY() / 2);
-    storage->writeMetadata("detectorMinZ", detZPosition - getThickness() / 2);
-    storage->writeMetadata("detectorMaxZ", detZPosition + getThickness() / 2);
+    storage->writeMetadata("detectorMinZ", detZPosition);
+    storage->writeMetadata("detectorMaxZ", detZPosition + getThickness());
     storage->writeMetadata("detectorBinX", fLayer.getNumberOfStrips());
     storage->writeMetadata("detectorBinY", fLayer.getNumberOfStrips());
 }

@@ -42,7 +42,7 @@ G4LogicalVolume* MuraMask::Construct() {
     if(fType == "standart"){
         mask = new G4LogicalVolume(
         new G4Box("mask", fSize.x() / 2, fSize.y() / 2, fSize.z() / 2),
-        MaterialManager::get()->Vacuum(),
+        MaterialManager::get()->GetMaterial("G4_AIR"),
         "mask");
 
         auto maskSegment = new G4LogicalVolume(
@@ -200,6 +200,40 @@ G4LogicalVolume* MuraMask::Construct() {
                             false,
                             placementId);
                     }
+                    placementId++;
+                }
+            }
+        }
+    } else if (fType == "nowallpet"){
+        auto petmaterial = MaterialManager::get()->GetMaterial("G4_POLYETHYLENE");
+        mask = new G4LogicalVolume(
+        new G4Box("mask", 1.01*fSize.x() / 2, 1.01*fSize.y() / 2, fSize.z() / 8),
+        petmaterial,
+        "mask");
+
+        auto maskSegment = new G4LogicalVolume(
+            new G4Box("maskSegment", segX / 2, segY / 2, fSize.z() / 2),
+            fMaterial,
+            "maskSegment");
+        maskSegment->SetVisAttributes(G4VisAttributes(G4Colour::Red()));
+        mask->SetVisAttributes(G4VisAttributes(G4Colour::Gray()));
+
+        int placementId = 1;
+
+        for (int i = 0; i < fMaskOrder; i++) {
+            for (int j = 0; j < fMaskOrder; j++) {
+                if (isMaskedAt(i, j)) {
+                    auto posX = (i + 0.5) * segX - fSize.x() / 2;
+                    auto posY = (j + 0.5) * segY - fSize.y() / 2;
+
+                    new G4PVPlacement(
+                        nullptr,
+                        G4ThreeVector(posX, posY, 0),
+                        maskSegment,
+                        "maskBin",
+                        mask,
+                        false,
+                        placementId);
                     placementId++;
                 }
             }

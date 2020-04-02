@@ -45,7 +45,7 @@ class DataStorage {
 
     void resizeHmatrix();
 
-    void setHmatrix(double DetX,double DetY, int sourceBinX, int sourceBinY);
+    void setHmatrix(double DetX,double DetY, int sourceBinX, int sourceBinY, double energy);
 
     void writeHmatrix();
     void writeHmatrix(int world_rank, int world_size);
@@ -60,10 +60,20 @@ class DataStorage {
 
     void setBinnedSize(int sourceBinX, int sourceBinY, int detectorBinX, int detectorBinY, double detectorBinSize);
 
+    void gammacount(){
+        fGammaCount ++;
+        // std::cout<<"GammaCount = " << fGammaCount << std::endl;
+    }
+
+    void Printgammacount(){
+        // fGammaCount ++;
+        std::cout<<"GammaCount = " << fGammaCount << std::endl;
+    }
   protected:
     TFile* fFile = nullptr;
 
     int fBinX, fBinY,fMaxBinX, fMaxBinY, fDetBinsX,fDetBinsY;
+    int fGammaCount = 0;
     double fDetBinSize;
     TMatrixT<Double_t> fMatrixH;
 

@@ -92,7 +92,7 @@ void DataStorage::registerDepositScoring(
             fEnergyDeposits.hits->Fill();
         }
         if(fEnable.hMatrixScoring){
-            setHmatrix(pos.x(),pos.y(), fBinX, fBinY);
+            setHmatrix(pos.x(),pos.y(), fBinX, fBinY,energy);
         }
         return;
     }
@@ -126,7 +126,7 @@ void DataStorage::resizeHmatrix(){
     fMatrixH.ResizeTo(fDetBinsX*fDetBinsY, fMaxBinX*fMaxBinY);
 }
 
-void DataStorage::setHmatrix(double DetX,double DetY, int sourceBinX, int sourceBinY){
+void DataStorage::setHmatrix(double DetX,double DetY, int sourceBinX, int sourceBinY, double energy){
     auto sourceHistBin = std::make_tuple<int, int>(std::forward<int>(sourceBinX+1),
         std::forward<int>(sourceBinY+1));
     
@@ -147,7 +147,8 @@ void DataStorage::setHmatrix(double DetX,double DetY, int sourceBinX, int source
     int rowIndexMatrixH = (nBinX-1) * fDetBinsY + fDetBinsY-nBinY;
     // spdlog::info("x = {}, y = {}", x, y);//nBinY - HISTOBIN
     // spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH, colIndexMatrixH);//nBinY - HISTOBIN
-    fMatrixH(rowIndexMatrixH,colIndexMatrixH)++;
+    fMatrixH(rowIndexMatrixH,colIndexMatrixH) ++;
+    // fMatrixH(rowIndexMatrixH,colIndexMatrixH) += energy;
 }
 
 void DataStorage::writeHmatrix(){
@@ -201,6 +202,7 @@ void DataStorage::writeHmatrix(int world_rank, int world_size){
 
 void DataStorage::cleanup() {
     // fMatrixH.Write("matrixH");
+    Printgammacount();
     fFile->Write();
     delete fEnergyDeposits.hits;
     delete fSourceRecord.events;
