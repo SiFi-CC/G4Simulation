@@ -5,6 +5,11 @@
 #include <G4VisAttributes.hh>
 #include <TFile.h>
 #include <TH2F.h>
+#include <TH1D.h>
+#include <TRandom3.h>
+#include <TCanvas.h>
+
+#include "CmdLineConfig.hh"
 
 namespace SiFi {
 
@@ -205,9 +210,19 @@ G4LogicalVolume* MuraMask::Construct() {
             }
         }
     } else if (fType == "nowallpet"){
+        auto gRandom = new TRandom3();
+        gRandom->SetSeed(0);
+        double deltaX,deltaY,deltaZ;
+        double error = CmdLineOption::GetDoubleValue("Precision");
+        TH1D * histX, *histY, *histZ;
+        
+        histX = new TH1D("rodsX", "X Size of Rods", 100, segX-0.03-error, segX+0.03);
+        histY = new TH1D("rodsY", "Y Size of Rods", 100, segY-0.03-error, segY+0.03);
+        histZ = new TH1D("rodsZ", "Z Size of Rods", 100, fSize.z()-0.03-error, fSize.z()+0.03);
+
         auto petmaterial = MaterialManager::get()->GetMaterial("G4_POLYETHYLENE");
         mask = new G4LogicalVolume(
-        new G4Box("mask", 1.01*fSize.x() / 2, 1.01*fSize.y() / 2, fSize.z() / 8),
+        new G4Box("mask", 1.01*fSize.x() / 2, 1.01*fSize.y() / 2, fSize.z() / 4),
         petmaterial,
         "mask");
 
@@ -226,6 +241,22 @@ G4LogicalVolume* MuraMask::Construct() {
                     auto posX = (i + 0.5) * segX - fSize.x() / 2;
                     auto posY = (j + 0.5) * segY - fSize.y() / 2;
 
+                    // if (error > 0){
+                        deltaX = gRandom->Gaus(error/2.0, error/6.0);
+                        histX->Fill(segX-deltaX);
+                        deltaY = gRandom->Gaus(error/2.0, error/6.0);
+                        histY->Fill(segY-deltaY);
+                        deltaZ = gRandom->Gaus(error/2.0, error/6.0);
+                        histZ->Fill(fSize.z()-deltaZ);
+
+
+                        maskSegment = new G4LogicalVolume(
+                        new G4Box("maskSegment", (segX-deltaX) / 2, (segY-deltaY) / 2, (fSize.z()-deltaZ) / 2),
+                        fMaterial,
+                        "maskSegment");
+                        maskSegment->SetVisAttributes(G4VisAttributes(G4Colour::Red()));
+                    // }
+
                     new G4PVPlacement(
                         nullptr,
                         G4ThreeVector(posX, posY, 0),
@@ -238,7 +269,17 @@ G4LogicalVolume* MuraMask::Construct() {
                 }
             }
         }
-    }  else {
+    }  else if (fType == "pet"){
+        auto gRandom = new TRandom3();
+        gRandom->SetSeed(0);
+        double deltaX,deltaY,deltaZ;
+        double error = CmdLineOption::GetDoubleValue("Precision");
+        TH1D * histX, *histY, *histZ;
+        
+        histX = new TH1D("rodsX", "X Size of Rods", 100, 0.9*segX-0.03-error, 0.9*segX+0.03);
+        histY = new TH1D("rodsY", "Y Size of Rods", 100, 0.9*segY-0.03-error, 0.9*segY+0.03);
+        histZ = new TH1D("rodsZ", "Z Size of Rods", 100, 1.001*fSize.z()-0.03-error, 1.001*fSize.z()+0.03);
+
         auto petmaterial = MaterialManager::get()->GetMaterial("G4_POLYETHYLENE");
 
         mask = new G4LogicalVolume(
@@ -264,6 +305,26 @@ G4LogicalVolume* MuraMask::Construct() {
                 auto posX = (i + 0.5) * segX - fSize.x() / 2;
                 auto posY = (j + 0.5) * segY - fSize.y() / 2;
                 if (isMaskedAt(i, j)) {
+                    // if (error > 0){
+                        deltaX = gRandom->Gaus(0.05, 0.1/6.0);
+                        histX->Fill(0.9*segX-deltaX);
+                        deltaY = gRandom->Gaus(0.05, 0.1/6.0);
+                        histY->Fill(0.9*segY-deltaY);
+                        deltaZ = gRandom->Gaus(0.05, 0.1/6.0);
+                        histZ->Fill(1.001*fSize.z()-deltaZ);
+
+
+                        maskSegmentTung = new G4LogicalVolume(
+                        new G4Box("maskSegmentTung", (segX-deltaX) / 2, 
+                                (segY-deltaY) / 2, (fSize.z()-deltaZ) / 2),
+                        fMaterial,
+                        "maskSegmentTung");
+                        auto maskSegmentTung = new G4LogicalVolume(
+                            new G4Box("maskSegment", (0.9*segX -deltaX) / 2, 
+                                (0.9*segY -deltaY) / 2, (1.001*fSize.z()-deltaZ) / 2),
+                            fMaterial,"maskSegment");
+                        maskSegmentTung->SetVisAttributes(G4VisAttributes(G4Colour::Red()));
+                    // }
                     new G4PVPlacement(
                         nullptr,
                         G4ThreeVector(posX, posY, 0),
@@ -286,6 +347,13 @@ G4LogicalVolume* MuraMask::Construct() {
             }
         }
     }
+    // TFile file1("histo.root", "RECREATE");
+    // file1.cd();
+
+    // histX->Write("histX");
+    // histY->Write("histY");
+    // histZ->Write("histZ");
+    // file1.Close();
     
     return mask;
 }

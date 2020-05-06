@@ -48,6 +48,10 @@ int main(int argc, char** argv) {
                                "Run visualization");
     CmdLineArg cmdarg_output("output", "Output file", CmdLineArg::kString);
 
+    CmdLineOption opt_precision("Precision", "-er",
+                               "Error in W rods size, default: 0.0 [mm]" 
+                               "(relevant only for pet and nowallpet masks", 0.0);
+
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
     const Positional& args = CmdLineConfig::GetPositionalArguments();
@@ -106,7 +110,6 @@ int main(int argc, char** argv) {
             abort();
         }
     }//CmdLine options 
-
 
 
     printf("Detector : %g %g %i %g [mm]\n", detectorsource, fibrenum*fibrewidth, fibrenum, fibrewidth);
@@ -209,13 +212,13 @@ int main(int argc, char** argv) {
     //MULTIPLE POINTS:
     // printf("Iter");
 
-    // source.SetPos(TVector3(-2, -2, 0));
+    // source.SetPos(TVector3(5, -5, 0));
     // runManager.GeometryHasBeenModified();
     // runManager.BeamOn(nIter);
 
     // printf("Iter");
 
-    //  source.SetPos(TVector3(0, 1, 0));
+    //  source.SetPos(TVector3(20, 20, 0));
     // runManager.GeometryHasBeenModified();
     // runManager.BeamOn(nIter);
 

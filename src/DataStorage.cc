@@ -90,6 +90,7 @@ void DataStorage::registerDepositScoring(
 
             fEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
             fEnergyDeposits.hits->Fill();
+            // spdlog::info("Energy = {}", energy);
         }
         if(fEnable.hMatrixScoring){
             setHmatrix(pos.x(),pos.y(), fBinX, fBinY,energy);
@@ -147,8 +148,8 @@ void DataStorage::setHmatrix(double DetX,double DetY, int sourceBinX, int source
     int rowIndexMatrixH = (nBinX-1) * fDetBinsY + fDetBinsY-nBinY;
     // spdlog::info("x = {}, y = {}", x, y);//nBinY - HISTOBIN
     // spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH, colIndexMatrixH);//nBinY - HISTOBIN
-    fMatrixH(rowIndexMatrixH,colIndexMatrixH) ++;
-    // fMatrixH(rowIndexMatrixH,colIndexMatrixH) += energy;
+    // fMatrixH(rowIndexMatrixH,colIndexMatrixH) ++;
+    fMatrixH(rowIndexMatrixH,colIndexMatrixH) += energy;
 }
 
 void DataStorage::writeHmatrix(){
@@ -159,6 +160,7 @@ void DataStorage::writeHmatrix(){
         }
         for(int j = 0; j < fMatrixH.GetNrows(); j ++){
              fMatrixH(j,i) = fMatrixH(j,i) == 0 ? 1e-9 : fMatrixH(j,i)/sum;
+            // spdlog::info("i = {}, j = {}, fMatrixH(i,j) = {}",j,i, fMatrixH(j,i));//nBinY - HISTOBIN
         }
     }
     fMatrixH.Write("matrixH");
