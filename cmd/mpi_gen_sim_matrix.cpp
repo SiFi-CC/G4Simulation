@@ -48,6 +48,10 @@ int main(int argc, char** argv) {
 
     CmdLineArg cmdarg_output("output", "Output file", CmdLineArg::kString);
 
+    CmdLineOption opt_precision("Precision", "-er",
+                           "Error in W rods size, default: 0.0[mm]"
+                           "(relevant only for pet and nowallpet masks", 0.0);
+
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
     const Positional& args = CmdLineConfig::GetPositionalArguments();
