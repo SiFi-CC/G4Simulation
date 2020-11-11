@@ -72,12 +72,12 @@ void DataStorage::init() {
     fSourceRecord.histogram = TH2F(
         "sourceHist",
         "source events",
-        100,
-        -15 * cm,
-        15 * cm,
-        100,
-        -15 * cm,
-        15 * cm);
+        fMetadata.data["sourceNBin"],
+        -fMetadata.data["sourceRange"]/2,
+        fMetadata.data["sourceRange"]/2,
+        fMetadata.data["sourceNBin"],
+        -fMetadata.data["sourceRange"]/2,
+        fMetadata.data["sourceRange"]/2);
 }
 
 void DataStorage::registerDepositScoring(
@@ -90,6 +90,7 @@ void DataStorage::registerDepositScoring(
 
             fEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
             fEnergyDeposits.hits->Fill();
+            total_deposited += energy;
             // spdlog::info("Energy = {}", energy);
         }
         if(fEnable.hMatrixScoring){
@@ -154,10 +155,11 @@ void DataStorage::setHmatrix(double DetX,double DetY, int sourceBinX, int source
 
 void DataStorage::writeHmatrix(){
     for(int i = 0; i < fMatrixH.GetNcols(); i ++){
-        double sum = 0.0;
-        for(int j = 0; j < fMatrixH.GetNrows(); j ++){
-            sum += fMatrixH(j,i);
-        }
+        double sum = 1.0;
+        // double sum = 0.0;
+        // for(int j = 0; j < fMatrixH.GetNrows(); j ++){
+        //     sum += fMatrixH(j,i);
+        // }
         for(int j = 0; j < fMatrixH.GetNrows(); j ++){
              fMatrixH(j,i) = fMatrixH(j,i) == 0 ? 1e-9 : fMatrixH(j,i)/sum;
             // spdlog::info("i = {}, j = {}, fMatrixH(i,j) = {}",j,i, fMatrixH(j,i));//nBinY - HISTOBIN
@@ -168,10 +170,11 @@ void DataStorage::writeHmatrix(){
 
 void DataStorage::writeHmatrix(int world_rank, int world_size){
     for(int i = 0; i < fMatrixH.GetNcols(); i ++){
-        double sum = 0.0;
-        for(int j = 0; j < fMatrixH.GetNrows(); j ++){
-            sum += fMatrixH(j,i);
-        }
+        double sum = 1.0;
+        // double sum = 0.0;
+        // for(int j = 0; j < fMatrixH.GetNrows(); j ++){
+        //     sum += fMatrixH(j,i);
+        // }
         for(int j = 0; j < fMatrixH.GetNrows(); j ++){
              fMatrixH(j,i) = fMatrixH(j,i) == 0 ? 1e-9 : fMatrixH(j,i)/sum;
         }

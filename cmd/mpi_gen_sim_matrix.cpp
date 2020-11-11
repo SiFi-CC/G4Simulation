@@ -92,6 +92,7 @@ int main(int argc, char** argv) {
 
     // minTheta = atan(-(masklength+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
     minTheta = atan(-(masklength+fibrewidth*fibrenum)/2/detectorsource)*180/M_PI+180.;
+    // minTheta = atan(-(masklength+fibrewidth*fibrenum)/2/detectorsource)*180/M_PI/2+180;
     if (opt_theta.GetArraySize() == 2) {
         minTheta = opt_theta.GetDoubleArrayValue(1);
         maxTheta = opt_theta.GetDoubleArrayValue(2);
@@ -138,7 +139,7 @@ int main(int argc, char** argv) {
         // TString output(args.at("output")->GetStringValue());
         output = args.at("output")->GetStringValue();
     } else {
-        TString output("outputMPI"+std::to_string(world_rank)+".root");
+        // TString output("outputMPI"+std::to_string(world_rank)+".root");
         output = "outputMPI"+std::to_string(world_rank)+".root";
     }
         // DataStorage storage(output);        
@@ -210,12 +211,14 @@ int main(int argc, char** argv) {
     runManager.GeometryHasBeenModified();
     log::info("world_size = {}",world_size);
 
+// log::info("xDimSource = {}, yDimSource = {}",xDimSource,yDimSource);
+// log::info("maxBinX = {}, maxBinY = {}",maxBinX,maxBinY);
 
     for (int binX = 0; binX < maxBinX; binX += 1) {
         for (int binY = 0; binY < maxBinY; binY += 1) {
             double sPosX = - xDimSource / 2. + (0.5 + binX) * (xDimSource / maxBinX);
             double sPosY = - yDimSource / 2. + (0.5 + binY) * (yDimSource / maxBinY);
-            for (int energy_it  = energy; energy_it > 50; energy_it /= 4) {
+            // for (int energy_it  = energy; energy_it > 50; energy_it /= 4) {
                 if(binX % world_size == world_rank){
                     log::info(
                         "Starting simulation source({}, {}), "
@@ -230,11 +233,11 @@ int main(int argc, char** argv) {
                     // log::info("processor {} calculates column {}", world_rank, binX);
                     storage.setCurrentBins(binX, binY);
 
-                    source.SetPos(TVector3(sPosX, sPosY, 0));
+                    source.SetPosAng(TVector3(sPosX, sPosY, 0),fibrewidth*fibrenum *mm,detectorsource * mm);
                     runManager.BeamOn(nIter);
-                    break;
+                    // break;
                 }
-            }
+            // }
         }
     }
     // storage.writeHmatrix();

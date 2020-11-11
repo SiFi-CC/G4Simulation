@@ -269,7 +269,72 @@ G4LogicalVolume* MuraMask::Construct() {
                 }
             }
         }
-    }  else if (fType == "pet"){
+    } else if (fType == "nowallpetCUT31"){
+        auto segX = fSize.x() / 31;
+        auto segY = fSize.y() / 31;
+        auto gRandom = new TRandom3();
+        gRandom->SetSeed(0);
+        double deltaX,deltaY,deltaZ;
+        double error = CmdLineOption::GetDoubleValue("Precision");
+        TH1D * histX, *histY, *histZ;
+        
+        histX = new TH1D("rodsX", "X Size of Rods", 100, segX-0.03-error, segX+0.03);
+        histY = new TH1D("rodsY", "Y Size of Rods", 100, segY-0.03-error, segY+0.03);
+        histZ = new TH1D("rodsZ", "Z Size of Rods", 100, fSize.z()-0.03-error, fSize.z()+0.03);
+
+        auto petmaterial = MaterialManager::get()->GetMaterial("G4_POLYETHYLENE");
+        mask = new G4LogicalVolume(
+        new G4Box("mask", 1.01*fSize.x() / 2, 1.01*fSize.y() / 2, fSize.z() / 4),
+        petmaterial,
+        "mask");
+
+        auto maskSegment = new G4LogicalVolume(
+            new G4Box("maskSegment", segX / 2, segY / 2, fSize.z() / 2),
+            fMaterial,
+            "maskSegment");
+        maskSegment->SetVisAttributes(G4VisAttributes(G4Colour::Red()));
+        mask->SetVisAttributes(G4VisAttributes(G4Colour::Gray()));
+
+        int placementId = 1;
+
+        for (int i = 0; i < 31; i++) {
+            for (int j = 0; j < 31; j++) {
+                if (i == 0) {
+                    continue;
+                }
+                if (isMaskedAt(round(i+fMaskOrder/2)-15, j+round(fMaskOrder/2)-15) || j==0) {
+                    auto posX = (i + 0.5) * segX - fSize.x() / 2;
+                    auto posY = (j + 0.5) * segY - fSize.y() / 2;
+
+                    // if (error > 0){
+                        deltaX = gRandom->Gaus(error/2.0, error/6.0);
+                        histX->Fill(segX-deltaX);
+                        deltaY = gRandom->Gaus(error/2.0, error/6.0);
+                        histY->Fill(segY-deltaY);
+                        deltaZ = gRandom->Gaus(error/2.0, error/6.0);
+                        histZ->Fill(fSize.z()-deltaZ);
+
+
+                        maskSegment = new G4LogicalVolume(
+                        new G4Box("maskSegment", (segX-deltaX) / 2, (segY-deltaY) / 2, (fSize.z()-deltaZ) / 2),
+                        fMaterial,
+                        "maskSegment");
+                        maskSegment->SetVisAttributes(G4VisAttributes(G4Colour::Red()));
+                    // }
+
+                    new G4PVPlacement(
+                        nullptr,
+                        G4ThreeVector(posX, posY, 0),
+                        maskSegment,
+                        "maskBin",
+                        mask,
+                        false,
+                        placementId);
+                    placementId++;
+                }
+            }
+        }
+    } else if (fType == "pet"){
         auto gRandom = new TRandom3();
         gRandom->SetSeed(0);
         double deltaX,deltaY,deltaZ;

@@ -28,10 +28,10 @@ int main(int argc, char** argv) {
 
     CmdLineOption opt_det(
       "Plane", "-det",
-      "Detector: detector-source:nFibres:fibre_width, default: 200:1:22:22", 0, 0);
+      "Detector: detector-source:nFibres:fibre_width, default: 220:16:1.3", 0, 0);
     CmdLineOption opt_mask(
       "Mask", "-mask",
-      "Mask: order:mask-source:width:length:thickness [mm], default: 31:150:22:20", 0, 0);
+      "Mask: order:mask-source:width/length:thickness [mm], default: 31:170:70:20", 0, 0);
     CmdLineOption opt_masktype(
       "MaskType", "-masktype", "MaskType: standart, round or pet", "standart");
     CmdLineOption opt_events("Events", "-n",
@@ -44,6 +44,8 @@ int main(int argc, char** argv) {
                                "Min and max Theta [Deg], default: 170:180", 0);
     CmdLineOption opt_source("Source", "-source",
                                "Source position [mm], default: 0:0", 0);
+    CmdLineOption opt_sourceBins("SourceBins", "-sourceBins",
+                               "Range and number of bins and in source Histogram (is needed for RMSE and UQI), default: 70:100", 0);
     CmdLineOption opt_visualization("Visualization", "-vis",
                                "Run visualization");
     CmdLineArg cmdarg_output("output", "Output file", CmdLineArg::kString);
@@ -59,16 +61,21 @@ int main(int argc, char** argv) {
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t detectorsource = 200, fibrewidth = 1.3; 
+    Float_t detectorsource = 220, fibrewidth = 1.3; 
     Int_t fibrenum = 16;
 
     Int_t mord = 31;
-    Float_t masksource = 150., masklength = 64., maskthick = 20.;
+    Float_t masksource = 170., masklength = 70., maskthick = 20.;
 
     Float_t minTheta, maxTheta = 180;
 
     Float_t sPosX = 0, sPosY = 0;
+
+    Int_t sNbins = 100;
+    Float_t sRange = 70;
+
     int nLayer = opt_nlay.GetIntValue();
+    storage.enablesource();
 
     { //CmdLine options 
         if (opt_det.GetArraySize() == 3) {
@@ -109,6 +116,14 @@ int main(int argc, char** argv) {
                           opt_source.GetArraySize());
             abort();
         }
+        if (opt_sourceBins.GetArraySize() == 2) {
+            sRange = opt_sourceBins.GetDoubleArrayValue(1);
+            sNbins = opt_sourceBins.GetIntArrayValue(2);
+        } else if (opt_sourceBins.GetArraySize() != 0) {
+            spdlog::error("Source histogram - 2 parameters required: range and Nbins, {} given",
+                          opt_sourceBins.GetArraySize());
+            abort();
+        }
     }//CmdLine options 
 
 
@@ -141,7 +156,7 @@ int main(int argc, char** argv) {
         nLayer,                 // number of layers
         FibreLayer(          //
             fibrenum,             // number of fibres in layer
-            Fibre({fibrewidth*fibrenum *mm, // fibre length
+            Fibre({fibrewidth*fibrenum *mm, // fibre length 
                    fibrewidth *mm, // fibre width and thickness
                    material,
                    wrappingmaterial,
@@ -158,7 +173,8 @@ int main(int argc, char** argv) {
     
     Source source(energy,minTheta,maxTheta);
 
-    source.SetPos(TVector3(sPosX, sPosY, 0));
+    // source.SetPosAng(TVector3(sPosX, sPosY, 0),fibrewidth*fibrenum *mm,detectorsource * mm);
+    source.SetPosAng(TVector3(sPosX, sPosY, 0));
 
     runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource()));
     runManager.SetUserAction(new SteppingAction(&storage));
@@ -188,6 +204,8 @@ int main(int argc, char** argv) {
     storage.writeMetadata("energy", energy * keV);
     storage.writeMetadata("sourceToMaskDistance", masksource * mm);
     storage.writeMetadata("maskToDetectorDistance", maskdetector * mm);
+    storage.writeMetadata("sourceNBin", sNbins);
+    storage.writeMetadata("sourceRange", sRange);
     detector.writeMetadata(&storage);
     mask.writeMetadata(&storage);
     storage.init(); 

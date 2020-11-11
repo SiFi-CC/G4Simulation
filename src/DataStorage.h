@@ -65,9 +65,15 @@ class DataStorage {
         // std::cout<<"GammaCount = " << fGammaCount << std::endl;
     }
 
+    void enablesource(){
+        fEnable.sourceRecord = true;
+        fEnable.maskDepositScoring = true;
+    }
+
     void Printgammacount(){
         // fGammaCount ++;
         std::cout<<"GammaCount = " << fGammaCount << std::endl;
+        std::cout<<"TotalDeposited = " << total_deposited << std::endl;
     }
   protected:
     TFile* fFile = nullptr;
@@ -75,6 +81,7 @@ class DataStorage {
     int fBinX, fBinY,fMaxBinX, fMaxBinY, fDetBinsX,fDetBinsY;
     int fGammaCount = 0;
     double fDetBinSize;
+    double total_deposited = 0;
     TMatrixT<Double_t> fMatrixH;
 
     struct {
@@ -90,7 +97,9 @@ class DataStorage {
                                                         {"maskMinY", -150},
                                                         {"maskMaxY", 150},
                                                         {"maskBinX", 100},
-                                                        {"maskBinY", 100}};
+                                                        {"maskBinY", 100},
+                                                        {"sourceNBin", 100},
+                                                        {"sourceRange", 70}};
     } fMetadata;
 
     struct {

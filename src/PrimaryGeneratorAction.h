@@ -21,7 +21,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
             log->error("Unable to find particle in particle table");
         }
         gps->SetParticleDefinition(particle);
-        gps->GetCurrentSource()->GetPosDist()->SetPosDisType("Point");
+        
+        // gps->GetCurrentSource()->GetPosDist()->SetPosDisType("Point");
         gps->GetCurrentSource()->GetAngDist()->SetAngDistType("iso");
         gps->GetCurrentSource()->GetEneDist()->SetEnergyDisType("Mono");
     };

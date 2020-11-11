@@ -17,13 +17,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
 
         fStorage->registerDepositScoring(name, pos, deposit);
         if (step->GetTrack()->GetParticleDefinition()->GetParticleType() == G4String("gamma")){
-            // log->info("ID = {} ",step->GetTrack()->GetTrackID() );
             fStorage->gammacount();
         }
-        // if(step->GetTrack()->GetTrackID() == 1){
-        //     log->info("type = {} ",step->GetTrack()->GetParticleDefinition()->GetParticleType () );
-        //     fStorage->gammacount();
-        // }
     }
 }
 

@@ -18,7 +18,8 @@ public:
 	TVector3 GetPos();
 
 	void Init(const TVector3& position = TVector3(0,0,0));
-	void SetPos(const TVector3& position);
+	void SetPosAng(const TVector3& position, double det, double SD);
+	void SetPosAng(const TVector3& position);
 
 	G4GeneralParticleSource* GetSource(){return fSourceGeant;}
 
@@ -27,6 +28,7 @@ public:
 	double GetMaxTheta(){return fMaxTheta;};
 
 private:
+	void SetAngles(const double det,const double SD);
 
 	TVector3 fPosition;
 	Int_t fEnergy;
