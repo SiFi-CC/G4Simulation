@@ -5,7 +5,7 @@
 
 namespace SiFi{
 
-Source::Source(const Int_t& energy = 4400, const double& mintheta = 170, const double& maxtheta = 180)
+Source::Source(const Int_t& energy, const double& mintheta, const double& maxtheta)
 :fEnergy(energy), fMinTheta(mintheta), fMaxTheta(maxtheta){
     Init(TVector3(0,0,0));
 }
@@ -38,27 +38,25 @@ void Source::SetPosAng(const TVector3& position){
     fSourceGeant->GetCurrentSource()->GetAngDist()->SetMaxTheta(fMaxTheta * deg);
     // std::cout<<fSourceGeant->GetCurrentSource()->GetPosDist()->GetPosDisType()<<std::endl;
 
-    // fSourceGeant->GetCurrentSource()->GetPosDist()->SetPosDisType("Point");
-    fSourceGeant->GetCurrentSource()->GetPosDist()->SetPosDisType("Beam");	
-    if(1){
-	fSourceGeant->GetCurrentSource()->GetPosDist()->SetPosDisShape("Rectangle");
-    	fSourceGeant->GetCurrentSource()->GetPosDist()->SetHalfY(1 * mm);
-    	// fSourceGeant->GetCurrentSource()->GetPosDist()->SetHalfY(5 * mm);
-    	fSourceGeant->GetCurrentSource()->GetPosDist()->SetHalfX(15 * mm);
-    	// fSourceGeant->GetCurrentSource()->GetPosDist()->SetHalfX(15 * mm);
-    	// fSourceGeant->GetCurrentSource()->GetPosDist()->SetBeamSigmaInX(1 * mm);
-    	// fSourceGeant->GetCurrentSource()->GetPosDist()->SetBeamSigmaInY(1 * mm);
-    } else {
-	fSourceGeant->GetCurrentSource()->GetPosDist()->SetPosDisShape("Circle");
-    	fSourceGeant->GetCurrentSource()->GetPosDist()->SetRadius(1.0 * mm);
-    }
+    // fSourceGeant->GetCurrentSource()->GetPosDist()->SetPosDisType("Beam");	
+    // if(1){
+    //     fSourceGeant->GetCurrentSource()->GetPosDist()->SetPosDisShape("Rectangle");
+    // 	fSourceGeant->GetCurrentSource()->GetPosDist()->SetHalfY(1 * mm);
+    // 	// fSourceGeant->GetCurrentSource()->GetPosDist()->SetHalfY(5 * mm);
+    // 	fSourceGeant->GetCurrentSource()->GetPosDist()->SetHalfX(15 * mm);
+    // 	// fSourceGeant->GetCurrentSource()->GetPosDist()->SetHalfX(15 * mm);
+    // 	// fSourceGeant->GetCurrentSource()->GetPosDist()->SetBeamSigmaInX(1 * mm);
+    // 	// fSourceGeant->GetCurrentSource()->GetPosDist()->SetBeamSigmaInY(1 * mm);
+    // } else {
+	// fSourceGeant->GetCurrentSource()->GetPosDist()->SetPosDisShape("Circle");
+    // 	fSourceGeant->GetCurrentSource()->GetPosDist()->SetRadius(1.0 * mm);
+    // }
 }
 
 // Set the source rotated to the direction of the center of detector
 // used only for system matrix calculation
 void Source::SetPosAng(const TVector3& position, double det, double SD){
     fPosition = position;
-    // spdlog::info("det = {}",det);
 
     Double_t sx = fPosition.X();
     Double_t sy = fPosition.Y();

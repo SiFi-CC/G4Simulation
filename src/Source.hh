@@ -14,7 +14,7 @@ namespace SiFi {
 class Source {
 
 public:
-	Source(const Int_t& energy, const double& mintheta, const double& maxtheta);
+	Source(const Int_t& energy, const double& mintheta = 170, const double& maxtheta = 180);
 	TVector3 GetPos();
 
 	void Init(const TVector3& position = TVector3(0,0,0));

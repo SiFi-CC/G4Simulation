@@ -41,11 +41,13 @@ int main(int argc, char** argv) {
     CmdLineOption opt_nlay("#layers", "-nlay",
                                "Number of layers in detector, default: 4 (integer)", 4);
     CmdLineOption opt_theta("Theta", "-theta",
-                               "Min and max Theta [Deg], default: 170:180", 0);
+                               "Min Theta angle [Deg] (maximum Theta is 180), default: auto", 0);
     CmdLineOption opt_source("Source", "-source",
                                "Source position [mm], default: 0:0", 0);
     CmdLineOption opt_sourceBins("SourceBins", "-sourceBins",
                                "Range and number of bins and in source Histogram (is needed for RMSE and UQI), default: 70:100", 0);
+    CmdLineOption opt_sourceMac("SourceMac", "-sMac",
+                               "Source '.mac' script (string)","");
     CmdLineOption opt_visualization("Visualization", "-vis",
                                "Run visualization");
     CmdLineArg cmdarg_output("output", "Output file", CmdLineArg::kString);
@@ -61,21 +63,21 @@ int main(int argc, char** argv) {
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t detectorsource = 220, fibrewidth = 1.3; 
-    Int_t fibrenum = 16;
+    Float_t detectorsource = 200, fibrewidth = 1.3;  //detector dimensions
+    Int_t fibrenum = 16; // number of fibers in one layer
 
-    Int_t mord = 31;
-    Float_t masksource = 170., masklength = 70., maskthick = 20.;
+    Int_t mord = 31; //MURA mask order
+    Float_t masksource = 150., masklength = 64., maskthick = 20.; // mask dimensions
 
     Float_t minTheta, maxTheta = 180;
 
-    Float_t sPosX = 0, sPosY = 0;
+    Float_t sPosX = 0, sPosY = 0; // source coordinates
 
-    Int_t sNbins = 100;
+    Int_t sNbins = 100; // source histogram parameters
     Float_t sRange = 70;
 
-    int nLayer = opt_nlay.GetIntValue();
-    storage.enablesource();
+    int nLayer = opt_nlay.GetIntValue(); // number of layers in the detector
+    storage.enablesource(); // enblesource histogram
 
     { //CmdLine options 
         if (opt_det.GetArraySize() == 3) {
@@ -100,11 +102,10 @@ int main(int argc, char** argv) {
 
         // minTheta = atan(-(masklength+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
         minTheta = atan(-(masklength+fibrewidth*fibrenum)/2/detectorsource)*180/M_PI+180.;
-        if (opt_theta.GetArraySize() == 2) {
+        if (opt_theta.GetArraySize() == 1) {
             minTheta = opt_theta.GetDoubleArrayValue(1);
-            maxTheta = opt_theta.GetDoubleArrayValue(2);
         } else if (opt_theta.GetArraySize() != 0) {
-            spdlog::error("Theta angles - 2 parameters required: min and max values, {} given",
+            spdlog::error("Theta_Min angle - 1 parameter is required, {} given",
                           opt_theta.GetArraySize());
             abort();
         }
@@ -210,6 +211,13 @@ int main(int argc, char** argv) {
     mask.writeMetadata(&storage);
     storage.init(); 
 
+    if (opt_sourceMac.GetStringValue()){
+        std::string str = "/control/execute ";
+        str.append(opt_sourceMac.GetStringValue());
+
+        G4UImanager* UI = G4UImanager::GetUIpointer();
+                    UI->ApplyCommand(str);
+    }
     
     if (CmdLineOption::GetFlagValue("Visualization")){
         //VISUALISATION:

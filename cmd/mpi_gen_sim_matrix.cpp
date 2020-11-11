@@ -41,8 +41,6 @@ int main(int argc, char** argv) {
                                "Energy of particles [keV], default: 4400 (integer)", 4400);
     CmdLineOption opt_nlay("#layers", "-nlay",
                                "Number of layers in detector, default: 4 (integer)", 4);
-    CmdLineOption opt_theta("Theta", "-theta",
-                               "Min and max Theta [Deg], default: 170:180", 0);
     CmdLineOption opt_source("Source", "-source",
                                "Source plane size and number of bins [mm], default: 64:100", 0);
 
@@ -58,17 +56,15 @@ int main(int argc, char** argv) {
 
 
 
-    Float_t detectorsource = 200, fibrewidth = 1.3; 
-    Int_t fibrenum = 16;
+    Float_t detectorsource = 200, fibrewidth = 1.3;  //detector dimensions
+    Int_t fibrenum = 16; // number of fibers in one layer
 
-    Int_t mord = 31;
-    Float_t masksource = 150., masklength = 64., maskthick = 20.;
+    Int_t mord = 31; //MURA mask order
+    Float_t masksource = 150., masklength = 64., maskthick = 20.; // mask dimensions
 
-    Float_t minTheta = 170., maxTheta = 180;
-
-    Float_t xDimSource = 64, yDimSource = 64;
-    Int_t maxBinX = 100, maxBinY = 100;
-    int nLayer = opt_nlay.GetIntValue();
+    Float_t xDimSource = 64, yDimSource = 64; // source dimensions
+    Int_t maxBinX = 100, maxBinY = 100; // source bins
+    int nLayer = opt_nlay.GetIntValue(); // number of layers in detector
 
     if (opt_det.GetArraySize() == 3) {
         detectorsource = opt_det.GetDoubleArrayValue(1);
@@ -90,17 +86,6 @@ int main(int argc, char** argv) {
         abort();
     }
 
-    // minTheta = atan(-(masklength+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
-    minTheta = atan(-(masklength+fibrewidth*fibrenum)/2/detectorsource)*180/M_PI+180.;
-    // minTheta = atan(-(masklength+fibrewidth*fibrenum)/2/detectorsource)*180/M_PI/2+180;
-    if (opt_theta.GetArraySize() == 2) {
-        minTheta = opt_theta.GetDoubleArrayValue(1);
-        maxTheta = opt_theta.GetDoubleArrayValue(2);
-    } else if (opt_theta.GetArraySize() != 0) {
-        spdlog::error("Theta angles - 2 parameters required: min and max values, {} given",
-                      opt_theta.GetArraySize());
-        abort();
-    }
     if (opt_source.GetArraySize() == 2) {
         xDimSource = opt_source.GetDoubleArrayValue(1);
         yDimSource = xDimSource;
@@ -117,7 +102,6 @@ int main(int argc, char** argv) {
     printf("Mask order      : %i\n", mord);
     printf("No. of events  : %i\n", opt_events.GetIntValue());
     printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
-    printf("Theta [Deg] : %g %g\n", minTheta, maxTheta);
     printf("Source plane [mm] : %g %g Number of bins: %i %i\n", xDimSource, yDimSource, maxBinX, maxBinY);
 
     double maskdetector = detectorsource-masksource;
@@ -172,7 +156,7 @@ int main(int argc, char** argv) {
     auto physicsList = new PhysicsList();
     runManager.SetUserInitialization(physicsList);
 
-    Source source(energy,minTheta,maxTheta);
+    Source source(energy);
     
     runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource()));
     runManager.SetUserAction(new SteppingAction(&storage));
