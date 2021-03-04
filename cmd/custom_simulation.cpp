@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
     // source.SetPosAng(TVector3(sPosX, sPosY, 0),fibrewidth*fibrenum *mm,detectorsource * mm);
     source.SetPosAng(TVector3(sPosX, sPosY, 0));
 
-    runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource()));
+    runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource(), &storage));
     runManager.SetUserAction(new SteppingAction(&storage));
     runManager.SetUserAction(new EventAction(&storage));
     runManager.Initialize();
