@@ -81,6 +81,23 @@ target_link_libraries(g4sim
     ${Geant4_LIBRARIES}   # TODO (export target)
 )
 
+INCLUDE_DIRECTORIES("src")
+root_generate_dictionary(dictionary DSinclude.hh  LINKDEF src/DSLinkDef.h MODULE customclass)
+
+add_library(customclass SHARED
+   dictionary)
+
+
+target_link_libraries(customclass
+    PUBLIC 
+    #  ROOT::Core ROOT::RIO ROOT::Geom ROOT::MathCore ROOT::Physics ROOT::Gui ROOT::Tree
+    spdlog::spdlog
+    ${ROOT_LIBRARIES} 
+    ${Geant4_LIBRARIES}   # TODO (export target)
+)
+
+# install(TARGETS customclass DESTINATION src/)
+
 add_subdirectory(cmd)
 
 MESSAGE(STATUS "<<< Configuration >>>
