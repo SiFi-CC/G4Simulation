@@ -77,7 +77,7 @@ void DataStorage::init() {
         fMetadata.data["sourceRange"]/2,
         fMetadata.data["sourceNBin"],
         -fMetadata.data["sourceRange"]/2,
-        200);
+        fMetadata.data["sourceRange"]/2);
 }
 
 void DataStorage::registerDepositScoring(

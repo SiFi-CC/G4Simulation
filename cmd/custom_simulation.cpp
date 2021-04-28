@@ -56,6 +56,11 @@ int main(int argc, char** argv) {
                                "Error in W rods size, default: 0.0 [mm]" 
                                "(relevant only for pet and nowallpet masks", 0.0);
 
+    CmdLineOption source_file("SourceFile", "-sfile",
+                            "PhaseSpaceFile", CmdLineArg::kString);
+    CmdLineArg source_files("", "more source files", CmdLineArg::kString);
+
+
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
     const Positional& args = CmdLineConfig::GetPositionalArguments();

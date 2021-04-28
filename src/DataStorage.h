@@ -98,8 +98,8 @@ class DataStorage {
                                                         {"maskMaxY", 150},
                                                         {"maskBinX", 100},
                                                         {"maskBinY", 100},
-                                                        {"sourceNBin", 100},
-                                                        {"sourceRange", 70}};
+                                                        {"sourceNBin", 200},
+                                                        {"sourceRange", 150}};
     } fMetadata;
 
     struct {
