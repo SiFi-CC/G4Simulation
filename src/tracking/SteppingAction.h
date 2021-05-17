@@ -3,6 +3,7 @@
 #include "DataStorage.h"
 #include "Utils.h"
 #include <G4UserSteppingAction.hh>
+#include <G4ThreeVector.hh>
 
 namespace SiFi {
 
@@ -16,6 +17,9 @@ class SteppingAction : public G4UserSteppingAction {
 
   private:
     DataStorage* fStorage = nullptr;
+    G4ThreeVector fParentPos;
+    double fParentEn;
+    int parentID = 0;
 };
 
 } // namespace SiFi

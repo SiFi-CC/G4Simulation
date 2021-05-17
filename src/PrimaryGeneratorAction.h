@@ -130,7 +130,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
             fParticleGun->SetParticlePosition(pos_vec.at(i));
             fParticleGun->SetParticleMomentumDirection(mom_vec.at(i));
             fParticleGun->SetParticleEnergy(en_vec.at(i));
-            fStorage->registerEventStart(event->GetEventID(), pos_vec.at(i), mom_vec.at(i), en_vec.at(i));
+            // log->info("Position {} {} {} {}", pos_vec.at(i).getX(), pos_vec.at(i).getY(), pos_vec.at(i).getZ(), en_vec.at(i));
+            fStorage->registerEventStart(i, pos_vec.at(i), mom_vec.at(i), en_vec.at(i));
             fParticleGun->GeneratePrimaryVertex(event);
           }
         log->info("Done");

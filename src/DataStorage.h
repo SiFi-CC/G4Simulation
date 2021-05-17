@@ -38,7 +38,9 @@ class DataStorage {
     void init();
 
     void registerDepositScoring(
-        const G4String& volume, const G4ThreeVector& pos, double energy);
+        const G4String& volume, const G4ThreeVector& pos, double energy,
+        const G4ThreeVector& dir,  const G4ThreeVector& parpos,
+        const G4ThreeVector& camefrom, double parentenergy, G4String particle, int parentID);
 
     void registerEventStart(
         int eventId, const G4ThreeVector& pos, const G4ThreeVector& dir, double energy);
@@ -113,8 +115,15 @@ class DataStorage {
         TTree* hits = nullptr;
 
         TVector3 position;
+        TVector3 dir;
+        TVector3 parent;
+        TVector3 camefrom;
+
         int eventId = 0;
+        int parentID = 0;
         double energy = 0;
+        double parentenergy = 0;
+        TString particle;
 
         TH2F histogram;
     } fEnergyDeposits;

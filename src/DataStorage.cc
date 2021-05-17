@@ -38,8 +38,14 @@ void DataStorage::newSimulation(const TString& name, bool deposits) {
 void DataStorage::init() {
     fEnergyDeposits.hits = new TTree("deposits", "energy deposits in detector");
     fEnergyDeposits.hits->Branch("position", &fEnergyDeposits.position);
+    fEnergyDeposits.hits->Branch("direction", &fEnergyDeposits.dir);
+    fEnergyDeposits.hits->Branch("parentposition", &fEnergyDeposits.parent);
+    fEnergyDeposits.hits->Branch("camefrom", &fEnergyDeposits.camefrom);
     fEnergyDeposits.hits->Branch("energy", &fEnergyDeposits.energy);
+    fEnergyDeposits.hits->Branch("parentenergy", &fEnergyDeposits.parentenergy);
+    fEnergyDeposits.hits->Branch("particle", &fEnergyDeposits.particle);
     fEnergyDeposits.hits->Branch("id", &fEnergyDeposits.eventId);
+    fEnergyDeposits.hits->Branch("parentID", &fEnergyDeposits.parentID);
     fEnergyDeposits.histogram = TH2F(
         "energyDeposits",
         "energy deposits in detector",
@@ -81,14 +87,23 @@ void DataStorage::init() {
 }
 
 void DataStorage::registerDepositScoring(
-    const G4String& volume, const G4ThreeVector& pos, double energy) {
+    const G4String& volume, const G4ThreeVector& pos, double energy,
+    const G4ThreeVector& dir,  const G4ThreeVector& parpos,
+    const G4ThreeVector& camefrom, double parentenergy, G4String particle, int parentID) {
     if (volume == "fibrephysical") {
         if(fEnable.depositScoring){
             fEnergyDeposits.eventId = fSourceRecord.eventId;
+            fEnergyDeposits.parentID = parentID;
             fEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
+            fEnergyDeposits.dir = TVector3(dir.x(), dir.y(), dir.z());
+            fEnergyDeposits.parent = TVector3(parpos.x(), parpos.y(), parpos.z());
+            fEnergyDeposits.camefrom = TVector3(camefrom.x(), camefrom.y(), camefrom.z());
+            fEnergyDeposits.particle = TString(particle);
             fEnergyDeposits.energy = energy;
+            fEnergyDeposits.parentenergy = parentenergy;
 
             fEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
+            // fEnergyDeposits.histogram.Fill(pos.x(), pos.y(), 1);
             fEnergyDeposits.hits->Fill();
             total_deposited += energy;
             // spdlog::info("Energy = {}", energy);
