@@ -58,7 +58,8 @@ int main(int argc, char** argv) {
 
     CmdLineOption source_file("SourceFile", "-sfile",
                             "PhaseSpaceFile", CmdLineArg::kString);
-    CmdLineArg source_files("", "more source files", CmdLineArg::kString);
+    CmdLineOption source_offset("SourceOffset", "-soffset",
+                               "Source offset [mm], default: 0:25", 0);
 
 
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);

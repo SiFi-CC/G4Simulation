@@ -65,6 +65,12 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
             sPosX = CmdLineOption::GetDoubleArrayValue("Source", 1);
             sPosY = CmdLineOption::GetDoubleArrayValue("Source", 2);
         }
+        double sOffX = 0.0;
+        double sOffY = -25.0;
+        if (CmdLineOption::GetArraySize("SourceOffset") == 2) {
+            sOffX = CmdLineOption::GetDoubleArrayValue("SourceOffset", 1);
+            sOffY = CmdLineOption::GetDoubleArrayValue("SourceOffset", 2);
+        }
           log->info("filename {}", filename);
           TFile* file = new TFile(filename, "READ");
           TTree* ftree = (TTree*)file->Get("Secondaries");
@@ -102,7 +108,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
                 if(point){
                   position = G4ThreeVector(sPosX,sPosY,0);
                 } else {
-                  position = G4ThreeVector(pos->at(j).Y(), -25.0-pos->at(j).Z(), pos->at(j).X());
+                  position = G4ThreeVector(pos->at(j).Y() + sOffX, -pos->at(j).Z() + sOffY, pos->at(j).X());
                 }
                 fParticleGun->SetParticlePosition(position);
                 direction = G4ThreeVector(fDir->at(j).Y(), -fDir->at(j).Z(), fDir->at(j).X());
