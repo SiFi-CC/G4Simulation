@@ -269,9 +269,10 @@ G4LogicalVolume* MuraMask::Construct() {
                 }
             }
         }
-    } else if (fType == "nowallpetCUT31"){
-        auto segX = fSize.x() / 31;
-        auto segY = fSize.y() / 31;
+    } else if (fType == "nowallpetCUT"){
+        int cut = CmdLineOption::GetIntValue("MaskCut");
+        auto segX = fSize.x() / cut;
+        auto segY = fSize.y() / cut;
         auto gRandom = new TRandom3();
         gRandom->SetSeed(0);
         double deltaX,deltaY,deltaZ;
@@ -297,12 +298,12 @@ G4LogicalVolume* MuraMask::Construct() {
 
         int placementId = 1;
 
-        for (int i = 0; i < 31; i++) {
-            for (int j = 0; j < 31; j++) {
+        for (int i = 0; i < cut; i++) {
+            for (int j = 0; j < cut; j++) {
                 if (i == 0) {
                     continue;
                 }
-                if (isMaskedAt(round(i+fMaskOrder/2)-15, j+round(fMaskOrder/2)-15) || j==0) {
+                if (isMaskedAt(round(i+fMaskOrder/2)-(int)cut/2, j+round(fMaskOrder/2)-(int)cut/2) || j==0) {
                     auto posX = (i + 0.5) * segX - fSize.x() / 2;
                     auto posY = (j + 0.5) * segY - fSize.y() / 2;
 

@@ -33,7 +33,9 @@ int main(int argc, char** argv) {
       "Mask", "-mask",
       "Mask: order:mask-source:width/length:thickness [mm], default: 31:170:70:20", 0, 0);
     CmdLineOption opt_masktype(
-      "MaskType", "-masktype", "MaskType: standart, round or pet", "standart");
+      "MaskType", "-masktype", "MaskType: {standart, round, pet, nowallpet, nowallpetcut}", "standart");
+    CmdLineOption opt_masktype_cut(
+      "MaskCut", "-cut", "MaskNumber of pixels,(relevant only if massktype=nowallpetcut) default: 31(integer)", 31);
     CmdLineOption opt_events("Events", "-n",
                                "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e",
