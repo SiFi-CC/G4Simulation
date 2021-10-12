@@ -5,6 +5,7 @@ from tqdm import tqdm
 
 SCORE = {"mse": 0, "uqi": 1, "both": 2}
 
+XY = namedtuple("XY", "x y")
 
 class Histogram(namedtuple('Histogram', ['vals', 'edges', 'name'])):
 
@@ -31,16 +32,16 @@ def get_histo(path, histo_names):
     result = []
     with uproot.open(path) as file:
         for name in histo_names:
-            vals, edges, _ = file[name].to_numpy()
-            result.append(Histogram(vals[:, ::-1], edges, name))
+            vals, edgesx, edgesy = file[name].to_numpy()
+            result.append(Histogram(vals[:, ::-1], XY(edgesx, edgesy[::-1]), name))
     return result
 
 
 def get_hmat(path, norm=True):
     with uproot.open(path) as matr_file:
         Tmatr = matr_file["matrixH"]
-    matrixH = np.array(Tmatr.member("fElements"))\
-        .reshape(Tmatr.member("fNrows"), Tmatr.member("fNcols"))
+        matrixH = np.array(Tmatr.member("fElements"))\
+            .reshape(Tmatr.member("fNrows"), Tmatr.member("fNcols"))
     if norm:
         matrixH = matrixH/matrixH.sum(axis=0)  # normalization
     return matrixH
@@ -76,7 +77,7 @@ def mse_uqi(x, y, normx=False, normy=True):
     uqi = 4*x.mean()*y.mean()*cov[0, 1]/(cov[0, 0]+cov[1, 1])\
         / (x.mean()**2 + y.mean()**2)
     if uqi == 0:
-        uqi = 1e-8
+        uqi = 1e-2
     return mse, 1/uqi, mse/uqi
 
 
