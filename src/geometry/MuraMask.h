@@ -21,6 +21,7 @@ class MuraMask : public DetectorElement {
 
     double getThickness() { return fSize.z(); }
     bool isMaskedAt(int x, int y);
+    bool isMaskedAt(int x);
     int isQuaResidue(int q, int p);
 
     void writeMetadata(DataStorage* storage);

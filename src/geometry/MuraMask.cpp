@@ -26,6 +26,16 @@ bool MuraMask::isMaskedAt(int x, int y) {
     return false;
 }
 
+bool MuraMask::isMaskedAt(int x) {
+    if (x == 0) {
+        return false;
+    }
+    if (isQuaResidue(x, fMaskOrder) == -1) {
+        return true;
+    }
+    return false;
+}
+
 int MuraMask::isQuaResidue(int q, int p) {
     int result = -1;
     for (int i = 1; i < p; i++) {
@@ -43,8 +53,9 @@ G4LogicalVolume* MuraMask::Construct() {
 
     G4LogicalVolume* mask;
 
+    bool ismask = false;
 
-    if(fType == "standart"){
+    if (fType == "standart" || fType == "standart1d") {
         mask = new G4LogicalVolume(
         new G4Box("mask", fSize.x() / 2, fSize.y() / 2, fSize.z() / 2),
         MaterialManager::get()->GetMaterial("G4_AIR"),
@@ -61,7 +72,12 @@ G4LogicalVolume* MuraMask::Construct() {
 
         for (int i = 0; i < fMaskOrder; i++) {
             for (int j = 0; j < fMaskOrder; j++) {
-                if (isMaskedAt(i, j)) {
+                if (fType == "standart"){
+                    ismask = isMaskedAt(i, j);
+                } else {
+                    isMaskedAt(i);
+                }
+                if (ismask) {
                     auto posX = (i + 0.5) * segX - fSize.x() / 2;
                     auto posY = (j + 0.5) * segY - fSize.y() / 2;
 
@@ -77,7 +93,7 @@ G4LogicalVolume* MuraMask::Construct() {
                 }
             }
         }
-    } else if (fType == "round"){
+    } else if (fType == "round") {
         mask = new G4LogicalVolume(
             new G4Box("mask", fSize.x() / 2, fSize.y() / 2, fSize.z() / 2),
             fMaterial, "mask");
@@ -148,7 +164,7 @@ G4LogicalVolume* MuraMask::Construct() {
                 }
             }
         }
-    } else if (fType == "round2"){
+    } else if (fType == "round2") {
         mask = new G4LogicalVolume(
             new G4Box("mask", fSize.x() / 2, fSize.y() / 2, fSize.z() / 2),
             fMaterial, "mask");
@@ -209,7 +225,7 @@ G4LogicalVolume* MuraMask::Construct() {
                 }
             }
         }
-    } else if (fType == "nowallpet"){
+    } else if (fType == "nowallpet" || fType == "nowallpet1d") {
         auto gRandom = new TRandom3();
         gRandom->SetSeed(0);
         double deltaX,deltaY,deltaZ;
@@ -237,7 +253,12 @@ G4LogicalVolume* MuraMask::Construct() {
 
         for (int i = 0; i < fMaskOrder; i++) {
             for (int j = 0; j < fMaskOrder; j++) {
-                if (isMaskedAt(i, j)) {
+                if (fType == "nowallpet"){
+                    ismask = isMaskedAt(i, j);
+                } else {
+                    ismask = isMaskedAt(i);
+                }
+                if (ismask) {
                     auto posX = (i + 0.5) * segX - fSize.x() / 2;
                     auto posY = (j + 0.5) * segY - fSize.y() / 2;
 
@@ -269,7 +290,7 @@ G4LogicalVolume* MuraMask::Construct() {
                 }
             }
         }
-    } else if (fType == "nowallpetCUT"){
+    } else if (fType == "nowallpetcut" || fType == "nowallpetcut1d") {
         int cut = CmdLineOption::GetIntValue("MaskCut");
         auto segX = fSize.x() / cut;
         auto segY = fSize.y() / cut;
@@ -303,7 +324,15 @@ G4LogicalVolume* MuraMask::Construct() {
                 if (i == 0) {
                     continue;
                 }
-                if (isMaskedAt(round(i+fMaskOrder/2)-(int)cut/2, j+round(fMaskOrder/2)-(int)cut/2) || j==0) {
+                if (fType == "nowallpetcut"){
+                    ismask = isMaskedAt(
+                                round(i + fMaskOrder / 2) - (int)cut / 2,
+                                j + round(fMaskOrder / 2) - (int)cut / 2) ||
+                            j == 0;
+                } else {
+                    ismask = isMaskedAt(round(i + fMaskOrder / 2) - (int)cut / 2);
+                }
+                if (ismask) {
                     auto posX = (i + 0.5) * segX - fSize.x() / 2;
                     auto posY = (j + 0.5) * segY - fSize.y() / 2;
 
@@ -335,7 +364,8 @@ G4LogicalVolume* MuraMask::Construct() {
                 }
             }
         }
-    } else if (fType == "pet"){
+
+    } else if (fType == "pet" || fType == "pet1d") {
         auto gRandom = new TRandom3();
         gRandom->SetSeed(0);
         double deltaX,deltaY,deltaZ;
@@ -370,7 +400,12 @@ G4LogicalVolume* MuraMask::Construct() {
             for (int j = 0; j < fMaskOrder; j++) {
                 auto posX = (i + 0.5) * segX - fSize.x() / 2;
                 auto posY = (j + 0.5) * segY - fSize.y() / 2;
-                if (isMaskedAt(i, j)) {
+                if (fType == "pet") {
+                    ismask = isMaskedAt(i, j);
+                } else {
+                    ismask = isMaskedAt(i);
+                }
+                if (ismask) {
                     // if (error > 0){
                         deltaX = gRandom->Gaus(0.05, 0.1/6.0);
                         histX->Fill(0.9*segX-deltaX);
@@ -399,7 +434,8 @@ G4LogicalVolume* MuraMask::Construct() {
                         mask,
                         false,
                         placementId);
-                } else {
+                }
+                else {
                     new G4PVPlacement(
                         nullptr,
                         G4ThreeVector(posX, posY, 0),
