@@ -175,9 +175,7 @@ int main(int argc, char** argv) {
     storage.setBinnedSize(maxBinX, maxBinY, fibrenum, fibrenum, fibrewidth);
     storage.resizeHmatrix();
 
-    storage.newSimulation(
-            TString::Format(
-                "%g_%g_%d", maskdetector, masksource, energy),false);
+    storage.newSimulation(false);
 
 
     storage.writeMetadata("energy", energy * keV);

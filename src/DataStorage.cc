@@ -26,7 +26,7 @@ void DataStorage::writeMetadata(const TString& key, double value) {
 
 double DataStorage::getMetadataNumber(const TString& key) { return fMetadata.data[key.Data()]; }
 
-void DataStorage::newSimulation(const TString& name, bool deposits) {
+void DataStorage::newSimulation(bool deposits) {
     // fFile->cd(name);
     fMetadata.tree = new TTree("metadata", "metadata");
     if (!deposits){

@@ -51,11 +51,11 @@ G4LogicalVolume* MuraMask::Construct() {
     auto segX = fSize.x() / fMaskOrder;
     auto segY = fSize.y() / fMaskOrder;
 
-    G4LogicalVolume* mask;
+    G4LogicalVolume* mask = NULL;
 
     bool ismask = false;
 
-    if (fType == "standart" || fType == "standart1d") {
+    if (fType == "standart") {
         mask = new G4LogicalVolume(
         new G4Box("mask", fSize.x() / 2, fSize.y() / 2, fSize.z() / 2),
         MaterialManager::get()->GetMaterial("G4_AIR"),
@@ -72,10 +72,10 @@ G4LogicalVolume* MuraMask::Construct() {
 
         for (int i = 0; i < fMaskOrder; i++) {
             for (int j = 0; j < fMaskOrder; j++) {
-                if (fType == "standart"){
-                    ismask = isMaskedAt(i, j);
+                if (CmdLineOption::GetFlagValue("Single_dimension")){
+                    ismask = isMaskedAt(i);
                 } else {
-                    isMaskedAt(i);
+                    ismask = isMaskedAt(i, j);
                 }
                 if (ismask) {
                     auto posX = (i + 0.5) * segX - fSize.x() / 2;
@@ -106,78 +106,8 @@ G4LogicalVolume* MuraMask::Construct() {
         mask->SetVisAttributes(G4VisAttributes(G4Colour::Gray()));
         G4LogicalVolume* maskSegmentTmp;
 
-        int maskFlags[fMaskOrder][fMaskOrder]={0};
-
-        int placementId = 1;
-        int size = 1;
-        for (int i = 0; i < fMaskOrder; i++) {
-            for (int j = 0; j < fMaskOrder; j++) {
-                maskFlags[i][j] = 0;
-            }
-        }
-
-        for (int i = 0; i < fMaskOrder; i++) {
-            for (int j = 0; j < fMaskOrder; j++) {
-                if (!isMaskedAt(i, j) && maskFlags[i][j] == 0) {
-                // if (!isMaskedAt(i, j)) {
-                    maskFlags[i][j] = 1;
-                    auto posX = (i + 0.5) * segX - fSize.x() / 2;
-                    auto posY = (j + 0.5) * segY - fSize.y() / 2;
-                    size = 1;
-                    if(j < fMaskOrder-1 && i < fMaskOrder-1 && i != 0 && j != 0){
-                        while (!isMaskedAt(i+size, j) && !isMaskedAt(i, j+size) && i+size < fMaskOrder && j+size < fMaskOrder){
-                            size++;
-                        }
-                    }
-                    if (size == 1){
-                        new G4PVPlacement(
-                            nullptr,
-                            G4ThreeVector(posX, posY, 0),
-                            maskSegment,
-                            "maskBin",
-                            mask,
-                            false,
-                            placementId);
-                    } else {
-                        for (int icount = i; icount < i+size; icount++){
-                            for (int jcount = j; jcount < j+size; jcount++){
-                                // spdlog::info("Mask at {} {} size = {}", icount, jcount, size);
-                                maskFlags[icount][jcount] = 1;
-                            }
-                        }
-                        maskSegmentTmp = new G4LogicalVolume(
-                            new G4Tubs("maskSegment", 0, size * segX / 2, 1.001*fSize.z() / 2, 0 * deg, 360 * deg),
-                            MaterialManager::get()->GetMaterial("G4_AIR"),
-                            "maskSegment");
-                        maskSegmentTmp->SetVisAttributes(G4VisAttributes(G4Colour::Blue()));
-
-                        new G4PVPlacement(
-                            nullptr,
-                            G4ThreeVector(posX + (size-1)*segX / 2, posY + (size-1)*segY / 2, 0),
-                            maskSegmentTmp,
-                            "maskBin",
-                            mask,
-                            false,
-                            placementId);
-                    }
-                    placementId++;
-                }
-            }
-        }
-    } else if (fType == "round2") {
-        mask = new G4LogicalVolume(
-            new G4Box("mask", fSize.x() / 2, fSize.y() / 2, fSize.z() / 2),
-            fMaterial, "mask");
-
-        auto maskSegment = new G4LogicalVolume(
-            new G4Tubs("maskSegment", 0, segX / 2, 1.001*fSize.z() / 2, 0 * deg, 360 * deg),
-            MaterialManager::get()->GetMaterial("G4_AIR"),
-            "maskSegment");
-        maskSegment->SetVisAttributes(G4VisAttributes(G4Colour::Blue()));
-        mask->SetVisAttributes(G4VisAttributes(G4Colour::Gray()));
-        G4LogicalVolume* maskSegmentTmp;
-
-        int maskFlags[fMaskOrder][fMaskOrder]={0};
+        std::vector<std::vector<int>> maskFlags(
+            fMaskOrder, std::vector<int>(fMaskOrder, 0));
 
         int placementId = 1;
         int size = 1;
@@ -188,9 +118,7 @@ G4LogicalVolume* MuraMask::Construct() {
         }
         for (int i = 0; i < fMaskOrder; i++) {
             for (int j = 0; j < fMaskOrder; j++) {
-                // if (!isMaskedAt(i, j) && maskFlags[i][j] == 0) {
                 if (!isMaskedAt(i, j)) {
-                    // maskFlags[i][j] = 1;
                     auto posX = (i + 0.5) * segX - fSize.x() / 2;
                     auto posY = (j + 0.5) * segY - fSize.y() / 2;
                     size = 1;
@@ -202,7 +130,6 @@ G4LogicalVolume* MuraMask::Construct() {
                     if(size >= maskFlags[i][j]){
                         for (int icount = i; icount < i+size; icount++){
                             for (int jcount = j; jcount < j+size; jcount++){
-                                // spdlog::info("Mask at {} {} size = {}", icount, jcount, size);
                                 maskFlags[icount][jcount] = size;
                             }
                         }
@@ -225,7 +152,7 @@ G4LogicalVolume* MuraMask::Construct() {
                 }
             }
         }
-    } else if (fType == "nowallpet" || fType == "nowallpet1d") {
+    } else if (fType == "nowallpet") {
         auto gRandom = new TRandom3();
         gRandom->SetSeed(0);
         double deltaX,deltaY,deltaZ;
@@ -253,10 +180,10 @@ G4LogicalVolume* MuraMask::Construct() {
 
         for (int i = 0; i < fMaskOrder; i++) {
             for (int j = 0; j < fMaskOrder; j++) {
-                if (fType == "nowallpet"){
-                    ismask = isMaskedAt(i, j);
-                } else {
+                if (CmdLineOption::GetFlagValue("Single_dimension")){
                     ismask = isMaskedAt(i);
+                } else {
+                    ismask = isMaskedAt(i, j);
                 }
                 if (ismask) {
                     auto posX = (i + 0.5) * segX - fSize.x() / 2;
@@ -290,10 +217,10 @@ G4LogicalVolume* MuraMask::Construct() {
                 }
             }
         }
-    } else if (fType == "nowallpetcut" || fType == "nowallpetcut1d") {
+    } else if (fType == "nowallpetcut") {
         int cut = CmdLineOption::GetIntValue("MaskCut");
-        auto segX = fSize.x() / cut;
-        auto segY = fSize.y() / cut;
+        segX = fSize.x() / cut;
+        segY = fSize.y() / cut;
         auto gRandom = new TRandom3();
         gRandom->SetSeed(0);
         double deltaX,deltaY,deltaZ;
@@ -324,13 +251,13 @@ G4LogicalVolume* MuraMask::Construct() {
                 if (i == 0) {
                     continue;
                 }
-                if (fType == "nowallpetcut"){
+                if (CmdLineOption::GetFlagValue("Single_dimension")) {
+                    ismask = isMaskedAt(round(i + fMaskOrder / 2) - (int)cut / 2);
+                } else {
                     ismask = isMaskedAt(
                                 round(i + fMaskOrder / 2) - (int)cut / 2,
                                 j + round(fMaskOrder / 2) - (int)cut / 2) ||
                             j == 0;
-                } else {
-                    ismask = isMaskedAt(round(i + fMaskOrder / 2) - (int)cut / 2);
                 }
                 if (ismask) {
                     auto posX = (i + 0.5) * segX - fSize.x() / 2;
@@ -365,7 +292,7 @@ G4LogicalVolume* MuraMask::Construct() {
             }
         }
 
-    } else if (fType == "pet" || fType == "pet1d") {
+    } else if (fType == "pet") {
         auto gRandom = new TRandom3();
         gRandom->SetSeed(0);
         double deltaX,deltaY,deltaZ;
@@ -400,10 +327,10 @@ G4LogicalVolume* MuraMask::Construct() {
             for (int j = 0; j < fMaskOrder; j++) {
                 auto posX = (i + 0.5) * segX - fSize.x() / 2;
                 auto posY = (j + 0.5) * segY - fSize.y() / 2;
-                if (fType == "pet") {
-                    ismask = isMaskedAt(i, j);
-                } else {
+                if (CmdLineOption::GetFlagValue("Single_dimension")) {
                     ismask = isMaskedAt(i);
+                } else {
+                    ismask = isMaskedAt(i, j);
                 }
                 if (ismask) {
                     // if (error > 0){
@@ -420,7 +347,7 @@ G4LogicalVolume* MuraMask::Construct() {
                                 (segY-deltaY) / 2, (fSize.z()-deltaZ) / 2),
                         fMaterial,
                         "maskSegmentTung");
-                        auto maskSegmentTung = new G4LogicalVolume(
+                        maskSegmentTung = new G4LogicalVolume(
                             new G4Box("maskSegment", (0.9*segX -deltaX) / 2, 
                                 (0.9*segY -deltaY) / 2, (1.001*fSize.z()-deltaZ) / 2),
                             fMaterial,"maskSegment");
@@ -449,13 +376,6 @@ G4LogicalVolume* MuraMask::Construct() {
             }
         }
     }
-    // TFile file1("histo.root", "RECREATE");
-    // file1.cd();
-
-    // histX->Write("histX");
-    // histY->Write("histY");
-    // histZ->Write("histZ");
-    // file1.Close();
     
     return mask;
 }

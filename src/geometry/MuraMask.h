@@ -27,10 +27,10 @@ class MuraMask : public DetectorElement {
     void writeMetadata(DataStorage* storage);
 
   private:
-    G4String fType;
     int fMaskOrder;
     G4ThreeVector fSize;
     G4Material* fMaterial;
+    G4String fType;
 };
 
 } // namespace SiFi

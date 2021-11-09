@@ -32,7 +32,7 @@ class DataStorage {
     
     double getMetadataNumber(const TString& key);
 
-    void newSimulation(const TString& name, bool deposits = true);
+    void newSimulation(bool deposits = true);
 
     // should be run after metadata
     void init();

@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
       "Mask", "-mask",
       "Mask: order:mask-source:width/length:thickness [mm], default: 31:170:70:20", 0, 0);
     CmdLineOption opt_masktype(
-      "MaskType", "-masktype", "MaskType: {standart[1d], round, pet, nowallpet[1d], nowallpetcut[1d]}", "standart");
+      "MaskType", "-masktype", "MaskType: {standart, round, pet, nowallpet, nowallpetcut}", "standart");
     CmdLineOption opt_masktype_cut(
       "MaskCut", "-cut", "MaskNumber of pixels,(relevant only if massktype=nowallpetcut) default: 31(integer)", 31);
     CmdLineOption opt_events("Events", "-n",
@@ -57,6 +57,8 @@ int main(int argc, char** argv) {
     CmdLineOption opt_precision("Precision", "-er",
                                "Error in W rods size, default: 0.0 [mm]" 
                                "(relevant only for pet and nowallpet masks", 0.0);
+
+    CmdLineOption opt_dimension("Single_dimension", "-1d", "Run in 1 dimension");
 
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
@@ -196,10 +198,7 @@ int main(int argc, char** argv) {
         masksource * mm,
         energy * keV);
 
-    storage.newSimulation(
-        TString::Format(
-            "%g_%g_%g_%g_%d", sPosX, sPosY, maskdetector, masksource, energy),
-        true);
+    storage.newSimulation(true);
 
     storage.writeMetadata("sourcePosX", sPosX * mm);
     storage.writeMetadata("sourcePosY", sPosY * mm);
