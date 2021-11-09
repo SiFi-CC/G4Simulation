@@ -100,6 +100,9 @@ int main(int argc, char** argv) {
                       opt_source.GetArraySize());
         abort();
     }
+    if (CmdLineOption::GetFlagValue("Single_dimension")) {
+        maxBinY = 1;
+    }
 
     printf("Detector : %g %g %i %g [mm]\n", detectorsource, fibrenum*fibrewidth, fibrenum, fibrewidth);
     printf("Mask     : %s, %g %g %g %g [mm]\n",opt_masktype.GetStringValue(), masksource, masklength, masklength, maskthick);
@@ -169,10 +172,11 @@ int main(int argc, char** argv) {
 
     const int nIter = opt_events.GetIntValue();
 
-    if (CmdLineOption::GetFlagValue("Single_dimension")){
-        maxBinY = 1;
+    if (CmdLineOption::GetFlagValue("Single_dimension")) {
+        storage.setBinnedSize(maxBinX, maxBinY, fibrenum, 1, fibrewidth);
+    } else {
+        storage.setBinnedSize(maxBinX, maxBinY, fibrenum, fibrenum, fibrewidth);
     }
-    storage.setBinnedSize(maxBinX, maxBinY, fibrenum, fibrenum, fibrewidth);
     storage.resizeHmatrix();
 
     storage.newSimulation(false);
@@ -202,7 +206,7 @@ int main(int argc, char** argv) {
 
 // log::info("xDimSource = {}, yDimSource = {}",xDimSource,yDimSource);
 // log::info("maxBinX = {}, maxBinY = {}",maxBinX,maxBinY);
-    if (! CmdLineOption::GetFlagValue("Single_dimension")) {
+    if (!CmdLineOption::GetFlagValue("Single_dimension")) {
         for (int binX = 0; binX < maxBinX; binX += 1) {
             for (int binY = 0; binY < maxBinY; binY += 1) {
                 double sPosX = -xDimSource / 2. + (0.5 + binX) * (xDimSource / maxBinX);

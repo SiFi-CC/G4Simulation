@@ -125,7 +125,7 @@ void DataStorage::registerEventStart(
 }
 
 void DataStorage::resizeHmatrix() {
-    fMatrixH.ResizeTo(fDetBinsX*fDetBinsY, fMaxBinX*fMaxBinY);
+    fMatrixH.ResizeTo(fDetBinsX * fDetBinsY, fMaxBinX * fMaxBinY);
 }
 
 void DataStorage::setHmatrix(double DetX,double DetY, int sourceBinX, int sourceBinY, double energy){

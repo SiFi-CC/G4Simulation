@@ -61,7 +61,11 @@ void DetectorBlock::writeMetadata(DataStorage* storage) {
     storage->writeMetadata("detectorMinZ", detZPosition);
     storage->writeMetadata("detectorMaxZ", detZPosition + getThickness());
     storage->writeMetadata("detectorBinX", fLayer.getNumberOfStrips());
-    storage->writeMetadata("detectorBinY", fLayer.getNumberOfStrips());
+    if (CmdLineOption::GetFlagValue("Single_dimension")){
+        storage->writeMetadata("detectorBinY", 1);
+    } else {
+        storage->writeMetadata("detectorBinY", fLayer.getNumberOfStrips());
+    }
 }
 
 } // namespace SiFi
