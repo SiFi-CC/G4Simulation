@@ -120,3 +120,15 @@ def reco_mlem_auto(matr, image, source,
     print(f"{len(reco)-2} iterations was performed")
     print(f"Best score: {round(score[-2],5)}")
     return reco[:-1]
+
+
+def hmat_to_1d(hmat):
+    shap = int(np.sqrt(hmat.shape[0]))
+    return hmat.reshape(shap, shap, 10).sum(axis=1)
+
+
+def reco_1d_from_file(filename, hmat2, niter=100):
+    sim = get_histo(filename, ["energyDeposits"])
+    sim_row = sim[0].vals.sum(axis=1).reshape(-1)
+    im = reco_mlem(hmat2, sim_row, niter)
+    return im
