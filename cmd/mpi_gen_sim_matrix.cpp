@@ -52,6 +52,8 @@ int main(int argc, char** argv) {
                            "Error in W rods size, default: 0.0[mm]"
                            "(relevant only for pet and nowallpet masks", 0.0);
 
+    CmdLineOption opt_dimension("Single_dimension", "-1d", "Run in 1 dimension");
+
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
     const Positional& args = CmdLineConfig::GetPositionalArguments();
@@ -167,6 +169,9 @@ int main(int argc, char** argv) {
 
     const int nIter = opt_events.GetIntValue();
 
+    if (CmdLineOption::GetFlagValue("Single_dimension")){
+        maxBinY = 1;
+    }
     storage.setBinnedSize(maxBinX, maxBinY, fibrenum, fibrenum, fibrewidth);
     storage.resizeHmatrix();
 
@@ -199,12 +204,12 @@ int main(int argc, char** argv) {
 
 // log::info("xDimSource = {}, yDimSource = {}",xDimSource,yDimSource);
 // log::info("maxBinX = {}, maxBinY = {}",maxBinX,maxBinY);
-
-    for (int binX = 0; binX < maxBinX; binX += 1) {
-        for (int binY = 0; binY < maxBinY; binY += 1) {
-            double sPosX = - xDimSource / 2. + (0.5 + binX) * (xDimSource / maxBinX);
-            double sPosY = - yDimSource / 2. + (0.5 + binY) * (yDimSource / maxBinY);
-            // for (int energy_it  = energy; energy_it > 50; energy_it /= 4) {
+    if (! CmdLineOption::GetFlagValue("Single_dimension")) {
+        for (int binX = 0; binX < maxBinX; binX += 1) {
+            for (int binY = 0; binY < maxBinY; binY += 1) {
+                double sPosX = -xDimSource / 2. + (0.5 + binX) * (xDimSource / maxBinX);
+                double sPosY = -yDimSource / 2. + (0.5 + binY) * (yDimSource / maxBinY);
+                // for (int energy_it  = energy; energy_it > 50; energy_it /= 4) {
                 if(binX % world_size == world_rank){
                     log::info(
                         "Starting simulation source({}, {}), "
@@ -224,6 +229,33 @@ int main(int argc, char** argv) {
                     // break;
                 }
             // }
+            }
+        }
+    } else {
+        double sPosY = 0.;
+        for (int binX = 0; binX < maxBinX; binX += 1) {
+            double sPosX = -xDimSource / 2. + (0.5 + binX) * (xDimSource / maxBinX);
+            if (binX % world_size == world_rank) {
+                log::info(
+                    "Starting simulation source({}, {}), "
+                    "maskToDetectorDistance={}, sourceToMaskDistance={}, "
+                    "binX{}, processor {}",
+                    sPosX * mm,
+                    sPosY * mm,
+                    maskdetector * mm,
+                    masksource * mm,
+                    binX,
+                    world_rank);
+                log::info("processor {} calculates column {}", world_rank, binX);
+                storage.setCurrentBins(binX, 0);
+
+                source.SetPosAng(
+                    TVector3(sPosX, sPosY, 0),
+                    fibrewidth * fibrenum * mm,
+                    detectorsource * mm);
+                runManager.BeamOn(nIter);
+                // break;
+            }
         }
     }
     // storage.writeHmatrix();
@@ -233,4 +265,4 @@ int main(int argc, char** argv) {
     }
     MPI_Finalize();
     // storage.gather(output);
-}
+    }

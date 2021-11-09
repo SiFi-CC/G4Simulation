@@ -86,7 +86,7 @@ void DataStorage::registerDepositScoring(
         if(fEnable.depositScoring){
             fEnergyDeposits.eventId = fSourceRecord.eventId;
             fEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
-            fEnergyDeposits.energy = energy;
+            // fEnergyDeposits.energy = energy;
 
             fEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
             fEnergyDeposits.hits->Fill();
@@ -120,11 +120,11 @@ void DataStorage::registerEventStart(
     // position of point source
     if (fEnable.sourceRecord || eventId == 0) {
         fSourceRecord.histogram.Fill(pos.x(), pos.y(), energy);
-        fSourceRecord.events->Fill();
+        // fSourceRecord.events->Fill();
     }
 }
 
-void DataStorage::resizeHmatrix(){
+void DataStorage::resizeHmatrix() {
     fMatrixH.ResizeTo(fDetBinsX*fDetBinsY, fMaxBinX*fMaxBinY);
 }
 
