@@ -63,8 +63,9 @@ void DataStorage::init() {
         static_cast<int>(fMetadata.data["maskBinY"]),
         fMetadata.data["maskMinY"],
         fMetadata.data["maskMaxY"]);
-
-    fSourceRecord.events = new TTree("source", "source events");
+    spdlog::info("sourceNBinY {}", fMetadata.data["sourceNBinY"]);
+    fSourceRecord.events =
+        new TTree("source", "source events");
     fSourceRecord.events->Branch("position", &fSourceRecord.position);
     fSourceRecord.events->Branch("direction", &fSourceRecord.direction);
     fSourceRecord.events->Branch("energy", &fSourceRecord.energy);

@@ -193,8 +193,8 @@ int main(int argc, char** argv) {
     storage.writeMetadata("sourceMaxX", xDimSource / 2);
     storage.writeMetadata("sourceMinY", - yDimSource / 2);
     storage.writeMetadata("sourceMaxY", yDimSource / 2);
-    storage.writeMetadata("sourceBinX", maxBinX);
-    storage.writeMetadata("sourceBinY", maxBinY);
+    storage.writeMetadata("sourceNBinX", maxBinX);
+    storage.writeMetadata("sourceNBinY", maxBinY);
     storage.init();
 
     log::info("maskDetDistance {}, maskSrcDistance {}",maskdetector * mm, masksource * mm);
