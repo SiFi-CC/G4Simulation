@@ -8,6 +8,8 @@
 #include <G4PVPlacement.hh>
 #include <TParameter.h>
 
+#include "CmdLineConfig.hh"
+
 namespace SiFi {
 
 G4LogicalVolume* DetectorBlock::Construct() {
@@ -27,7 +29,7 @@ G4LogicalVolume* DetectorBlock::Construct() {
     rotMatrix->rotateY(0);
     rotMatrix->rotateZ(90*deg);
     for (int i = 0; i < fNumberOfLayers; i++){
-        if(i % 2 == 0){
+        if (i % 2 == 0 || CmdLineOption::GetFlagValue("Single_dimension")) {
             new G4PVPlacement(rotMatrix,G4ThreeVector(0,0,(i+0.5-0.5*fNumberOfLayers)*fLayer.getThickness()),
                 layer,"detectorBlockRepLayers",block,0,i,0);
         } else {
