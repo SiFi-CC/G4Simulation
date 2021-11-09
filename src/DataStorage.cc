@@ -72,10 +72,10 @@ void DataStorage::init() {
     fSourceRecord.histogram = TH2F(
         "sourceHist",
         "source events",
-        fMetadata.data["sourceNBin"],
+        fMetadata.data["sourceNBinX"],
         -fMetadata.data["sourceRange"]/2,
         fMetadata.data["sourceRange"]/2,
-        fMetadata.data["sourceNBin"],
+        fMetadata.data["sourceNBinY"],
         -fMetadata.data["sourceRange"]/2,
         fMetadata.data["sourceRange"]/2);
 }

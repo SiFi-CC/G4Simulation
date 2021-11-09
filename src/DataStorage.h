@@ -98,7 +98,8 @@ class DataStorage {
                                                         {"maskMaxY", 150},
                                                         {"maskBinX", 100},
                                                         {"maskBinY", 100},
-                                                        {"sourceNBin", 100},
+                                                        {"sourceNBinX", 100},
+                                                        {"sourceNBinY", 100},
                                                         {"sourceRange", 70}};
     } fMetadata;
 
