@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project (SiFi-G4Simulation VERSION 1.0.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11) # TODO(resolve issue with spdlog and ROOT)
+set(CMAKE_CXX_STANDARD 17) # TODO(resolve issue with spdlog and ROOT)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -15,7 +15,7 @@ list(APPEND CMAKE_MODULE_PATH
 
 find_package(Geant4 REQUIRED ui_all vis_all)
 find_package(ROOT REQUIRED RIO Geom MathCore Physics Gui Tree)
-find_package(CmdLineArgs 2.0.0 REQUIRED)
+find_package(CmdLineArgs 2.2.0 REQUIRED)
 find_package(MPI REQUIRED)
 message(STATUS "Found Geant4 version " ${Geant4_VERSION} )
 message(STATUS "Found ROOT version " ${ROOT_VERSION} ) 
@@ -37,7 +37,7 @@ include(c++-standards)
 include(code-coverage)
 include(sanitizers)
 
-cxx_11()
+cxx_17()
 add_code_coverage()
 
 # libraries and bianries
