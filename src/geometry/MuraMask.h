@@ -4,18 +4,22 @@
 #include "Element.h"
 
 #include <G4Box.hh>
-#include <G4Tubs.hh>
-#include <G4String.hh>
 #include <G4LogicalVolume.hh>
 #include <G4Material.hh>
+#include <G4String.hh>
 #include <G4SystemOfUnits.hh>
+#include <G4Tubs.hh>
 
-namespace SiFi {
+namespace SiFi
+{
 
-class MuraMask : public DetectorElement {
-  public:
+class MuraMask : public DetectorElement
+{
+public:
     MuraMask(int order, const G4ThreeVector& size, G4Material* material, G4String type)
-        : fMaskOrder(order), fSize(size), fMaterial(material), fType(type) {}
+        : fMaskOrder(order), fSize(size), fMaterial(material), fType(type)
+    {
+    }
 
     G4LogicalVolume* Construct() override;
 
@@ -26,7 +30,7 @@ class MuraMask : public DetectorElement {
 
     void writeMetadata(DataStorage* storage);
 
-  private:
+private:
     int fMaskOrder;
     G4ThreeVector fSize;
     G4Material* fMaterial;

@@ -2,10 +2,12 @@
 
 #include <G4LogicalVolume.hh>
 
-namespace SiFi {
+namespace SiFi
+{
 
-class DetectorElement {
-  public:
+class DetectorElement
+{
+public:
     virtual G4LogicalVolume* Construct() = 0;
 };
 

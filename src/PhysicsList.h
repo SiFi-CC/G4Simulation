@@ -3,10 +3,12 @@
 #include "Utils.h"
 #include <G4VModularPhysicsList.hh>
 
-namespace SiFi {
+namespace SiFi
+{
 
-class PhysicsList : public G4VModularPhysicsList {
-  public:
+class PhysicsList : public G4VModularPhysicsList
+{
+public:
     PhysicsList();
     void ConstructParticle() override;
 

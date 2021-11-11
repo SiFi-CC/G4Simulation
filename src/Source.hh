@@ -6,35 +6,35 @@
 #include "PrimaryGeneratorAction.h"
 #include "tracking/SteppingAction.h"
 
-
 #include <TVector3.h>
 
-namespace SiFi {
+namespace SiFi
+{
 
-class Source {
+class Source
+{
 
 public:
-	Source(const Int_t& energy, const double& mintheta = 170, const double& maxtheta = 180);
-	TVector3 GetPos();
+    Source(const Int_t& energy, const double& mintheta = 170, const double& maxtheta = 180);
+    TVector3 GetPos();
 
-	void Init(const TVector3& position = TVector3(0,0,0));
-	void SetPosAng(const TVector3& position, double det, double SD);
-	void SetPosAng(const TVector3& position);
+    void Init(const TVector3& position = TVector3(0, 0, 0));
+    void SetPosAng(const TVector3& position, double det, double SD);
+    void SetPosAng(const TVector3& position);
 
-	G4GeneralParticleSource* GetSource(){return fSourceGeant;}
+    G4GeneralParticleSource* GetSource() { return fSourceGeant; }
 
-	Int_t GetEnergy(){return fEnergy;};
-	double GetMinTheta(){return fMinTheta;};
-	double GetMaxTheta(){return fMaxTheta;};
+    Int_t GetEnergy() { return fEnergy; };
+    double GetMinTheta() { return fMinTheta; };
+    double GetMaxTheta() { return fMaxTheta; };
 
 private:
-	void SetAngles(const double det,const double SD);
+    void SetAngles(const double det, const double SD);
 
-	TVector3 fPosition;
-	Int_t fEnergy;
-	G4GeneralParticleSource* fSourceGeant = nullptr;
-	double fMinTheta, fMaxTheta;
+    TVector3 fPosition;
+    Int_t fEnergy;
+    G4GeneralParticleSource* fSourceGeant = nullptr;
+    double fMinTheta, fMaxTheta;
 };
 
-
-}
+} // namespace SiFi

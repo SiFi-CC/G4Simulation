@@ -15,42 +15,30 @@
 #include <G4VUserDetectorConstruction.hh>
 #include <G4VisAttributes.hh>
 
-namespace SiFi {
+namespace SiFi
+{
 
-class DetectorConstruction : public G4VUserDetectorConstruction {
-  public:
+class DetectorConstruction : public G4VUserDetectorConstruction
+{
+public:
     DetectorConstruction(DetectorElement* mask, DetectorElement* absorber)
         : fMask(mask), fAbsober(absorber){};
 
-    G4VPhysicalVolume* Construct() override {
+    G4VPhysicalVolume* Construct() override
+    {
         log->debug("Construct()");
 
-        auto world = new G4LogicalVolume(
-            new G4Box("world", .5 * m, .5 * m, 1.2 * m),
-            MaterialManager::get()->GetMaterial("G4_AIR"),
-            "world");
+        auto world = new G4LogicalVolume(new G4Box("world", .5 * m, .5 * m, 1.2 * m),
+                                         MaterialManager::get()->GetMaterial("G4_AIR"), "world");
 
-        new G4PVPlacement(
-            nullptr,
-            G4ThreeVector(0, 0, fDetectorPosZ),
-            fAbsober->Construct(),
-            "detector",
-            world,
-            false,
-            0);
+        new G4PVPlacement(nullptr, G4ThreeVector(0, 0, fDetectorPosZ), fAbsober->Construct(),
+                          "detector", world, false, 0);
 
-        new G4PVPlacement(
-            nullptr,
-            G4ThreeVector(0, 0, fMaskPosZ),
-            fMask->Construct(),
-            "mask",
-            world,
-            false,
-            0);
+        new G4PVPlacement(nullptr, G4ThreeVector(0, 0, fMaskPosZ), fMask->Construct(), "mask",
+                          world, false, 0);
 
         world->SetVisAttributes(G4VisAttributes::Invisible);
-        return new G4PVPlacement(
-            nullptr, G4ThreeVector(), world, "world", nullptr, false, 0);
+        return new G4PVPlacement(nullptr, G4ThreeVector(), world, "world", nullptr, false, 0);
     };
 
     void setMaskPos(double z) { fMaskPosZ = z; };
@@ -58,7 +46,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
 
     const logger log = createLogger("DetectorConstruction");
 
-  private:
+private:
     DetectorElement* fMask;
     DetectorElement* fAbsober;
     double fMaskPosZ = 30 * cm;

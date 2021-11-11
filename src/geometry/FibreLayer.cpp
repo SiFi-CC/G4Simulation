@@ -5,19 +5,19 @@
 #include <G4PVReplica.hh>
 #include <G4VisAttributes.hh>
 
-namespace SiFi {
+namespace SiFi
+{
 
-G4LogicalVolume* FibreLayer::Construct() {
+G4LogicalVolume* FibreLayer::Construct()
+{
     auto layer = new G4LogicalVolume(
         new G4Box("fibreLayerSolid", getSizeX() / 2, getSizeY() / 2, getThickness() / 2),
-        MaterialManager::get()->Vacuum(),
-        "fibreLayerLogical");
+        MaterialManager::get()->Vacuum(), "fibreLayerLogical");
 
     auto fibre = fFibre.Construct();
     layer->SetVisAttributes(G4VisAttributes::Invisible);
 
-    new G4PVReplica(
-        "fibreLayerRepFibre", fibre, layer, kYAxis, fNumberOfStrips, fFibre.getWidth());
+    new G4PVReplica("fibreLayerRepFibre", fibre, layer, kYAxis, fNumberOfStrips, fFibre.getWidth());
 
     return layer;
 }

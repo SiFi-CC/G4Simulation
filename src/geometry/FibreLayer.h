@@ -3,12 +3,13 @@
 #include "Element.h"
 #include "Fibre.h"
 
-namespace SiFi {
+namespace SiFi
+{
 
-class FibreLayer : public DetectorElement {
-  public:
-    FibreLayer(int nStrips, const Fibre& fibre)
-        : fNumberOfStrips(nStrips), fFibre(fibre){};
+class FibreLayer : public DetectorElement
+{
+public:
+    FibreLayer(int nStrips, const Fibre& fibre) : fNumberOfStrips(nStrips), fFibre(fibre){};
 
     G4LogicalVolume* Construct() override;
 
@@ -17,7 +18,7 @@ class FibreLayer : public DetectorElement {
     double getThickness() { return fFibre.getWidth(); };
     int getNumberOfStrips() { return fNumberOfStrips; };
 
-  private:
+private:
     int fNumberOfStrips;
     Fibre fFibre;
 };

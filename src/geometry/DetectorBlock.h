@@ -4,12 +4,13 @@
 #include "FibreLayer.h"
 #include <G4LogicalVolume.hh>
 
-namespace SiFi {
+namespace SiFi
+{
 
-class DetectorBlock : public DetectorElement {
-  public:
-    DetectorBlock(int nLayers, const FibreLayer& layer)
-        : fNumberOfLayers(nLayers), fLayer(layer)  {};
+class DetectorBlock : public DetectorElement
+{
+public:
+    DetectorBlock(int nLayers, const FibreLayer& layer) : fNumberOfLayers(nLayers), fLayer(layer){};
 
     G4LogicalVolume* Construct() override;
 
@@ -18,7 +19,7 @@ class DetectorBlock : public DetectorElement {
     double getSizeY() { return fLayer.getSizeY(); };
     void writeMetadata(DataStorage* storage);
 
-  private:
+private:
     int fNumberOfLayers;
     FibreLayer fLayer;
 };

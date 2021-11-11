@@ -4,9 +4,11 @@
 #include <G4LogicalVolume.hh>
 #include <G4Material.hh>
 
-namespace SiFi {
+namespace SiFi
+{
 
-struct FibreSpecs {
+struct FibreSpecs
+{
     double length;
     double width;
     // double thickness; // z axis(thickness of single layer)
@@ -16,14 +18,13 @@ struct FibreSpecs {
     G4Material* couplingMaterial;
 };
 
-class Fibre : public DetectorElement {
-  public:
+class Fibre : public DetectorElement
+{
+public:
     explicit Fibre(const FibreSpecs& specs)
-        : fLength(specs.length),
-          fWidth(specs.width),
+        : fLength(specs.length), fWidth(specs.width),
           // fThickness(specs.thickness),
-          fFibreMaterial(specs.fibreMaterial),
-          fWrappingMaterial(specs.wrappingMaterial),
+          fFibreMaterial(specs.fibreMaterial), fWrappingMaterial(specs.wrappingMaterial),
           fCouplingMaterial(specs.couplingMaterial){};
     G4LogicalVolume* Construct() override;
 
@@ -31,7 +32,7 @@ class Fibre : public DetectorElement {
     double getWidth() { return fWidth; };
     // double getThickness() { return fThickness; };
 
-  private:
+private:
     double fLength;
     double fWidth;
     // double fThickness;

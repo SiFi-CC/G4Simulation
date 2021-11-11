@@ -6,14 +6,15 @@
 #include <string>
 #include <unordered_map>
 
-namespace SiFi {
+namespace SiFi
+{
 
-class MaterialManager {
-  public:
-    static MaterialManager* get() {
-        if (instance == nullptr) {
-            instance = new MaterialManager();
-        }
+class MaterialManager
+{
+public:
+    static MaterialManager* get()
+    {
+        if (instance == nullptr) { instance = new MaterialManager(); }
         return instance;
     };
     G4Material* GetMaterial(const G4String& materialName);
@@ -21,7 +22,7 @@ class MaterialManager {
     G4Material* LuAGCe();
     G4Material* LYSO();
 
-  private:
+private:
     static MaterialManager* instance;
     MaterialManager() = default;
 

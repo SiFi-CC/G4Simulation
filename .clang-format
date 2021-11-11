@@ -1,16 +1,12 @@
 BasedOnStyle: LLVM
+UseTab: Never
 IndentWidth: 4
-ColumnLimit: 90
-
-Standard:        Cpp11
-TabWidth:        4
-UseTab:          Never
-
-BinPackArguments: false
-BinPackParameters: false
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
-
-DerivePointerAlignment: false
+BreakBeforeBraces: Allman
+AllowShortBlocksOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: true
+IndentCaseLabels: true
+ColumnLimit: 100
 PointerAlignment: Left
+AccessModifierOffset: -4
 
-AlignAfterOpenBracket: AlwaysBreak
+TabWidth: 4
