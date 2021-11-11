@@ -33,7 +33,7 @@ cd G4Simulation
 * Prepare submodules (spdlog) by running:
 
 ``` bash
-./prepare_tree.sh
+git submodule update --init --recursive
 ```
 
 * Create build directory and compile the code
