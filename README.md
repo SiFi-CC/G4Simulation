@@ -1,5 +1,5 @@
 # G4Simulation
-*[SIFI-CM](sifi_link) 'simple'[^1] Geant4 Simulation*
+*[SIFI-CM][sifi_link] 'simple'[^1] Geant4 Simulation*
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
@@ -11,7 +11,7 @@
 ## Prerequisites
 
 * Required ROOT version: 6.24/00
-  *For the installation guide look at [root_official](root_install)*[^root]
+  *For the installation guide look at [root_official][root_install]*[^root]
 * Compiler supporting c++17
 * CmdLineArgs >= 2.2.0
   *Available in [SiFi-CC/CmdLineArgs](https://github.com/SiFi-CC/CmdLineArgs)*
@@ -228,4 +228,4 @@ The list of 2 values (float and int) to specify a source plane parameters. The f
 
 <!-- Links -->
 [sifi_link]: https://bragg.if.uj.edu.pl/gccbwiki/index.php/Main_Page "SiFi-CC"
-[root_install]: https://root.cern/install/
+[root_install]: https://root.cern/install/ "ROOT"
