@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     Int_t mord = 31; //MURA mask order
     Float_t masksource = 150., masklength = 64., maskthick = 20.; // mask dimensions
 
-    Float_t xDimSource = 64, yDimSource = 64; // source dimensions
+    Float_t sRange = 64; // source dimensions
     Int_t maxBinX = 100, maxBinY = 100; // source bins
     int nLayer = opt_nlay.GetIntValue(); // number of layers in detector
 
@@ -91,8 +91,7 @@ int main(int argc, char** argv) {
     }
 
     if (opt_source.GetArraySize() == 2) {
-        xDimSource = opt_source.GetDoubleArrayValue(1);
-        yDimSource = xDimSource;
+        sRange = opt_source.GetDoubleArrayValue(1);
         maxBinX = opt_source.GetIntArrayValue(2);
         maxBinY = maxBinX;
     } else if (opt_source.GetArraySize() != 0) {
@@ -109,7 +108,12 @@ int main(int argc, char** argv) {
     printf("Mask order      : %i\n", mord);
     printf("No. of events  : %i\n", opt_events.GetIntValue());
     printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
-    printf("Source plane [mm] : %g %g Number of bins: %i %i\n", xDimSource, yDimSource, maxBinX, maxBinY);
+    printf(
+        "Source plane [mm] : %g %g Number of bins: %i %i\n",
+        sRange,
+        sRange,
+        maxBinX,
+        maxBinY);
 
     double maskdetector = detectorsource-masksource;
     int energy = opt_energy.GetIntValue();
@@ -189,10 +193,10 @@ int main(int argc, char** argv) {
         "maskToDetectorDistance", maskdetector * mm);
     detector.writeMetadata(&storage);
     mask.writeMetadata(&storage);
-    storage.writeMetadata("sourceMinX", - xDimSource / 2);
-    storage.writeMetadata("sourceMaxX", xDimSource / 2);
-    storage.writeMetadata("sourceMinY", - yDimSource / 2);
-    storage.writeMetadata("sourceMaxY", yDimSource / 2);
+    storage.writeMetadata("sourceMinX", - sRange / 2);
+    storage.writeMetadata("sourceMaxX", sRange / 2);
+    storage.writeMetadata("sourceMinY", - sRange / 2);
+    storage.writeMetadata("sourceMaxY", sRange / 2);
     storage.writeMetadata("sourceNBinX", maxBinX);
     storage.writeMetadata("sourceNBinY", maxBinY);
     storage.init();
@@ -204,13 +208,13 @@ int main(int argc, char** argv) {
     runManager.GeometryHasBeenModified();
     log::info("world_size = {}",world_size);
 
-// log::info("xDimSource = {}, yDimSource = {}",xDimSource,yDimSource);
-// log::info("maxBinX = {}, maxBinY = {}",maxBinX,maxBinY);
+    // log::info("xDimSource = {}, yDimSource = {}",sRange,sRange);
+    // log::info("maxBinX = {}, maxBinY = {}",maxBinX,maxBinY);
     if (!CmdLineOption::GetFlagValue("Single_dimension")) {
         for (int binX = 0; binX < maxBinX; binX += 1) {
             for (int binY = 0; binY < maxBinY; binY += 1) {
-                double sPosX = -xDimSource / 2. + (0.5 + binX) * (xDimSource / maxBinX);
-                double sPosY = -yDimSource / 2. + (0.5 + binY) * (yDimSource / maxBinY);
+                double sPosX = -sRange / 2. + (0.5 + binX) * (sRange / maxBinX);
+                double sPosY = -sRange / 2. + (0.5 + binY) * (sRange / maxBinY);
                 // for (int energy_it  = energy; energy_it > 50; energy_it /= 4) {
                 if(binX % world_size == world_rank){
                     log::info(
@@ -236,7 +240,7 @@ int main(int argc, char** argv) {
     } else {
         double sPosY = 0.;
         for (int binX = 0; binX < maxBinX; binX += 1) {
-            double sPosX = -xDimSource / 2. + (0.5 + binX) * (xDimSource / maxBinX);
+            double sPosX = -sRange / 2. + (0.5 + binX) * (sRange / maxBinX);
             if (binX % world_size == world_rank) {
                 log::info(
                     "Starting simulation source({}, {}), "

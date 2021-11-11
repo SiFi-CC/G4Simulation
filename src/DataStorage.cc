@@ -63,7 +63,6 @@ void DataStorage::init() {
         static_cast<int>(fMetadata.data["maskBinY"]),
         fMetadata.data["maskMinY"],
         fMetadata.data["maskMaxY"]);
-    spdlog::info("sourceNBinY {}", fMetadata.data["sourceNBinY"]);
     fSourceRecord.events =
         new TTree("source", "source events");
     fSourceRecord.events->Branch("position", &fSourceRecord.position);
@@ -74,11 +73,11 @@ void DataStorage::init() {
         "sourceHist",
         "source events",
         fMetadata.data["sourceNBinX"],
-        -fMetadata.data["sourceRange"]/2,
-        fMetadata.data["sourceRange"]/2,
+        fMetadata.data["sourceMinX"],
+        fMetadata.data["sourceMaxX"],
         fMetadata.data["sourceNBinY"],
-        -fMetadata.data["sourceRange"]/2,
-        fMetadata.data["sourceRange"]/2);
+        fMetadata.data["sourceMinY"],
+        fMetadata.data["sourceMaxY"]);
 }
 
 void DataStorage::registerDepositScoring(

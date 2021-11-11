@@ -100,7 +100,10 @@ class DataStorage {
                                                         {"maskBinY", 100},
                                                         {"sourceNBinX", 100},
                                                         {"sourceNBinY", 100},
-                                                        {"sourceRange", 70}};
+                                                        {"sourceMinX", -150},
+                                                        {"sourceMaxX", 150},
+                                                        {"sourceMinY", -150},
+                                                        {"sourceMaxY", 150}};
     } fMetadata;
 
     struct {

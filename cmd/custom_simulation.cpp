@@ -206,13 +206,16 @@ int main(int argc, char** argv) {
     storage.writeMetadata("energy", energy * keV);
     storage.writeMetadata("sourceToMaskDistance", masksource * mm);
     storage.writeMetadata("maskToDetectorDistance", maskdetector * mm);
+    storage.writeMetadata("sourceMinX", -sRange / 2);
+    storage.writeMetadata("sourceMaxX", sRange / 2);
+    storage.writeMetadata("sourceMinY", -sRange / 2);
+    storage.writeMetadata("sourceMaxY", sRange / 2);
     storage.writeMetadata("sourceNBinX", sNbins);
     if (CmdLineOption::GetFlagValue("Single_dimension")) {
         storage.writeMetadata("sourceNBinY", 1);
     } else {
         storage.writeMetadata("sourceNBinY", sNbins);
     }
-    storage.writeMetadata("sourceRange", sRange);
     detector.writeMetadata(&storage);
     mask.writeMetadata(&storage);
     storage.init(); 
