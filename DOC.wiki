@@ -1,0 +1,230 @@
+
+
+Description of [https://github.com/SiFi-CC/G4Simulation the code] for the 'simple'<ref>The simulation is simpler than [https://bragg.if.uj.edu.pl/gccbwiki/index.php/SiFi-CC/SiFi-CM_Geant4_Simulation one of JK] in a sense that it does not take into account a lot of details (electronics, fibers coupling etc.).</ref> <code>Geant4</code> simulation of the Coded-Mask(<code>CM</code>) setup.
+
+
+== General description ==
+
+The program contains 2 modes. [[#Simulation|The first]] of them is used to simulate an experiment of <math display="inline">\gamma</math>-particles being shot towards the detector. And [[#H-matrix calculation|the second]] - for the calculation of the system matrix.
+
+The general procedure is very similar for both modes. The basic difference is that the second performs a set of single simulations and combines them together in the form of <code>system matrix</code>.
+
+<center>
+[[File:images/cool.jpg|Figure from Geant4 !TODO]]
+</center>
+== Usage ==
+
+=== Simulation ===
+
+ $ ./cmd/custom_simulation.cp output.root [optional arguments]
+
+<code>output.root</code> is a name of the output root-file.
+
+'''Optional arguments:'''
+
+''(detailed description below the table)''
+
+{|
+!align="center" width="15%"| Parameter
+!align="center" width="15%"| Default
+!align="center" width="15%"| Type
+!width="55%"| Description
+|-
+|align="center"| <code>-det</code>
+|align="center"| 220:16:1.3
+|align="center"| list(float:int:float)
+| Detector parameters: detector-source:nFibres:fibre_width [mm/-/mm]
+|-
+|align="center"| <code>-nlay</code>
+|align="center"| 4
+|align="center"| int
+| Number of layers in detector)
+|-
+|align="center"| <code>-mask</code>
+|align="center"| 31:170:70:20
+|align="center"| list(int:floats)
+| Mask parameters: order:mask-source:width/length:thickness [mm]
+|-
+|align="center"| <code>-masktype</code>
+|align="center"| standard
+|align="center"| string
+| Mask type: {<code>standard</code>, <code>round</code>, <code>pet</code>, <code>nowallpet</code>, <code>nowallpetCUT</code>}
+|-
+|align="center"| <code>-cut</code>
+|align="center"| 31
+|align="center"| int
+| Number of pixels in mask, (relevant only if masktype=nowallpetcut)
+|-
+|align="center"| <code>-er</code>
+|align="center"| 0.0
+|align="center"| float
+| Error in W rods size [mm], (relevant only if <code>masktype</code>=<code>nowallpetcut</code>)
+|-
+|align="center"| <code>-source</code>
+|align="center"| 0:0
+|align="center"| list(float:int)
+| Source coordinates [mm]
+|-
+|align="center"| <code>-sourceBins</code>
+|align="center"| 70:100
+|align="center"| list(int)
+| Range and number of bins in the source histogram
+|-
+|align="center"| <code>-n</code>
+|align="center"| 1000
+|align="center"| int
+| Number of generated events
+|-
+|align="center"| <code>-e</code>
+|align="center"| 4400
+|align="center"| int
+| Energy of particles [keV]
+|-
+|align="center"| <code>-theta</code>
+|align="center"| auto
+|align="center"| int
+| Min <math display="inline">\theta</math> angle [Deg], (maximum <math display="inline">\theta</math> is 180)
+|-
+|align="center"| <code>-sMac</code>
+|align="center"| none
+|align="center"| string
+| mac-script to change source parameters
+|-
+|align="center"| <code>-vis</code>
+|align="center"| none
+|align="center"| flag
+| Run in visual mode(no simulation is performed)
+|}
+
+'''Parameter -det'''
+
+List of 3 values which define define geometry parameters, connected to the detector. First one is <code>detector-source</code>, that is a distance between the source and the detector. This parameter is followed by the number of fibers in the single layer and width of a single fiber.
+
+'''Parameter -nlay'''
+
+This parameter allows user to set a number of the layers in the detector.
+
+'''Parameter -mask'''
+
+List of 4 values which define define geometry parameters, connected to the <code>MURA</code> mask. First one defines an order of the mask (should be a prime number). Second value is <code>mask-source</code>, that is a distance between the source and the mask. The last 2 parameters are the width(and the length - as the mask is a square) and thickness.
+
+'''Parameter -masktype'''
+
+Specify the type of implementation of the MURA mask. It should be one of the following options:
+
+* <code>standard</code> - ideal (theoretical) case when the mask is truly binary and has no walls between the pixels
+* <code>round</code> - the mask is constructed as a Tungsten monoblock, where in places of empty pixels are round-shape holes
+* <code>pet</code> - the mask has a <code>PET raster</code> where it is possible to put Tungsten rods and prepare any pattern. The size of rods is hardcoded as a 90% of the full pixel size.
+* <code>nowallpet</code> - similar to <code>pet</code> but the raster is prepared specifically to the particular pattern. It means that empty pixels are filled with PET and it allows to avoid having walls.
+* <code>nowallpetCUT</code> - the same as <code>nowallpet</code> but allows option <code>-cut</code> to be activated
+
+'''Parameter -cut'''
+
+If <code>-masktype=nowallpetCUT</code>, the cut parameter specifies a size of mask’s central area to be used. For example if mask order is 467 and <code>-cut=31</code>, then only 31X31 central pixels of the 467’s order MURA mask will be used.
+
+'''Parameter -er'''
+
+Specifies the error in the size of Tungsten rods. If used, than from the each dimension of each rod is subtracted a random number from the distribution: <math display="inline">er/2 - N(er/2, er/6)</math>
+
+'''Parameter -source'''
+
+The list of 2 numbers, which specifies a coordinates of the source (or the center of the source if not point-like).
+
+'''Parameter -sourceBins'''
+
+The list of 2 values (float and int) to specify a source histogram range and number of bins. The first of them is a size of the plane in [mm] and the second is a number of source positions in each direction (positions are uniformly distributed among the source plane).
+
+'''Parameter -n'''
+
+Number of generated events.
+
+'''Parameter -e'''
+
+Energy of generated <math display="inline">\gamma</math>-particles [kEv].
+
+'''Parameter -theta'''
+
+This parameter allows to set the <math display="inline">\theta_{min}</math> angle [deg]. <math display="inline">\theta_{max}</math> is always <math display="inline">180^o</math> (parallel to the source-detector axis). It means that particles will be shot with angles <math display="inline">[\theta_{min}, 180^o]</math>.
+
+'''Parameter -sMac'''
+
+Path to the <code>mac</code>-script with additional specifications of the source. It allows to change type and shape of the source distribution.
+
+<pre>Example !TODO</pre>
+'''Parameter -vis'''
+
+If this flag is used, the programs runs in visual mode<ref>Parameters of the graphical interface can be set in the file <code>vic_CC.mac</code> which is executed before the opening of the viewer and should be placed in the working directory.</ref>. That is Geant4 graphical interface is opened with specified geometry setup.
+
+=== H-matrix calculation ===
+
+ $ mpirun -np #cores ./cmd/mpi_gen_sim_matrix.cp output.root [optional arguments]
+
+<code>#cores</code> - is a number of parallel processes (number of cores used).
+
+<code>output.root</code> is a name of the output root-file.
+
+The most of the optional arguments are the same as for the [[#optional-arguments|simulation]], but some of them are not used or have different meaning.
+
+'''Optional arguments:'''
+
+{|
+!align="center" width="15%"| Parameter
+!align="center" width="15%"| Default
+!align="center" width="15%"| Type
+!width="55%"| Description
+|-
+|align="center"| <code>-det</code>
+|align="center"| 220:16:1.3
+|align="center"| list(float:int:float)
+| Detector parameters: detector-source:nFibres:fibre_width [mm/-/mm]
+|-
+|align="center"| <code>-nlay</code>
+|align="center"| 4
+|align="center"| int
+| Number of layers in detector)
+|-
+|align="center"| <code>-mask</code>
+|align="center"| 31:170:70:20
+|align="center"| list(int:floats)
+| Mask parameters: order:mask-source:width/length:thickness [mm]
+|-
+|align="center"| <code>-masktype</code>
+|align="center"| standard
+|align="center"| string
+| Mask type: {<code>standard</code>, <code>round</code>, <code>pet</code>, <code>nowallpet</code>, <code>nowallpetCUT</code>}
+|-
+|align="center"| <code>-cut</code>
+|align="center"| 31
+|align="center"| int
+| Number of pixels in mask, (relevant only if masktype=nowallpetcut)
+|-
+|align="center"| <code>-er</code>
+|align="center"| 0.0
+|align="center"| float
+| Error in W rods size [mm], (relevant only if <code>masktype</code>=<code>nowallpetcut</code>)
+|-
+|align="center"| <code>-source</code>
+|align="center"| 70:100
+|align="center"| list(float:int)
+| Range and number of bins in the source plane
+|-
+|align="center"| <code>-n</code>
+|align="center"| 1000
+|align="center"| int
+| Number of generated events for each source position
+|-
+|align="center"| <code>-e</code>
+|align="center"| 4400
+|align="center"| int
+| Energy of particles [keV]
+|}
+
+'''Parameter -source'''
+
+The list of 2 values (float and int) to specify a source plane parameters. The first of them is a size of the plane in [mm] and the second is a number of source positions in each direction (positions are uniformly distributed among the source plane).<ref>Usually it is convenient to set [[#parameter-sourcebins|<code>-sourceBins</code>]] parameter for the simulation to be the same ace [[#parameter-source|<code>-source</code>]] parameter of system matrix for the further comparison of reconstructed image and original source histogram.</ref>
+
+== Workflow ==
+
+=== Geometry parameters ===
+
+The very first step is to set all the geometry parameters needed for the setup.
