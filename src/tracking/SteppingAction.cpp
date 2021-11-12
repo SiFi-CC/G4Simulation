@@ -15,6 +15,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         auto pos = step->GetPostStepPoint()->GetPosition();
 
         log->debug("hit in volume {}", name);
+        log->debug("Position {} {}", pos.x(), pos.y());
 
         fStorage->registerDepositScoring(name, pos, deposit);
         if (step->GetTrack()->GetParticleDefinition()->GetParticleType() == G4String("gamma"))

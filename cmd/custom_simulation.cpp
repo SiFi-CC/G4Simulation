@@ -175,10 +175,9 @@ int main(int argc, char** argv)
     DetectorBlock detector(nLayer,                                // number of layers
                            FibreLayer(                            //
                                fibrenum,                          // number of fibres in layer
-                               Fibre({fibrewidth * fibrenum * mm, // fibre length
+                               Fibre({100 * mm, // fibre length
                                       fibrewidth * mm,            // fibre width and thickness
                                       material, wrappingmaterial, airmaterial})));
-
     auto construction = new DetectorConstruction(&mask, &detector);
     construction->setMaskPos(masksource * mm);
     construction->setDetectorPos(detectorsource * mm + nLayer * fibrewidth / 2 * mm);

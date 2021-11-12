@@ -17,7 +17,7 @@ G4LogicalVolume* DetectorBlock::Construct()
 {
     auto block = new G4LogicalVolume(
         new G4Box("detectorBlockSolid", fLayer.getSizeX() / 2,
-                  fLayer.getSizeX() / 2, // the length of fibre defines both sizes
+                  fLayer.getSizeY() / 2, // the length of fibre defines both sizes
                   fNumberOfLayers * fLayer.getThickness() / 2),
         MaterialManager::get()->Vacuum(), "detectorBlockLogical");
 
