@@ -25,7 +25,7 @@ using namespace SiFi;
 
 int main(int argc, char** argv)
 {
-    spdlog::set_level(spdlog::level::info);
+    spdlog::set_level(spdlog::level::debug);
 
     CmdLineOption opt_det("Plane", "-det",
                           "Detector: detector-source:nFibres:fibre_width, default: 220:16:1.3", 0,
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     CmdLineOption opt_energy("Energy", "-e", "Energy of particles [keV], default: 4400 (integer)",
                              4400);
     CmdLineOption opt_nlay("#layers", "-nlay", "Number of layers in detector, default: 4 (integer)",
-                           4);
+                           3);
     CmdLineOption opt_theta("Theta", "-theta",
                             "Min Theta angle [Deg] (maximum Theta is 180), default: auto", 0);
     CmdLineOption opt_source("Source", "-source", "Source position [mm], default: 0:0", 0);
@@ -172,12 +172,46 @@ int main(int argc, char** argv)
     MuraMask mask(mord, {masklength * mm, masklength * mm, maskthick * mm},
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
 
-    DetectorBlock detector(nLayer,                                // number of layers
-                           FibreLayer(                            //
-                               fibrenum,                          // number of fibres in layer
-                               Fibre({100 * mm, // fibre length
-                                      fibrewidth * mm,            // fibre width and thickness
-                                      material, wrappingmaterial, airmaterial})));
+    // # HypMed
+    // double fibreY = 1.3;
+    double crystalWidth = 1.3;
+    // double fibreZ = 4.4;
+    // fibrenum = 34;
+
+    // top
+    FibreLayer layer1 = FibreLayer(11, 15 ,// number of fibres in layer
+                                Fibre({crystalWidth * mm,    // fibre length
+                                        crystalWidth * mm,     // fibre width
+                                        3.2 * mm, // fibre thickness
+                                        material, wrappingmaterial, airmaterial}));
+    // middle
+    FibreLayer layer2 = FibreLayer(11, 16 ,// number of fibres in layer
+                                Fibre({crystalWidth * mm,    // fibre length
+                                        crystalWidth * mm,     // fibre width
+                                        4.4 * mm, // fibre thickness
+                                        material, wrappingmaterial, airmaterial}));
+    FibreLayer layer3 = FibreLayer(14, 16 ,// number of fibres in layer
+                                Fibre({crystalWidth * mm,    // fibre length
+                                        crystalWidth * mm,     // fibre width
+                                        7.4 * mm, // fibre thickness
+                                        material, wrappingmaterial, airmaterial}));
+    // FibreLayer layer2 = FibreLayer(4, 7 ,// number of fibres in layer
+    //                             Fibre({1.333 * mm,    // fibre length
+    //                                     1.333 * mm,     // fibre width
+    //                                     3.2 * mm, // fibre thickness
+    //                                     material, wrappingmaterial, airmaterial}));
+
+    
+
+    // DetectorBlock detector(3, layer1);
+    DetectorBlock detector(layer1, layer2, layer3);
+    // DetectorBlock detector(nLayer,                         // number of layers
+    //                         FibreLayer(                     //
+    //                             fibrenum,                   // number of fibres in layer
+    //                             Fibre({fibreY * mm,    // fibre length
+    //                                     fibreX * mm,     // fibre width and thickness
+    //                                     fibreZ * mm, // fibre width and thickness
+    //                                     material, wrappingmaterial, airmaterial})));
     auto construction = new DetectorConstruction(&mask, &detector);
     construction->setMaskPos(masksource * mm);
     construction->setDetectorPos(detectorsource * mm + nLayer * fibrewidth / 2 * mm);

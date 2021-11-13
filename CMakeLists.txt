@@ -45,7 +45,7 @@ add_code_coverage()
 # include_directories(BEFORE src)
 
 add_library(g4sim
-    ./src/Defaults.cpp
+    # ./src/Defaults.cpp
     ./src/PhysicsList.cpp
     ./src/EventAction.cpp
     ./src/MaterialManager.cpp
