@@ -7,37 +7,37 @@
 namespace SiFi
 {
 
-struct FibreSpecs
+struct CrystalSpecs
 {
-    double length;
-    double width;
+    double sizeX;
+    double sizeY;
     double thickness; // z axis(thickness of single layer)
 
-    G4Material* fibreMaterial;
+    G4Material* crystalMaterial;
     G4Material* wrappingMaterial;
     G4Material* couplingMaterial;
 };
 
-class Fibre : public DetectorElement
+class Crystal : public DetectorElement
 {
 public:
-    explicit Fibre(const FibreSpecs& specs)
-        : fLength(specs.length), fWidth(specs.width),
+    explicit Crystal(const CrystalSpecs& specs)
+        : fsizeX(specs.sizeX), fsizeY(specs.sizeY),
           fThickness(specs.thickness),
-          fFibreMaterial(specs.fibreMaterial), fWrappingMaterial(specs.wrappingMaterial),
+          fCrystalMaterial(specs.crystalMaterial), fWrappingMaterial(specs.wrappingMaterial),
           fCouplingMaterial(specs.couplingMaterial){};
     G4LogicalVolume* Construct() override;
 
-    double getLength() { return fLength; };
-    double getWidth() { return fWidth; };
+    double getSizeX() { return fsizeX; };
+    double getSizeY() { return fsizeY; };
     double getThickness() { return fThickness; };
 
 private:
-    double fLength;
-    double fWidth;
+    double fsizeX;
+    double fsizeY;
     double fThickness;
 
-    G4Material* fFibreMaterial;
+    G4Material* fCrystalMaterial;
     G4Material* fWrappingMaterial;
     G4Material* fCouplingMaterial;
 };

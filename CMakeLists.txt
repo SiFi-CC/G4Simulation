@@ -53,9 +53,10 @@ add_library(g4sim
     ./src/DataStorage.cc
     ./src/Source.cc
 
-    ./src/geometry/DetectorBlock.cpp
-    ./src/geometry/FibreLayer.cpp
-    ./src/geometry/Fibre.cpp
+    # ./src/geometry/DetectorBlock.cpp
+    ./src/geometry/HypMedBlock.cpp
+    ./src/geometry/CrystalLayer.cpp
+    ./src/geometry/Crystal.cpp
     ./src/geometry/MuraMask.cpp
 
     ./src/tracking/SteppingAction.cpp

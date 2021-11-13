@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DataStorage.h"
-#include "FibreLayer.h"
+#include "CrystalLayer.h"
 #include <G4LogicalVolume.hh>
 
 namespace SiFi
@@ -10,8 +10,8 @@ namespace SiFi
 class DetectorBlock : public DetectorElement
 {
 public:
-    // DetectorBlock(int nLayers, const FibreLayer& layer) : fNumberOfLayers(nLayers), fLayer(layer){};
-    DetectorBlock(const FibreLayer& layer1, const FibreLayer& layer2, const FibreLayer& layer3)
+    // DetectorBlock(int nLayers, const CrystalLayer& layer) : fNumberOfLayers(nLayers), fLayer(layer){};
+    DetectorBlock(const CrystalLayer& layer1, const CrystalLayer& layer2, const CrystalLayer& layer3)
         : fLayer1(layer1), fLayer2(layer2), fLayer3(layer3){};
 
     G4LogicalVolume* Construct() override;
@@ -32,10 +32,10 @@ public:
 
 private:
     int fNumberOfLayers;
-    // FibreLayer fLayer;
-    FibreLayer fLayer1;
-    FibreLayer fLayer2;
-    FibreLayer fLayer3;
+    // CrystalLayer fLayer;
+    CrystalLayer fLayer1;
+    CrystalLayer fLayer2;
+    CrystalLayer fLayer3;
 };
 
 } // namespace SiFi

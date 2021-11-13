@@ -173,48 +173,31 @@ int main(int argc, char** argv)
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
 
     // # HypMed
-    // double fibreY = 1.3;
     double crystalWidth = 1.3;
-    // double fibreZ = 4.4;
-    // fibrenum = 34;
 
     // top
-    FibreLayer layer1 = FibreLayer(11, 15 ,// number of fibres in layer
-                                Fibre({crystalWidth * mm,    // fibre length
+    CrystalLayer layer1 = CrystalLayer(11, 15 ,// number of fibres in layer
+                                Crystal({crystalWidth * mm,    // fibre length
                                         crystalWidth * mm,     // fibre width
                                         3.2 * mm, // fibre thickness
                                         material, wrappingmaterial, airmaterial}));
     // middle
-    FibreLayer layer2 = FibreLayer(11, 16 ,// number of fibres in layer
-                                Fibre({crystalWidth * mm,    // fibre length
+    CrystalLayer layer2 = CrystalLayer(11, 16 ,// number of fibres in layer
+                                Crystal({crystalWidth * mm,    // fibre length
                                         crystalWidth * mm,     // fibre width
                                         4.4 * mm, // fibre thickness
                                         material, wrappingmaterial, airmaterial}));
-    FibreLayer layer3 = FibreLayer(14, 16 ,// number of fibres in layer
-                                Fibre({crystalWidth * mm,    // fibre length
+    CrystalLayer layer3 = CrystalLayer(14, 16 ,// number of fibres in layer
+                                Crystal({crystalWidth * mm,    // fibre length
                                         crystalWidth * mm,     // fibre width
                                         7.4 * mm, // fibre thickness
                                         material, wrappingmaterial, airmaterial}));
-    // FibreLayer layer2 = FibreLayer(4, 7 ,// number of fibres in layer
-    //                             Fibre({1.333 * mm,    // fibre length
-    //                                     1.333 * mm,     // fibre width
-    //                                     3.2 * mm, // fibre thickness
-    //                                     material, wrappingmaterial, airmaterial}));
 
-    
+    HypMedBlock detector(layer1, layer2, layer3);
 
-    // DetectorBlock detector(3, layer1);
-    DetectorBlock detector(layer1, layer2, layer3);
-    // DetectorBlock detector(nLayer,                         // number of layers
-    //                         FibreLayer(                     //
-    //                             fibrenum,                   // number of fibres in layer
-    //                             Fibre({fibreY * mm,    // fibre length
-    //                                     fibreX * mm,     // fibre width and thickness
-    //                                     fibreZ * mm, // fibre width and thickness
-    //                                     material, wrappingmaterial, airmaterial})));
     auto construction = new DetectorConstruction(&mask, &detector);
     construction->setMaskPos(masksource * mm);
-    construction->setDetectorPos(detectorsource * mm + nLayer * fibrewidth / 2 * mm);
+    construction->setDetectorPos(detectorsource * mm + detector.getThickness() / 2. * mm);
 
     G4RunManager runManager;
     runManager.SetUserInitialization(construction);
@@ -261,7 +244,7 @@ int main(int argc, char** argv)
     }
     detector.writeMetadata(&storage);
     mask.writeMetadata(&storage);
-    storage.init();
+    storage.init(true);
 
     if (opt_sourceMac.GetStringValue())
     {

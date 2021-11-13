@@ -1,8 +1,9 @@
 #pragma once
 
 #include "geometry/DetectorBlock.h"
-#include "geometry/Fibre.h"
-#include "geometry/FibreLayer.h"
+#include "geometry/HypMedBlock.h"
+#include "geometry/Crystal.h"
+#include "geometry/CrystalLayer.h"
 #include "geometry/MuraMask.h"
 
 namespace SiFi
@@ -13,8 +14,8 @@ namespace defaults
 namespace geometry
 {
 
-Fibre simpleFibre();
-FibreLayer simpleFibreLayer();
+Crystal simpleCrystal();
+CrystalLayer simpleCrystalLayer();
 DetectorBlock simpleDetectorBlock();
 MuraMask simpleMask();
 

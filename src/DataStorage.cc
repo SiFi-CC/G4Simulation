@@ -36,17 +36,39 @@ void DataStorage::newSimulation(bool deposits)
     }
 }
 
-void DataStorage::init()
+void DataStorage::init(bool hypmed)
 {
-    fEnergyDeposits.hits = new TTree("deposits", "energy deposits in detector");
-    fEnergyDeposits.hits->Branch("position", &fEnergyDeposits.position);
-    fEnergyDeposits.hits->Branch("energy", &fEnergyDeposits.energy);
-    fEnergyDeposits.hits->Branch("id", &fEnergyDeposits.eventId);
-    fEnergyDeposits.histogram =
-        TH2F("energyDeposits", "energy deposits in detector",
-             static_cast<int>(fMetadata.data["detectorBinX"]), fMetadata.data["detectorMinX"],
-             fMetadata.data["detectorMaxX"], static_cast<int>(fMetadata.data["detectorBinY"]),
-             fMetadata.data["detectorMinY"], fMetadata.data["detectorMaxY"]);
+    if (!hypmed)
+    {
+        fEnergyDeposits.hits = new TTree("deposits", "energy deposits in detector");
+        fEnergyDeposits.hits->Branch("position", &fEnergyDeposits.position);
+        fEnergyDeposits.hits->Branch("energy", &fEnergyDeposits.energy);
+        fEnergyDeposits.hits->Branch("id", &fEnergyDeposits.eventId);
+        fEnergyDeposits.histogram =
+            TH2F("energyDeposits", "energy deposits in detector",
+                static_cast<int>(fMetadata.data["detectorBinX"]), fMetadata.data["detectorMinX"],
+                fMetadata.data["detectorMaxX"], static_cast<int>(fMetadata.data["detectorBinY"]),
+                fMetadata.data["detectorMinY"], fMetadata.data["detectorMaxY"]);
+    }
+    else
+    {
+        for (int nLay = 0; nLay<3; nLay++){
+            std::string layerNumber = std::to_string(nLay);
+            fLayersDeposits[nLay].hits = new TTree(TString("depositsLayer" + layerNumber),
+                                                    "energy deposits in detector");
+            fLayersDeposits[nLay].hits->Branch("position", &fLayersDeposits[nLay].position);
+            fLayersDeposits[nLay].hits->Branch("energy", &fLayersDeposits[nLay].energy);
+            fLayersDeposits[nLay].hits->Branch("id", &fLayersDeposits[nLay].eventId);
+            fLayersDeposits[nLay].histogram =
+                TH2F(TString("energyDepositsLayer" + layerNumber), "energy deposits in detector",
+                     static_cast<int>(fMetadata.data["layer" + layerNumber + "BinX"]),
+                     fMetadata.data["layer" + layerNumber + "MinX"],
+                     fMetadata.data["layer" + layerNumber + "MaxX"],
+                     static_cast<int>(fMetadata.data["layer" + layerNumber + "BinY"]),
+                     fMetadata.data["layer" + layerNumber + "MinY"],
+                     fMetadata.data["layer" + layerNumber + "MaxY"]);
+        }
+    }
 
     fMaskEnergyDeposits.hits = new TTree("maskDeposits", "energy deposits in mask");
     fMaskEnergyDeposits.hits->Branch("position", &fMaskEnergyDeposits.position);
@@ -74,7 +96,7 @@ void DataStorage::registerDepositScoring(const G4String& volume, const G4ThreeVe
     if (volume == "fibrephysical")
     {
         if (fEnable.depositScoring)
-        {
+        {   
             fEnergyDeposits.eventId = fSourceRecord.eventId;
             fEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
             // fEnergyDeposits.energy = energy;
@@ -83,6 +105,37 @@ void DataStorage::registerDepositScoring(const G4String& volume, const G4ThreeVe
             fEnergyDeposits.hits->Fill();
             total_deposited += energy;
             // spdlog::info("Energy = {}", energy);
+        }
+        if (fEnable.hMatrixScoring) { setHmatrix(pos.x(), pos.y(), fBinX, fBinY, energy); }
+        return;
+    }
+    if (volume == "maskBin" && fEnable.maskDepositScoring)
+    {
+        fMaskEnergyDeposits.eventId = fSourceRecord.eventId;
+        fMaskEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
+        fMaskEnergyDeposits.energy = energy;
+
+        fMaskEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
+        fMaskEnergyDeposits.hits->Fill();
+        return;
+    }
+}
+
+void DataStorage::registerDepositScoring(const G4String& volume, const G4int layerNum,
+                                         const G4ThreeVector& pos,
+                                         double energy)
+{
+    if (volume == "crystalphysical")
+    {
+        if (fEnable.depositScoring)
+        {
+            fLayersDeposits[layerNum].eventId = fSourceRecord.eventId;
+            fLayersDeposits[layerNum].position = TVector3(pos.x(), pos.y(), pos.z());
+            // fLayersDeposits[layerNum].energy = energy;
+
+            fLayersDeposits[layerNum].histogram.Fill(pos.x(), pos.y(), energy);
+            fLayersDeposits[layerNum].hits->Fill();
+            total_deposited += energy;
         }
         if (fEnable.hMatrixScoring) { setHmatrix(pos.x(), pos.y(), fBinX, fBinY, energy); }
         return;

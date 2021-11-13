@@ -19,6 +19,17 @@
 namespace SiFi
 {
 
+struct fLayerDeposits
+{
+    TTree* hits = nullptr;
+
+    TVector3 position;
+    int eventId = 0;
+    double energy = 0;
+
+    TH2F histogram;
+};
+
 class DataStorage
 {
 public:
@@ -34,9 +45,12 @@ public:
     void newSimulation(bool deposits = true);
 
     // should be run after metadata
-    void init();
+    void init(bool hypmed = false);
 
     void registerDepositScoring(const G4String& volume, const G4ThreeVector& pos, double energy);
+    
+    void registerDepositScoring(const G4String& volume, const G4int layerNum,
+                                const G4ThreeVector& pos, double energy);
 
     void registerEventStart(int eventId, const G4ThreeVector& pos, const G4ThreeVector& dir,
                             double energy);
@@ -68,7 +82,12 @@ public:
     void enablesource()
     {
         fEnable.sourceRecord = true;
-        fEnable.maskDepositScoring = true;
+        fEnable.maskDepositScoring = false;
+    }
+
+    void enableHypMed()
+    {
+        fEnable.hypmed = true;
     }
 
     void Printgammacount()
@@ -105,6 +124,7 @@ protected:
         bool depositScoring = true;
         bool maskDepositScoring = false;
         bool hMatrixScoring = false;
+        bool hypmed = false;
     } fEnable;
 
     struct
@@ -140,6 +160,9 @@ protected:
 
         TH2F histogram;
     } fSourceRecord;
+
+    std::vector<fLayerDeposits> fLayersDeposits = {fLayerDeposits(), fLayerDeposits(),
+                                                   fLayerDeposits()};
 };
 
 } // namespace SiFi
