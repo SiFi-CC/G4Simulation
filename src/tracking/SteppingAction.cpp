@@ -19,7 +19,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
 
         auto pos = step->GetPostStepPoint()->GetPosition();
 
-        fStorage->registerDepositScoring(name, grandgrandmotherCopyNo, pos, deposit);
+        fStorage->registerDepositScoringHypMed(name, grandgrandmotherCopyNo, pos, deposit);
         if (step->GetTrack()->GetParticleDefinition()->GetParticleType() == G4String("gamma"))
         {
             fStorage->gammacount();

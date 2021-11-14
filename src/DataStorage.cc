@@ -121,9 +121,8 @@ void DataStorage::registerDepositScoring(const G4String& volume, const G4ThreeVe
     }
 }
 
-void DataStorage::registerDepositScoring(const G4String& volume, const G4int layerNum,
-                                         const G4ThreeVector& pos,
-                                         double energy)
+void DataStorage::registerDepositScoringHypMed(const G4String& volume, const G4int layerNum,
+                                               const G4ThreeVector& pos, double energy)
 {
     if (volume == "crystalphysical")
     {
@@ -137,7 +136,7 @@ void DataStorage::registerDepositScoring(const G4String& volume, const G4int lay
             fLayersDeposits[layerNum].hits->Fill();
             total_deposited += energy;
         }
-        if (fEnable.hMatrixScoring) { setHmatrix(pos.x(), pos.y(), fBinX, fBinY, energy); }
+        if (fEnable.hMatrixScoring) { setHmatrixHypMed(layerNum, pos.x(), pos.y(), fBinX, fBinY, energy); }
         return;
     }
     if (volume == "maskBin" && fEnable.maskDepositScoring)
@@ -164,6 +163,7 @@ void DataStorage::registerEventStart(int eventId, const G4ThreeVector& pos,
     // position of point source
     if (fEnable.sourceRecord || eventId == 0)
     {
+        spdlog::info("source {} {}", pos.x(), pos.y());
         fSourceRecord.histogram.Fill(pos.x(), pos.y(), energy);
         // fSourceRecord.events->Fill();
     }
@@ -171,9 +171,18 @@ void DataStorage::registerEventStart(int eventId, const G4ThreeVector& pos,
 
 void DataStorage::resizeHmatrix() { fMatrixH.ResizeTo(fDetBinsX * fDetBinsY, fMaxBinX * fMaxBinY); }
 
+void DataStorage::resizeHmatrixHypMed()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        fMatrixHHypMed[i].ResizeTo(fDetBinsXLayers[i] * fDetBinsYLayers[i],
+                                   fMaxBinX * fMaxBinY);
+    }
+}
+
 void DataStorage::setHmatrix(double DetX, double DetY, int sourceBinX, int sourceBinY,
                              double energy)
-{
+    {
     auto sourceHistBin = std::make_tuple<int, int>(std::forward<int>(sourceBinX + 1),
                                                    std::forward<int>(sourceBinY + 1));
 
@@ -196,6 +205,38 @@ void DataStorage::setHmatrix(double DetX, double DetY, int sourceBinX, int sourc
     fMatrixH(rowIndexMatrixH, colIndexMatrixH) += energy;
 }
 
+void DataStorage::setHmatrixHypMed(int layerNum, double DetX, double DetY,
+                             int sourceBinX, int sourceBinY,
+                             double energy)
+{
+    auto sourceHistBin = std::make_tuple<int, int>(std::forward<int>(sourceBinX + 1),
+                                                   std::forward<int>(sourceBinY + 1));
+
+    auto sourceMatBin = std::make_tuple<int, int>(fMaxBinY - std::get<1>(sourceHistBin),
+                                                  std::get<0>(sourceHistBin) - 1);
+    int colIndexMatrixH = std::get<1>(sourceMatBin) * fMaxBinY + std::get<0>(sourceMatBin);
+
+    double x = DetX;
+    double y = DetY;
+    auto nBinX = fLayersDeposits[layerNum].histogram.GetXaxis()->FindBin(x);
+    auto nBinY = fLayersDeposits[layerNum].histogram.GetYaxis()->FindBin(y);
+    // auto nBinX = static_cast<int>((x + fDetBinsXLayers[layerNum] * fDetBinSize / 2) / fDetBinSize) + 1;
+    // auto nBinY = static_cast<int>((y + fDetBinsYLayers[layerNum] * fDetBinSize / 2) / fDetBinSize) + 1;
+    // spdlog::info("xbin : hist {}, loc {}", nBinCheckX, nBinX);//nBinY - HISTOBIN
+    // spdlog::info("ybin : hist {}, loc {}", nBinCheckY, nBinY);//nBinY - HISTOBIN
+    nBinX = nBinX < 1 ? 1 : nBinX;
+    nBinX = nBinX > fDetBinsXLayers[layerNum] - 1 ? fDetBinsXLayers[layerNum] : nBinX;
+    nBinY = nBinY < 1 ? 1 : nBinY;
+    nBinY = nBinY > fDetBinsYLayers[layerNum] - 1 ? fDetBinsYLayers[layerNum] : nBinY;
+    int rowIndexMatrixH = (nBinX - 1) * fDetBinsYLayers[layerNum] + fDetBinsYLayers[layerNum] - nBinY;
+    // spdlog::info("x = {}, y = {}", x, y);//nBinY - HISTOBIN
+    // spdlog::info("Layer {}", layerNum); // nBinY - HISTOBIN
+    // spdlog::info("xbin {}, ybin {}", nBinX, nBinY); // nBinY - HISTOBIN
+    // spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH, colIndexMatrixH);
+    //nBinY - HISTOBIN fMatrixH(rowIndexMatrixH,colIndexMatrixH) ++;
+    fMatrixHHypMed[layerNum](rowIndexMatrixH, colIndexMatrixH) += energy;
+}
+
 void DataStorage::writeHmatrix()
 {
     for (int i = 0; i < fMatrixH.GetNcols(); i++)
@@ -208,13 +249,12 @@ void DataStorage::writeHmatrix()
         for (int j = 0; j < fMatrixH.GetNrows(); j++)
         {
             fMatrixH(j, i) = fMatrixH(j, i) == 0 ? 1e-9 : fMatrixH(j, i) / sum;
-            // spdlog::info("i = {}, j = {}, fMatrixH(i,j) = {}",j,i, fMatrixH(j,i));//nBinY -
-            // HISTOBIN
         }
     }
     fMatrixH.Write("matrixH");
 }
 
+// for the using with MPI library
 void DataStorage::writeHmatrix(int world_rank, int world_size)
 {
     for (int i = 0; i < fMatrixH.GetNcols(); i++)
@@ -256,6 +296,58 @@ void DataStorage::writeHmatrix(int world_rank, int world_size)
     if (world_rank == 0) { fMatrixH.Write("matrixH"); }
 }
 
+// for the using with MPI library
+void DataStorage::writeHmatrixHypMed(int world_rank, int world_size)
+{   
+    for (int nLay = 0; nLay <3; nLay++)
+    {
+        for (int i = 0; i < fMatrixHHypMed[nLay].GetNcols(); i++)
+        {
+            double sum = 1.0;
+            // double sum = 0.0;
+            // for(int j = 0; j < fMatrixHHypMed[nLay].GetNrows(); j ++){
+            //     sum += fMatrixHHypMed[nLay](j,i);
+            // }
+            for (int j = 0; j < fMatrixHHypMed[nLay].GetNrows(); j++)
+            {
+                fMatrixHHypMed[nLay](j, i) = fMatrixHHypMed[nLay](j, i) == 0 ? 1e-9 : fMatrixHHypMed[nLay](j, i) / sum;
+            }
+        }
+
+        std::vector<TMatrixT<Double_t>> fMatrixH2(3);
+        if (world_rank == 0) {
+            fMatrixH2[nLay].ResizeTo(fDetBinsXLayers[nLay] * fDetBinsYLayers[nLay],
+                               fMaxBinX * fMaxBinY);
+        }
+        for (int rank = 1; rank < world_size; rank++)
+        {
+            spdlog::info("gathering from {} ...", world_rank);
+            for (int i = 0; i < fMatrixHHypMed[nLay].GetNrows(); i++)
+            {
+                for (int j = 0; j < fMatrixHHypMed[nLay].GetNcols(); j++)
+                {
+                    if (world_rank == 0)
+                    {
+                        MPI_Recv(&fMatrixH2[nLay](i, j), 1, MPI_DOUBLE, rank, 0, MPI_COMM_WORLD,
+                                MPI_STATUS_IGNORE);
+                        fMatrixHHypMed[nLay](i, j) += fMatrixH2[nLay](i, j);
+                    }
+                    else if (world_rank == rank)
+                    {
+                        MPI_Ssend(&fMatrixHHypMed[nLay](i, j), 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+                    }
+                }
+            }
+        }
+    }
+    spdlog::info("gathered {}", world_rank);
+    // if (world_rank == 0) { fMatrixH.Write("matrixH"); }
+    for (int nLay = 0; nLay < 3; nLay++)
+    {
+        if (world_rank == 0) {fMatrixHHypMed[nLay].Write(TString::Format("matrixH%d", nLay)); }
+    }
+}
+
 void DataStorage::cleanup()
 {
     // fMatrixH.Write("matrixH");
@@ -287,6 +379,16 @@ void DataStorage::setBinnedSize(int sourceBinX, int sourceBinY, int detectorBinX
     fMaxBinY = sourceBinY;
     fDetBinsX = detectorBinX;
     fDetBinsY = detectorBinY;
+    fDetBinSize = detectorBinSize;
+}
+
+void DataStorage::setBinnedSize(int sourceBinX, int sourceBinY, std::vector<int> detectorBinXlayers,
+                                std::vector<int> detectorBinYlayers, double detectorBinSize)
+{
+    fMaxBinX = sourceBinX;
+    fMaxBinY = sourceBinY;
+    fDetBinsXLayers = detectorBinXlayers;
+    fDetBinsYLayers = detectorBinYlayers;
     fDetBinSize = detectorBinSize;
 }
 

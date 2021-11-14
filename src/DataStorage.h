@@ -49,18 +49,25 @@ public:
 
     void registerDepositScoring(const G4String& volume, const G4ThreeVector& pos, double energy);
     
-    void registerDepositScoring(const G4String& volume, const G4int layerNum,
+    void registerDepositScoringHypMed(const G4String& volume, const G4int layerNum,
                                 const G4ThreeVector& pos, double energy);
 
     void registerEventStart(int eventId, const G4ThreeVector& pos, const G4ThreeVector& dir,
                             double energy);
 
     void resizeHmatrix();
+    
+    void resizeHmatrixHypMed();
 
     void setHmatrix(double DetX, double DetY, int sourceBinX, int sourceBinY, double energy);
+    
+    void setHmatrixHypMed(int layerNum, double DetX, double DetY,
+                    int sourceBinX, int sourceBinY, double energy);
 
     void writeHmatrix();
     void writeHmatrix(int world_rank, int world_size);
+
+    void writeHmatrixHypMed(int world_rank, int world_size);
 
     void gather(TString output);
 
@@ -71,6 +78,10 @@ public:
     void setCurrentBins(int binX, int binY);
 
     void setBinnedSize(int sourceBinX, int sourceBinY, int detectorBinX, int detectorBinY,
+                       double detectorBinSize);
+
+    void setBinnedSize(int sourceBinX, int sourceBinY,
+                       std::vector<int> detectorBinXlayers, std::vector<int> detectorBinYlayers,
                        double detectorBinSize);
 
     void gammacount()
@@ -100,11 +111,20 @@ public:
 protected:
     TFile* fFile = nullptr;
 
-    int fBinX, fBinY, fMaxBinX, fMaxBinY, fDetBinsX, fDetBinsY;
+    //current bins of the source plane
+    int fBinX, fBinY;
+    // number of bins in the source plane
+    int fMaxBinX, fMaxBinY;
+    // number of bins in the detector
+    int fDetBinsX, fDetBinsY;
+    //number of bins in each layer (for hypmed)
+    std::vector<int> fDetBinsXLayers, fDetBinsYLayers;
     int fGammaCount = 0;
     double fDetBinSize;
     double total_deposited = 0;
     TMatrixT<Double_t> fMatrixH;
+    std::vector<TMatrixT<Double_t>> fMatrixHHypMed = {TMatrixT<Double_t>(), TMatrixT<Double_t>(),
+                                                      TMatrixT<Double_t>()};
 
     struct
     {

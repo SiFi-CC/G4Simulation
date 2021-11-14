@@ -25,7 +25,7 @@ using namespace SiFi;
 
 int main(int argc, char** argv)
 {
-    spdlog::set_level(spdlog::level::debug);
+    spdlog::set_level(spdlog::level::info);
 
     CmdLineOption opt_det("Plane", "-det",
                           "Detector: detector-source:nFibres:fibre_width, default: 220:16:1.3", 0,
@@ -174,26 +174,35 @@ int main(int argc, char** argv)
 
     // # HypMed
     double crystalWidth = 1.3;
+    double layer0Z = 3.2;
+    double layer1Z = 4.4;
+    double layer2Z = 7.4;
+    int layer0binsX = 11;
+    int layer0binsY = 15;
+    int layer1binsX = 11;
+    int layer1binsY = 16;
+    int layer2binsX = 14;
+    int layer2binsY = 16;
 
     // top
-    CrystalLayer layer1 = CrystalLayer(11, 15 ,// number of fibres in layer
-                                Crystal({crystalWidth * mm,    // fibre length
-                                        crystalWidth * mm,     // fibre width
-                                        3.2 * mm, // fibre thickness
-                                        material, wrappingmaterial, airmaterial}));
+    CrystalLayer layer0 = CrystalLayer(layer0binsX, layer0binsY,   // number of crystals in layer
+                                       Crystal({crystalWidth * mm, // fibre length
+                                                crystalWidth * mm, // fibre width
+                                                layer0Z * mm,      // fibre thickness
+                                                material, wrappingmaterial, airmaterial}));
     // middle
-    CrystalLayer layer2 = CrystalLayer(11, 16 ,// number of fibres in layer
-                                Crystal({crystalWidth * mm,    // fibre length
-                                        crystalWidth * mm,     // fibre width
-                                        4.4 * mm, // fibre thickness
-                                        material, wrappingmaterial, airmaterial}));
-    CrystalLayer layer3 = CrystalLayer(14, 16 ,// number of fibres in layer
-                                Crystal({crystalWidth * mm,    // fibre length
-                                        crystalWidth * mm,     // fibre width
-                                        7.4 * mm, // fibre thickness
-                                        material, wrappingmaterial, airmaterial}));
+    CrystalLayer layer1 = CrystalLayer(layer1binsX, layer1binsY,   // number of crystals in layer
+                                       Crystal({crystalWidth * mm, // fibre length
+                                                crystalWidth * mm, // fibre width
+                                                layer1Z * mm,      // fibre thickness
+                                                material, wrappingmaterial, airmaterial}));
+    CrystalLayer layer2 = CrystalLayer(layer2binsX, layer2binsY,   // number of crystals in layer
+                                       Crystal({crystalWidth * mm, // fibre length
+                                                crystalWidth * mm, // fibre width
+                                                layer2Z * mm,      // fibre thickness
+                                                material, wrappingmaterial, airmaterial}));
 
-    HypMedBlock detector(layer1, layer2, layer3);
+    HypMedBlock detector(layer0, layer1, layer2);
 
     auto construction = new DetectorConstruction(&mask, &detector);
     construction->setMaskPos(masksource * mm);
