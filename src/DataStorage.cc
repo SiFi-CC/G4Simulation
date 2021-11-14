@@ -163,7 +163,6 @@ void DataStorage::registerEventStart(int eventId, const G4ThreeVector& pos,
     // position of point source
     if (fEnable.sourceRecord || eventId == 0)
     {
-        spdlog::info("source {} {}", pos.x(), pos.y());
         fSourceRecord.histogram.Fill(pos.x(), pos.y(), energy);
         // fSourceRecord.events->Fill();
     }
