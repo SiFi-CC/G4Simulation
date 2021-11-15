@@ -2,30 +2,32 @@
 #include "MaterialManager.h"
 #include <G4SystemOfUnits.hh>
 
-namespace SiFi {
-namespace defaults {
-namespace geometry {
+namespace SiFi
+{
+namespace defaults
+{
+namespace geometry
+{
 
-Fibre simpleFibre() {
-    return Fibre({20. * cm,
-                  1. * cm,
-                  1. * cm, // thickness
-                  material::fibre(),
-                  material::wrapping(),
-                  material::coupling()});
+Fibre simpleFibre()
+{
+    return Fibre(
+        {20. * cm, 1. * cm, material::fibre(), material::wrapping(), material::coupling()});
 }
 
 FibreLayer simpleFibreLayer() { return {20, simpleFibre()}; }
 
 DetectorBlock simpleDetectorBlock() { return {5, simpleFibreLayer()}; }
 
-MuraMask simpleMask() {
-    return MuraMask(11, {20. * cm, 20. * cm, 2. * cm}, material::mask());
+MuraMask simpleMask()
+{
+    return MuraMask(11, {20. * cm, 20. * cm, 2. * cm}, material::mask(), "standart");
 }
 
 } // namespace geometry
 
-namespace material {
+namespace material
+{
 
 G4Material* mask() { return MaterialManager::get()->GetMaterial("G4_W"); }
 G4Material* fibre() { return MaterialManager::get()->LuAGCe(); }
@@ -37,4 +39,3 @@ G4Material* detectorFilling() { return MaterialManager::get()->GetMaterial("G4_W
 
 } // namespace defaults
 } // namespace SiFi
-

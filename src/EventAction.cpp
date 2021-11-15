@@ -3,9 +3,11 @@
 #include <G4PrimaryParticle.hh>
 #include <G4PrimaryVertex.hh>
 
-namespace SiFi {
+namespace SiFi
+{
 
-void EventAction::BeginOfEventAction(const G4Event* event) {
+void EventAction::BeginOfEventAction(const G4Event* event)
+{
     auto vertex = event->GetPrimaryVertex();
     auto position = vertex->GetPosition();
     auto direction = vertex->GetPrimary()->GetMomentumDirection();

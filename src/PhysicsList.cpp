@@ -18,9 +18,11 @@
 #include <G4ProcessTable.hh>
 #include <G4StoppingPhysics.hh>
 
-namespace SiFi {
+namespace SiFi
+{
 
-PhysicsList::PhysicsList() {
+PhysicsList::PhysicsList()
+{
     RegisterPhysics(new G4EmStandardPhysics());
     // RegisterPhysics(new G4EmLowEPPhysics());
     RegisterPhysics(new G4EmExtraPhysics());
@@ -34,7 +36,8 @@ PhysicsList::PhysicsList() {
     // RegisterPhysics(new G4HadronPhysicsQGSP_BERT_HP());
 }
 
-void PhysicsList::ConstructParticle() {
+void PhysicsList::ConstructParticle()
+{
     log->debug("ConstructParticle()");
     G4VModularPhysicsList::ConstructParticle();
     PhysicsList::DumpList();

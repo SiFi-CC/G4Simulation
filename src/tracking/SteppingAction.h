@@ -4,17 +4,19 @@
 #include "Utils.h"
 #include <G4UserSteppingAction.hh>
 
-namespace SiFi {
+namespace SiFi
+{
 
-class SteppingAction : public G4UserSteppingAction {
-  public:
+class SteppingAction : public G4UserSteppingAction
+{
+public:
     explicit SteppingAction(DataStorage* storage) : fStorage(storage){};
 
     void UserSteppingAction(const G4Step* step) override;
 
     const logger log = createLogger("Simulation");
 
-  private:
+private:
     DataStorage* fStorage = nullptr;
 };
 

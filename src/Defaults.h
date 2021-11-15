@@ -5,10 +5,13 @@
 #include "geometry/FibreLayer.h"
 #include "geometry/MuraMask.h"
 
-namespace SiFi {
-namespace defaults {
+namespace SiFi
+{
+namespace defaults
+{
 
-namespace geometry {
+namespace geometry
+{
 
 Fibre simpleFibre();
 FibreLayer simpleFibreLayer();
@@ -17,7 +20,8 @@ MuraMask simpleMask();
 
 } // namespace geometry
 
-namespace material {
+namespace material
+{
 
 G4Material* mask();
 G4Material* fibre();
