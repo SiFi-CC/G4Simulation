@@ -156,17 +156,16 @@ int main(int argc, char** argv)
     MuraMask mask(mord, {masklength * mm, masklength * mm, maskthick * mm},
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
     // # HypMed
-    double crystalWidth = 1.3;
+    double crystalWidth = 1.333;
     double layer0Z = 3.2;
     double layer1Z = 4.4;
     double layer2Z = 7.4;
-    int layer0binsX = 11;
-    int layer0binsY = 15;
-    int layer1binsX = 11;
-    int layer1binsY = 16;
-    int layer2binsX = 14;
-    int layer2binsY = 16;
-
+    int layer0binsX = 31;
+    int layer0binsY = 35;
+    int layer1binsX = 31;
+    int layer1binsY = 36;
+    int layer2binsX = 34;
+    int layer2binsY = 36;
     // top
     CrystalLayer layer0 = CrystalLayer(layer0binsX, layer0binsY,   // number of crystals in layer
                                        Crystal({crystalWidth * mm, // fibre length
