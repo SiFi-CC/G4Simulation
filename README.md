@@ -185,10 +185,10 @@ If this flag is used, the detector and mask are constructed in a singe-dimension
 ### H-matrix calculation
 
 ```shell
-mpirun -np _#cores_ ./cmd/mpi_gen_sim_matrix.cp output.root [optional arguments]
+mpirun -np n_cores ./cmd/mpi_gen_sim_matrix.cp output.root [optional arguments]
 ```
 
-`#cores` - is a number of parallel processes (number of cores used).
+`n_cores` - is a number of parallel processes (number of cores used).
 
 `output.root` is a name of the output root-file.
 
