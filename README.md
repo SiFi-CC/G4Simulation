@@ -79,7 +79,7 @@ The general procedure is very similar for both modes. The basic difference is th
 |  `-det`            |    220:16:1.3    | float:int:float | Detector parameters: detector-source:nFibres:fibre_width [mm/-/mm]
 |  `-nlay`            |    4    | int  | Number of layers in detector)
 |  `-mask`            |    31:170:70:20    | int:floats | Mask parameters: order:mask-source:width/length:thickness [mm]
-|  `-masktype`            |    standard    | string  | Mask type: \{`standard`, `round`, `pet`, `nowallpet`, `nowallpetcut`\}
+|  `-masktype`            |    nowallpet    | string  | Mask type: \{`standard`, `round`, `pet`, `nowallpet`, `nowallpetcut`\}
 |  `-cut`            |    31    | int  | Number of pixels in mask, (relevant only if masktype=nowallpetcut)
 |  `-er`            |    0.0    | float  | Error in W rods size [mm], (relevant only if `masktype`=`nowallpetcut`)
 |  `-source`            |    0:0    | float:int  | Source coordinates [mm]
@@ -201,7 +201,7 @@ The most of the optional arguments are the same as for the [simulation](#optiona
 |  `-det`            |    220:16:1.3    | list(float:int:float) | Detector parameters: detector-source:nFibres:fibre_width [mm/-/mm]
 |  `-nlay`            |    4    | int  | Number of layers in detector)
 |  `-mask`            |    31:170:70:20    | list(int:floats) | Mask parameters: order:mask-source:width/length:thickness [mm]
-|  `-masktype`            |    standard    | string  | Mask type: \{`standard`, `round`, `pet`, `nowallpet`, `nowallpetcut`\}
+|  `-masktype`            |    nowallpet    | string  | Mask type: \{`standard`, `round`, `pet`, `nowallpet`, `nowallpetcut`\}
 |  `-cut`            |    31    | int  | Number of pixels in mask, (relevant only if masktype=nowallpetcut)
 |  `-er`            |    0.0    | float  | Error in W rods size [mm], (relevant only if `masktype`=`nowallpetcut`)
 |  `-source`            |    70:100    | list(float:int)  | Range and number of bins in the source plane

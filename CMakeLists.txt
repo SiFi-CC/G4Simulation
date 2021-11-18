@@ -45,7 +45,7 @@ add_code_coverage()
 # include_directories(BEFORE src)
 
 add_library(g4sim
-    ./src/Defaults.cpp
+    # ./src/Defaults.cpp
     ./src/PhysicsList.cpp
     ./src/EventAction.cpp
     ./src/MaterialManager.cpp
@@ -57,6 +57,9 @@ add_library(g4sim
     ./src/geometry/FibreLayer.cpp
     ./src/geometry/Fibre.cpp
     ./src/geometry/MuraMask.cpp
+    ./src/geometry/HypMedBlock.cpp
+    ./src/geometry/CrystalLayer.cpp
+    ./src/geometry/Crystal.cpp
 
     ./src/tracking/SteppingAction.cpp
 )

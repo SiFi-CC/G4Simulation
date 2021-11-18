@@ -11,8 +11,8 @@ namespace geometry
 
 Fibre simpleFibre()
 {
-    return Fibre(
-        {20. * cm, 1. * cm, material::fibre(), material::wrapping(), material::coupling()});
+    return Fibre({20. * cm, 1. * cm, 1. * cm, material::fibre(), material::wrapping(),
+                  material::coupling()});
 }
 
 FibreLayer simpleFibreLayer() { return {20, simpleFibre()}; }

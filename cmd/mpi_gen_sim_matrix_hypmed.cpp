@@ -27,10 +27,10 @@ using namespace SiFi;
 
 int main(int argc, char** argv)
 {
+    spdlog::set_level(spdlog::level::info);
 
     CmdLineOption opt_det("Plane", "-det",
-                          "Detector: detector-source:nFibres:fibre_width[mm], default: 200:16:1.3",
-                          0, 0);
+                          "Detector-source distance [mm], default: 220",220.);
     CmdLineOption opt_mask(
         "Mask", "-mask",
         "Mask: order:mask-source:width:length:thickness [mm], default: 31:150:64:20", 0, 0);
@@ -43,8 +43,6 @@ int main(int argc, char** argv)
     CmdLineOption opt_events("Events", "-n", "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e", "Energy of particles [keV], default: 4400 (integer)",
                              4400);
-    CmdLineOption opt_nlay("#layers", "-nlay", "Number of layers in detector, default: 4 (integer)",
-                           4);
     CmdLineOption opt_source("Source", "-source",
                              "Source plane size and number of bins [mm], default: 64:100", 0);
 
@@ -61,27 +59,14 @@ int main(int argc, char** argv)
 
     const Positional& args = CmdLineConfig::GetPositionalArguments();
 
-    Float_t detectorsource = 220, fibrewidth = 1.3; // detector dimensions
-    Int_t fibrenum = 16;                            // number of fibers in one layer
+    Float_t detectorsource = opt_det.GetDoubleValue(); // detector dimensions
 
     Int_t mord = 31;                                              // MURA mask order
     Float_t masksource = 170., masklength = 70., maskthick = 20.; // mask dimensions
 
     Float_t sRange = 70;                 // source dimensions
     Int_t maxBinX = 100, maxBinY = 100;  // source bins
-    int nLayer = opt_nlay.GetIntValue(); // number of layers in detector
 
-    if (opt_det.GetArraySize() == 3)
-    {
-        detectorsource = opt_det.GetDoubleArrayValue(1);
-        fibrenum = opt_det.GetIntArrayValue(2);
-        fibrewidth = opt_det.GetDoubleArrayValue(3);
-    }
-    else if (opt_det.GetArraySize() != 0)
-    {
-        spdlog::error("Detector plane - 3 parameters required, {} given", opt_det.GetArraySize());
-        abort();
-    }
     if (opt_mask.GetArraySize() == 4)
     {
         mord = opt_mask.GetIntArrayValue(1);
@@ -109,14 +94,6 @@ int main(int argc, char** argv)
     }
     if (CmdLineOption::GetFlagValue("Single_dimension")) { maxBinY = 1; }
 
-    printf("Detector : %g %g %i %g [mm]\n", detectorsource, fibrenum * fibrewidth, fibrenum,
-           fibrewidth);
-    printf("Mask     : %s, %g %g %g %g [mm]\n", opt_masktype.GetStringValue(), masksource,
-           masklength, masklength, maskthick);
-    printf("Mask order      : %i\n", mord);
-    printf("No. of events  : %i\n", opt_events.GetIntValue());
-    printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
-    printf("Source plane [mm] : %g %g Number of bins: %i %i\n", sRange, sRange, maxBinX, maxBinY);
 
     double maskdetector = detectorsource - masksource;
     int energy = opt_energy.GetIntValue();
@@ -154,12 +131,46 @@ int main(int argc, char** argv)
 
     MuraMask mask(mord, {masklength * mm, masklength * mm, maskthick * mm},
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
-    DetectorBlock detector(nLayer,                                // number of layers
-                           FibreLayer(                            //
-                               fibrenum,                          // number of fibres in layer
-                               Fibre({fibrewidth * fibrenum * mm, // fibre length
-                                      fibrewidth * mm,            // fibre width and thickness
-                                      material, wrappingmaterial, airmaterial})));
+    // # HypMed
+    double crystalWidth = 1.333;
+    double layer0Z = 3.2;
+    double layer1Z = 4.4;
+    double layer2Z = 7.4;
+    int layer0binsX = 31;
+    int layer0binsY = 35;
+    int layer1binsX = 31;
+    int layer1binsY = 36;
+    int layer2binsX = 34;
+    int layer2binsY = 36;
+
+    printf("Detector HypMed Array: %g %g %g [mm]\n", detectorsource, layer2binsY * crystalWidth,
+           crystalWidth);
+    printf("Mask     : %s, %g %g %g %g [mm]\n", opt_masktype.GetStringValue(), masksource,
+           masklength, masklength, maskthick);
+    printf("Mask order      : %i\n", mord);
+    printf("No. of events  : %i\n", opt_events.GetIntValue());
+    printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
+    printf("Source plane [mm] : %g %g Number of bins: %i %i\n", sRange, sRange, maxBinX, maxBinY);
+
+    // top
+    CrystalLayer layer0 = CrystalLayer(layer0binsX, layer0binsY,   // number of crystals in layer
+                                       Crystal({crystalWidth * mm, // fibre length
+                                                crystalWidth * mm, // fibre width
+                                                layer0Z * mm,      // fibre thickness
+                                                material, wrappingmaterial, airmaterial}));
+    // middle
+    CrystalLayer layer1 = CrystalLayer(layer1binsX, layer1binsY,   // number of crystals in layer
+                                       Crystal({crystalWidth * mm, // fibre length
+                                                crystalWidth * mm, // fibre width
+                                                layer1Z * mm,      // fibre thickness
+                                                material, wrappingmaterial, airmaterial}));
+    CrystalLayer layer2 = CrystalLayer(layer2binsX, layer2binsY,   // number of crystals in layer
+                                       Crystal({crystalWidth * mm, // fibre length
+                                                crystalWidth * mm, // fibre width
+                                                layer2Z * mm,      // fibre thickness
+                                                material, wrappingmaterial, airmaterial}));
+
+    HypMedBlock detector(layer0, layer1, layer2);
 
     auto construction = new DetectorConstruction(&mask, &detector);
 
@@ -177,15 +188,11 @@ int main(int argc, char** argv)
 
     const int nIter = opt_events.GetIntValue();
 
-    if (CmdLineOption::GetFlagValue("Single_dimension"))
-    {
-        storage.setBinnedSize(maxBinX, maxBinY, fibrenum, 1, fibrewidth);
-    }
-    else
-    {
-        storage.setBinnedSize(maxBinX, maxBinY, fibrenum, fibrenum, fibrewidth);
-    }
-    storage.resizeHmatrix();
+    storage.setBinnedSize(maxBinX, maxBinY,
+                          {layer0binsX, layer1binsX, layer2binsX},
+                          {layer0binsY, layer1binsY, layer2binsY},
+                          crystalWidth);
+    storage.resizeHmatrixHypMed();
 
     storage.newSimulation(false);
 
@@ -200,70 +207,45 @@ int main(int argc, char** argv)
     storage.writeMetadata("sourceMaxY", sRange / 2);
     storage.writeMetadata("sourceNBinX", maxBinX);
     storage.writeMetadata("sourceNBinY", maxBinY);
-    storage.init();
+    storage.init(true);
 
     log::info("maskDetDistance {}, maskSrcDistance {}", maskdetector * mm, masksource * mm);
     construction->setMaskPos(masksource * mm);
-    construction->setDetectorPos(detectorsource * mm + nLayer * fibrewidth / 2 * mm);
+    construction->setDetectorPos(detectorsource * mm + detector.getThickness() / 2 * mm);
     runManager.DefineWorldVolume(construction->Construct());
     runManager.GeometryHasBeenModified();
     log::info("world_size = {}", world_size);
 
-    // log::info("xDimSource = {}, yDimSource = {}",sRange,sRange);
+    log::debug("xDimSource = {}, yDimSource = {}",sRange,sRange);
     // log::info("maxBinX = {}, maxBinY = {}",maxBinX,maxBinY);
-    if (!CmdLineOption::GetFlagValue("Single_dimension"))
+    for (int binX = 0; binX < maxBinX; binX += 1)
     {
-        for (int binX = 0; binX < maxBinX; binX += 1)
-        {
-            for (int binY = 0; binY < maxBinY; binY += 1)
-            {
-                double sPosX = -sRange / 2. + (0.5 + binX) * (sRange / maxBinX);
-                double sPosY = -sRange / 2. + (0.5 + binY) * (sRange / maxBinY);
-                // for (int energy_it  = energy; energy_it > 50; energy_it /= 4) {
-                if (binX % world_size == world_rank)
-                {
-                    log::info("Starting simulation source({}, {}), "
-                              "maskToDetectorDistance={}, sourceToMaskDistance={}, "
-                              "binX{}, processor {}",
-                              sPosX * mm, sPosY * mm, maskdetector * mm, masksource * mm, binX,
-                              world_rank);
-                    // log::info("processor {} calculates column {}", world_rank, binX);
-                    storage.setCurrentBins(binX, binY);
-
-                    source.SetPosAng(TVector3(sPosX, sPosY, 0), fibrewidth * fibrenum * mm,
-                                     detectorsource * mm);
-                    runManager.BeamOn(nIter);
-                    // break;
-                }
-                // }
-            }
-        }
-    }
-    else
-    {
-        double sPosY = 0.;
-        for (int binX = 0; binX < maxBinX; binX += 1)
+        for (int binY = 0; binY < maxBinY; binY += 1)
         {
             double sPosX = -sRange / 2. + (0.5 + binX) * (sRange / maxBinX);
+            double sPosY = -sRange / 2. + (0.5 + binY) * (sRange / maxBinY);
+            // for (int energy_it  = energy; energy_it > 50; energy_it /= 4) {
             if (binX % world_size == world_rank)
             {
                 log::info("Starting simulation source({}, {}), "
-                          "maskToDetectorDistance={}, sourceToMaskDistance={}, "
-                          "binX{}, processor {}",
-                          sPosX * mm, sPosY * mm, maskdetector * mm, masksource * mm, binX,
-                          world_rank);
-                log::info("processor {} calculates column {}", world_rank, binX);
-                storage.setCurrentBins(binX, 0);
+                            "maskToDetectorDistance={}, sourceToMaskDistance={}, "
+                            "binX{}, processor {}",
+                            sPosX * mm, sPosY * mm, maskdetector * mm, masksource * mm, binX,
+                            world_rank);
+                // log::info("processor {} calculates column {}", world_rank, binX);
+                storage.setCurrentBins(binX, binY);
 
-                source.SetPosAng(TVector3(sPosX, sPosY, 0), fibrewidth * fibrenum * mm,
-                                 detectorsource * mm);
+                source.SetPosAng(TVector3(sPosX, sPosY, 0), layer2.getSizeY() * mm,
+                                    detectorsource * mm);
+                // source.SetPosAng(TVector3(sPosX, sPosY, 0));
                 runManager.BeamOn(nIter);
                 // break;
             }
+            // }
         }
     }
-    // storage.writeHmatrix();
-    storage.writeHmatrix(world_rank, world_size);
+    // storage.writeHmatrix(world_rank, world_size);
+    storage.writeHmatrixHypMed(world_rank, world_size);
     if (world_rank == 0) { storage.cleanup(); }
     MPI_Finalize();
     // storage.gather(output);
