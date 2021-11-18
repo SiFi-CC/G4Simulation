@@ -216,6 +216,10 @@ The list of 2 values (float and int) to specify a source plane parameters. The f
 
 *All the rest parameters have the same meaning and usage as for [Simulation](#simulation)*
 
+## Geometry
+
+![Geometry](scripts/Geometry.png)
+
 <!-- Footnotes -->
 [^1]: The simulation is simpler than [one of JK](https://bragg.if.uj.edu.pl/gccbwiki/index.php/SiFi-CC/SiFi-CM_Geant4_Simulation) in a sense that it does not take into account a lot of details (electronics, fibers coupling etc.).
 
