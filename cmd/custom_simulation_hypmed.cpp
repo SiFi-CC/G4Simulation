@@ -28,13 +28,13 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::info);
 
     CmdLineOption opt_det("Plane", "-det",
-                          "Detector-source distance [mm], default: 220", 220);
+                          "Detector-source distance [mm], default: 220", 220.);
     CmdLineOption opt_mask(
         "Mask", "-mask",
         "Mask: order:mask-source:width/length:thickness [mm], default: 31:170:70:20", 0, 0);
     CmdLineOption opt_masktype("MaskType", "-masktype",
                                "MaskType: {standart, round, pet, nowallpet, nowallpetcut}",
-                               "standart");
+                               "nowallpet");
     CmdLineOption opt_masktype_cut(
         "MaskCut", "-cut",
         "MaskNumber of pixels,(relevant only if massktype=nowallpetcut) default: 31(integer)", 31);
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     Float_t detectorsource = opt_det.GetDoubleValue(); // detector dimensions
 
     Int_t mord = 31;                                              // MURA mask order
-    Float_t masksource = 150., masklength = 64., maskthick = 20.; // mask dimensions
+    Float_t masksource = 170., masklength = 70., maskthick = 20.; // mask dimensions
 
     Float_t minTheta, maxTheta = 180;
 

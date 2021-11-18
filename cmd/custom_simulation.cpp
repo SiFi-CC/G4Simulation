@@ -35,7 +35,7 @@ int main(int argc, char** argv)
         "Mask: order:mask-source:width/length:thickness [mm], default: 31:170:70:20", 0, 0);
     CmdLineOption opt_masktype("MaskType", "-masktype",
                                "MaskType: {standart, round, pet, nowallpet, nowallpetcut}",
-                               "standart");
+                               "nowallpet");
     CmdLineOption opt_masktype_cut(
         "MaskCut", "-cut",
         "MaskNumber of pixels,(relevant only if massktype=nowallpetcut) default: 31(integer)", 31);
@@ -69,11 +69,11 @@ int main(int argc, char** argv)
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t detectorsource = 200, fibrewidth = 1.3; // detector dimensions
+    Float_t detectorsource = 220, fibrewidth = 1.3; // detector dimensions
     Int_t fibrenum = 16;                            // number of fibers in one layer
 
     Int_t mord = 31;                                              // MURA mask order
-    Float_t masksource = 150., masklength = 64., maskthick = 20.; // mask dimensions
+    Float_t masksource = 170., masklength = 70., maskthick = 20.; // mask dimensions
 
     Float_t minTheta, maxTheta = 180;
 
