@@ -1,9 +1,11 @@
+ <!-- Convert to MediaWiki format:
+ 	$ pandoc .\DOC.md --mathjax -f markdown -t mediawiki -s -o DOC.wiki -->
+
 # G4Simulation
 *[SIFI-CM][sifi_link] 'simple'[^1] Geant4 Simulation*
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [General description](#general-description)
 - [Usage](#usage)
   - [Simulation](#simulation)
   - [H-matrix calculation](#h-matrix-calculation)
@@ -56,7 +58,7 @@ cp ../*.mac .
 
 ## Geometry
 
-![Geometry](scripts/Geometry.png)
+![Geometry](scripts/CM_geometry.png)
 
 * **SD** - distance from the source plane to the detector
 * **SM** - distance from the source plane to the middle of the mask
