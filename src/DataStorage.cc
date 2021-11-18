@@ -99,10 +99,10 @@ void DataStorage::registerDepositScoring(const G4String& volume, const G4ThreeVe
         {   
             fEnergyDeposits.eventId = fSourceRecord.eventId;
             fEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
-            // fEnergyDeposits.energy = energy;
+            fEnergyDeposits.energy = energy;
 
             fEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
-            fEnergyDeposits.hits->Fill();
+            // fEnergyDeposits.hits->Fill();
             total_deposited += energy;
             // spdlog::info("Energy = {}", energy);
         }
@@ -130,10 +130,10 @@ void DataStorage::registerDepositScoringHypMed(const G4String& volume, const G4i
         {
             fLayersDeposits[layerNum].eventId = fSourceRecord.eventId;
             fLayersDeposits[layerNum].position = TVector3(pos.x(), pos.y(), pos.z());
-            // fLayersDeposits[layerNum].energy = energy;
+            fLayersDeposits[layerNum].energy = energy;
 
             fLayersDeposits[layerNum].histogram.Fill(pos.x(), pos.y(), energy);
-            fLayersDeposits[layerNum].hits->Fill();
+            // fLayersDeposits[layerNum].hits->Fill();
             total_deposited += energy;
         }
         if (fEnable.hMatrixScoring) { setHmatrixHypMed(layerNum, pos.x(), pos.y(), fBinX, fBinY, energy); }

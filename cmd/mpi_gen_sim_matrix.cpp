@@ -30,8 +30,7 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::info);
 
     CmdLineOption opt_det("Plane", "-det",
-                          "Detector: detector-source:nFibres:fibre_width[mm], default: 200:16:1.3",
-                          0, 0);
+                          "Detector-source distance [mm], default: 220",220);
     CmdLineOption opt_mask(
         "Mask", "-mask",
         "Mask: order:mask-source:width:length:thickness [mm], default: 31:150:64:20", 0, 0);
@@ -44,8 +43,6 @@ int main(int argc, char** argv)
     CmdLineOption opt_events("Events", "-n", "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e", "Energy of particles [keV], default: 4400 (integer)",
                              4400);
-    CmdLineOption opt_nlay("#layers", "-nlay", "Number of layers in detector, default: 4 (integer)",
-                           4);
     CmdLineOption opt_source("Source", "-source",
                              "Source plane size and number of bins [mm], default: 64:100", 0);
 
@@ -62,27 +59,14 @@ int main(int argc, char** argv)
 
     const Positional& args = CmdLineConfig::GetPositionalArguments();
 
-    Float_t detectorsource = 200, fibrewidth = 1.3; // detector dimensions
-    Int_t fibrenum = 16;                            // number of fibers in one layer
+    Float_t detectorsource = opt_det.GetDoubleValue(); // detector dimensions
 
     Int_t mord = 31;                                              // MURA mask order
     Float_t masksource = 150., masklength = 64., maskthick = 20.; // mask dimensions
 
     Float_t sRange = 64;                 // source dimensions
     Int_t maxBinX = 100, maxBinY = 100;  // source bins
-    int nLayer = opt_nlay.GetIntValue(); // number of layers in detector
 
-    if (opt_det.GetArraySize() == 3)
-    {
-        detectorsource = opt_det.GetDoubleArrayValue(1);
-        fibrenum = opt_det.GetIntArrayValue(2);
-        fibrewidth = opt_det.GetDoubleArrayValue(3);
-    }
-    else if (opt_det.GetArraySize() != 0)
-    {
-        spdlog::error("Detector plane - 3 parameters required, {} given", opt_det.GetArraySize());
-        abort();
-    }
     if (opt_mask.GetArraySize() == 4)
     {
         mord = opt_mask.GetIntArrayValue(1);
@@ -110,14 +94,6 @@ int main(int argc, char** argv)
     }
     if (CmdLineOption::GetFlagValue("Single_dimension")) { maxBinY = 1; }
 
-    printf("Detector : %g %g %i %g [mm]\n", detectorsource, fibrenum * fibrewidth, fibrenum,
-           fibrewidth);
-    printf("Mask     : %s, %g %g %g %g [mm]\n", opt_masktype.GetStringValue(), masksource,
-           masklength, masklength, maskthick);
-    printf("Mask order      : %i\n", mord);
-    printf("No. of events  : %i\n", opt_events.GetIntValue());
-    printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
-    printf("Source plane [mm] : %g %g Number of bins: %i %i\n", sRange, sRange, maxBinX, maxBinY);
 
     double maskdetector = detectorsource - masksource;
     int energy = opt_energy.GetIntValue();
@@ -166,6 +142,16 @@ int main(int argc, char** argv)
     int layer1binsY = 36;
     int layer2binsX = 34;
     int layer2binsY = 36;
+
+    printf("Detector HypMed Array: %g %g %g [mm]\n", detectorsource, layer2binsY * crystalWidth,
+           crystalWidth);
+    printf("Mask     : %s, %g %g %g %g [mm]\n", opt_masktype.GetStringValue(), masksource,
+           masklength, masklength, maskthick);
+    printf("Mask order      : %i\n", mord);
+    printf("No. of events  : %i\n", opt_events.GetIntValue());
+    printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
+    printf("Source plane [mm] : %g %g Number of bins: %i %i\n", sRange, sRange, maxBinX, maxBinY);
+
     // top
     CrystalLayer layer0 = CrystalLayer(layer0binsX, layer0binsY,   // number of crystals in layer
                                        Crystal({crystalWidth * mm, // fibre length
