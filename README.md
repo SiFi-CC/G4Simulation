@@ -91,7 +91,7 @@ At the same time, it can be considered to use larger mask, but additional rods s
 
 At this point experiments with geometry parameters led to finding optimal (*or just better than other in some particular cases*) values and set-ups.
 
-##### Small-scale prototype  
+##### Small-scale prototype  **2D** and **1D**
 
 64 fibers in total, tested with 4 layers by 16
 (can be also arranged in 2 layers by 32 or 1 layer with 64 fibers)
@@ -101,7 +101,18 @@ At this point experiments with geometry parameters led to finding optimal (*or j
 - M = 70 mm
 - M_z = 20 mm
 - S = 70 mm
-<!-- - Number of points in the source plane: 100x100=10000 -->
+- Number of points in the source plane: 100x100=10000
+
+##### Large-scale prototype  **2D**
+
+tested with 8 layers with 76 fibers
+
+- SM = 270 mm
+- MD = 50 mm
+- M = 210 mm
+- M_z = 20 mm
+- S = 105 mm (210 mm is planned to be tested)
+- Number of points in the source plane: 100x100=10000
 
 ## Usage
 
