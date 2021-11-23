@@ -43,6 +43,9 @@ class Edges(namedtuple("XY", "x y")):
     def y_cent(self):
         return self.y[:-1] - sign(self.y[1] - self.y[0])*self.y_binWidth
 
+    def __eq__(self, other):
+        return np.all(self.x == other.x) and np.all(self.y == other.y)
+
 
 def sign(x):
     return (1, -1)[x > 0]
