@@ -263,7 +263,7 @@ The most of the optional arguments are the same as for the [simulation](#optiona
 |  `-masktype`            |    nowallpet    | string  | Mask type: \{`standard`, `round`, `pet`, `nowallpet`, `nowallpetcut`\}
 |  `-cut`            |    31    | int  | Number of pixels in mask, (relevant only if masktype=nowallpetcut)
 |  `-er`            |    0.0    | float  | Error in W rods size [mm], (relevant only if `masktype`=`nowallpetcut`)
-|  `-source`            |    70:100    | float:int  | Range and number of bins in the source plane
+|  `-source`            |    70:100    | float:int  | Range (**S**) and number of bins in the source plane
 |  `-n`            |    1000    | int  | Number of generated events for each source position
 |  `-e`            |    4400    | int  | Energy of particles [keV]
 |  `-1d`            |    none    | flag  | Mask and detector are single-dimensional. The source position is shifted only along one dimension (`x`)

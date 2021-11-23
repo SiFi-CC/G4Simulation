@@ -2,39 +2,81 @@ import uproot
 from collections import namedtuple
 import numpy as np
 from tqdm import tqdm
+from scipy.stats import multivariate_normal
+import scipy.optimize as opt
 
 SCORE = {"mse": 0, "uqi": 1, "both": 2}
 
-XY = namedtuple("XY", "x y")
+# XY = namedtuple("XY", "x y")
+GAUSS2D = namedtuple("gauss_params", "meanx meany sigmax sigmay cov ampl cut")
+
+
+class Edges(namedtuple("XY", "x y")):
+    """Class inherited from named tuple which represents
+    edges of the histogram coordinates.
+
+    Raises
+    ------
+    ValueError
+        If trying to get binWidth when widths are different for X and Y
+    """
+    @property
+    def x_binWidth(self):
+        return 0.5*abs(self.x[1] - self.x[0])
+
+    @property
+    def y_binWidth(self):
+        return 0.5*abs(self.y[1] - self.y[0])
+
+    @property
+    def binWidth(self):
+        if self.x_binWidth == self.y_binWidth:
+            return self.x_binWidth
+        else:
+            raise ValueError("Different widths for X and Y")
+
+    @property
+    def x_cent(self):
+        return self.x[:-1] - sign(self.x[1] - self.x[0])*self.x_binWidth
+
+    @property
+    def y_cent(self):
+        return self.y[:-1] - sign(self.y[1] - self.y[0])*self.y_binWidth
+
+
+def sign(x):
+    return (1, -1)[x > 0]
+
 
 class Histogram(namedtuple('Histogram', ['vals', 'edges', 'name'])):
 
     vals: np.array
-    edges: np.array
+    edges: Edges
     name: str
 
     def __repr__(self):
         return "Histogram {}".format(self.name)
 
 
-def get_histo(path, histo_names):
-    """[summary]
+def get_histo(path, histo_names=["energyDeposits", "sourceHist"]):
+    """Get histogram(s) from the .root file
 
     Args:
         path (str): Path to the root file
-        histo_names (str or iterable of strings): Names of histograms
+        histo_names (str or iterable of strings): Name(s) of histograms
 
     Returns:
         list[Histogram]: List of 'Histogram' objects
     """
-    if type(histo_names) == str:
-        histo_names = [histo_names]
+    histo_names_it = [histo_names] if type(histo_names) == str else histo_names
     result = []
     with uproot.open(path) as file:
-        for name in histo_names:
+        for name in histo_names_it:
             vals, edgesx, edgesy = file[name].to_numpy()
-            result.append(Histogram(vals[:, ::-1], XY(edgesx, edgesy[::-1]), name))
-    return result
+            result.append(Histogram(vals[:, ::-1],
+                                    Edges(edgesx, edgesy[::-1]),
+                                    name))
+    return result[0] if type(histo_names) == str else result
 
 
 def get_hmat(path, norm=True):
@@ -45,6 +87,10 @@ def get_hmat(path, norm=True):
     if norm:
         matrixH = matrixH/matrixH.sum(axis=0)  # normalization
     return matrixH
+
+
+def get_source_edges(path):
+    return get_histo(path, "sourceHist").edges
 
 
 def ls(path):
@@ -95,7 +141,7 @@ def mse_uqi_set(x_set, y, normx=False, normy=True):
     return mse, uqi, comb
 
 
-def reco_mlem(matr, image, niter, reco=None, source=None):
+def reco_mlem(matr, image, niter, reco=None):
     if not reco:
         reco = [np.ones(matr.shape[-1])]
     for _ in tqdm(range(niter), desc="Reconstruction"):
@@ -122,13 +168,111 @@ def reco_mlem_auto(matr, image, source,
     return reco[:-1]
 
 
-def hmat_to_1d(hmat):
-    shap = int(np.sqrt(hmat.shape[0]))
-    return hmat.reshape(shap, shap, 10).sum(axis=1)
-
-
 def reco_1d_from_file(filename, hmat2, niter=100):
-    sim = get_histo(filename, ["energyDeposits"])
-    sim_row = sim[0].vals.sum(axis=1).reshape(-1)
+    """make reconstruction 1D from file"""
+    sim = get_histo(filename, "energyDeposits")
+    sim_row = sim.vals.sum(axis=1).reshape(-1)
     im = reco_mlem(hmat2, sim_row, niter)
     return im
+
+
+def get_hymped_hmat(path, norm=True):
+    with uproot.open(path) as matr_file:
+        Tmatr2 = matr_file["matrixH0"]
+        matrixH0 = np.array(Tmatr2.member("fElements"))\
+            .reshape(Tmatr2.member("fNrows"), Tmatr2.member("fNcols"))
+
+        Tmatr2 = matr_file["matrixH1"]
+        matrixH1 = np.array(Tmatr2.member("fElements"))\
+            .reshape(Tmatr2.member("fNrows"), Tmatr2.member("fNcols"))
+
+        Tmatr2 = matr_file["matrixH2"]
+        matrixH2 = np.array(Tmatr2.member("fElements"))\
+            .reshape(Tmatr2.member("fNrows"), Tmatr2.member("fNcols"))
+    matrix_all = np.vstack((matrixH0, matrixH1, matrixH2))
+    if norm:
+        matrix_all /= matrix_all.sum(axis=0)
+    return matrix_all
+
+
+def get_hypmed_sim_row(path):
+    simdata = get_histo(
+        path, [f"energyDepositsLayer{i}" for i in range(3)])
+    return np.hstack([sim.vals.flatten() for sim in simdata])
+
+
+def get_sim_row(path):
+    simdata = get_histo(path, "energyDeposits")
+    return simdata[0].vals.flatten()
+
+
+def Gaussian_2D(xdata_tuple,
+                meanx, meany,
+                sigmax, sigmay, cov,
+                amplitude, cut):
+    """Probability density function for the 2D multivariate normal distribution
+    with custom amplitude and shift along Y.
+    This function is used for fitting.
+
+    Parameters
+    ----------
+    xdata_tuple : tuple(numpy.array, numpy.array)
+        Tuple of the X and Y coordinates
+    meanx : float
+            Location parameter for X axis
+    meany : float
+            Location parameter for Y axis
+    sigmax : float
+             Variance for X axis
+    sigmay : float
+             Variance for Y axis
+    cov : float
+          cov(X, Y)
+    amplitude : float
+    cut : float
+
+    Returns
+    -------
+    numpy.array
+        Flattened array of the function values
+    """
+    xdata_tuple = np.meshgrid(*xdata_tuple)
+    cov_matrix = [[sigmax, cov], [cov, sigmay]]
+    return cut + amplitude*multivariate_normal.pdf(np.dstack(xdata_tuple),
+                                                   [meanx, meany],
+                                                   cov_matrix).ravel()
+
+
+def fit_2d(x, y, data):
+    """Fir the function values with 2D Gaussian
+
+    Parameters
+    ----------
+    x : numpy.array
+    y : numpy.array
+    data : numpy.array
+        2D numpy array with function values
+
+    Returns
+    -------
+    GAUSS2D
+        fitting parameters
+    """
+    meanx = x[np.argmax(data.sum(axis=0))]
+    meany = y[np.argmax(data.sum(axis=1))]
+    popt, _ = opt.curve_fit(
+        Gaussian_2D, (x, y), data.ravel(), (meanx, meany, 1, 1, 0.0, 1, 0))
+    return GAUSS2D(*popt)
+
+
+def reco_mlem_last(matr, image, niter, reco=None):
+    """Reconstruction which returns only the last image
+    """
+    if not reco:
+        reco = np.ones(matr.shape[-1])
+    else:
+        reco = reco[-1]
+    for _ in range(niter):
+        reco_tmp = reco*(matr.T @ (image/(matr @ reco)))
+        reco = reco_tmp
+    return reco
