@@ -8,8 +8,15 @@ import scipy.optimize as opt
 SCORE = {"mse": 0, "uqi": 1, "both": 2}
 
 # XY = namedtuple("XY", "x y")
-GAUSS2D = namedtuple("gauss_params", "meanx meany sigmax sigmay cov ampl cut")
+# GAUSS2D = namedtuple("gauss_params", "meanx meany sigmax sigmay theta ampl cut")
 
+class GAUSS2D(namedtuple("gauss_params", "meanx meany sigmax sigmay theta ampl cut")):
+    @property
+    def variancex(self):
+        return self.sigmax**2
+    @property
+    def variancey(self):
+        return self.sigmay**2
 
 class Edges(namedtuple("XY", "x y")):
     """Class inherited from named tuple which represents
@@ -211,7 +218,7 @@ def get_sim_row(path):
 
 def Gaussian_2D(xdata_tuple,
                 meanx, meany,
-                sigmax, sigmay, cov,
+                sigmax, sigmay, theta,
                 amplitude, cut):
     """Probability density function for the 2D multivariate normal distribution
     with custom amplitude and shift along Y.
@@ -226,11 +233,11 @@ def Gaussian_2D(xdata_tuple,
     meany : float
             Location parameter for Y axis
     sigmax : float
-             Variance for X axis
+             Standard deviation for X axis
     sigmay : float
-             Variance for Y axis
-    cov : float
-          cov(X, Y)
+             Standard deviation for Y axis
+    theta : float
+            angle of the ellipsoid
     amplitude : float
     cut : float
 
@@ -239,11 +246,13 @@ def Gaussian_2D(xdata_tuple,
     numpy.array
         Flattened array of the function values
     """
-    xdata_tuple = np.meshgrid(*xdata_tuple)
-    cov_matrix = [[sigmax, cov], [cov, sigmay]]
-    return cut + amplitude*multivariate_normal.pdf(np.dstack(xdata_tuple),
-                                                   [meanx, meany],
-                                                   cov_matrix).ravel()
+    x, y = np.meshgrid(*xdata_tuple)
+    a = (np.cos(theta)**2)/(2*sigmax**2) + (np.sin(theta)**2)/(2*sigmay**2)
+    b = -(np.sin(2*theta))/(4*sigmax**2) + (np.sin(2*theta))/(4*sigmay**2)
+    c = (np.sin(theta)**2)/(2*sigmax**2) + (np.cos(theta)**2)/(2*sigmay**2)
+    g = cut + amplitude*np.exp( - (a*((x-meanx)**2) + 2*b*(x-meanx)*(y-meany) 
+                            + c*((y-meany)**2)))
+    return g.ravel()
 
 
 def fit_2d(x, y, data):
@@ -264,7 +273,7 @@ def fit_2d(x, y, data):
     meanx = x[np.argmax(data.sum(axis=0))]
     meany = y[np.argmax(data.sum(axis=1))]
     popt, _ = opt.curve_fit(
-        Gaussian_2D, (x, y), data.ravel(), (meanx, meany, 1, 1, 0.0, 1, 0))
+        Gaussian_2D, (x, y), data.ravel(), (meanx, meany, 1, 1, 1, 1, 0))
     return GAUSS2D(*popt)
 
 

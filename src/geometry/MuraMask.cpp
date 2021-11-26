@@ -243,7 +243,6 @@ G4LogicalVolume* MuraMask::Construct()
         {
             for (int j = 0; j < cut; j++)
             {
-                if (i == 0) { continue; }
                 if (CmdLineOption::GetFlagValue("Single_dimension"))
                 {
                     ismask = isMaskedAt(round(i + fMaskOrder / 2) - (int)cut / 2);
@@ -254,6 +253,10 @@ G4LogicalVolume* MuraMask::Construct()
                                         j + round(fMaskOrder / 2) - (int)cut / 2) ||
                              j == 0;
                 }
+                // if (j==0)
+                // {
+                //     spdlog::info("MASK at {} {}", i , ismask);
+                // }
                 if (ismask)
                 {
                     auto posX = (i + 0.5) * segX - fSize.x() / 2;
