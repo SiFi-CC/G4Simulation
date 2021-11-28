@@ -74,11 +74,11 @@ cp ../*.mac .
 
 The size of the detector plane is determined by the fibers size and amount. It is hardcoded that the length of a single fiber is **10 cm**. Also it is not hardcoded but recommended to take a width of a fiber as **1.36 mm** (despite the fact that default value is 1.3 mm which should be corrected).
 
-So in **2D** regime, the detector plane would be a square-shaped and one side of such a square would be equal to **nFibres**$\times$**fibre_width**.
+So in **2D** regime, the detector plane would be a square-shaped and one side of such a square would be equal to **nFibres**$$\times$$**fibre_width**.
 
-In **1D** the size of the detector plane in **Y** direction is always the same as fiber length (10 cm), and in **X** direction it is equal to **nFibres**$\times$**fibre_width**.
+In **1D** the size of the detector plane in **Y** direction is always the same as fiber length (10 cm), and in **X** direction it is equal to **nFibres**$$\times$$**fibre_width**.
 
-The thickness of the detector is always determined as **nLayers**$\times$**fibre_width**
+The thickness of the detector is always determined as **nLayers**$$\times$$**fibre_width**
 
 #### Mask
 
