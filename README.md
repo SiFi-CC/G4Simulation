@@ -61,7 +61,7 @@ cp ../*.mac .
 
 * **SD** - distance from the source plane to the detector
 * **SM** - distance from the source plane to the middle of the mask
-* **MD** - distance from the middle of the mask to the detector ($SD = SM + MD$)
+* **MD** - distance from the middle of the mask to the detector (**SD = SM + MD**)
 * **M** - size of the mask in X and Y directions
 * **M_z** - mask thickness
 * **S** - size of the source plane. This dimension is specified during the system matrix calculation. It determines a space of reconstructed images for a particular matrix.
@@ -74,15 +74,15 @@ cp ../*.mac .
 
 The size of the detector plane is determined by the fibers size and amount. It is hardcoded that the length of a single fiber is **10 cm**. Also it is not hardcoded but recommended to take a width of a fiber as **1.36 mm** (despite the fact that default value is 1.3 mm which should be corrected).
 
-So in **2D** regime, the detector plane would be a square-shaped and one side of such a square would be equal to **nFibres**$$\times$$**fibre_width**.
+So in **2D** regime, the detector plane would be a square-shaped and one side of such a square would be equal to **nFibres X fibre_width**.
 
-In **1D** the size of the detector plane in **Y** direction is always the same as fiber length (10 cm), and in **X** direction it is equal to **nFibres**$$\times$$**fibre_width**.
+In **1D** the size of the detector plane in **Y** direction is always the same as fiber length (10 cm), and in **X** direction it is equal to **nFibres X fibre_width**.
 
-The thickness of the detector is always determined as **nLayers**$$\times$$**fibre_width**
+The thickness of the detector is always determined as **nLayers X fibre_width**
 
 #### Mask
 
-At the moment it is decided to test a `nowallpet` mask (or `nowallpetcut`) for the **2D** mode (the practical implementation can be slightly different for the **1D**). For that purpose the Tungsten rods had been ordered together with the first PET raster. It has been done for the **31 order** mask, with the size **M = 70 mm** and **M_z = 20 mm**. So each rod is in size $70/31 \approx 2.3 \text{ mm}$. The number of rods available is **480**(or so?) This information should be taken into account when constructing another mask patterns - that is the single pixel size should kept the same (no matter it is **1D** or **2D**).
+At the moment it is decided to test a `nowallpet` mask (or `nowallpetcut`) for the **2D** mode (the practical implementation can be slightly different for the **1D**). For that purpose the Tungsten rods had been ordered together with the first PET raster. It has been done for the **31 order** mask, with the size **M = 70 mm** and **M_z = 20 mm**. So each rod is in size **70/31 ≈ 2.3 mm**. The number of rods available is **480**(or so?) This information should be taken into account when constructing another mask patterns - that is the single pixel size should kept the same (no matter it is **1D** or **2D**).
 
 At the same time, it can be considered to use larger mask, but additional rods should be ordered than.
 
@@ -115,7 +115,7 @@ tested with 8 layers with 76 fibers
 
 ## Usage
 
-The program operates in 2 modes. [The first](#simulation) of them is used to simulate an experiment of $\gamma$-particles being shot towards the detector. And [the second](#h-matrix-calculation) - for the calculation of the system matrix (needed for the reconstruction).
+The program operates in 2 modes. [The first](#simulation) of them is used to simulate an experiment of γ-particles being shot towards the detector. And [the second](#h-matrix-calculation) - for the calculation of the system matrix (needed for the reconstruction).
 
 The general procedure is very similar for both modes. The basic difference is that the second performs a set of single simulations and combines them together in the form of `system matrix`.
 
@@ -144,7 +144,7 @@ The general procedure is very similar for both modes. The basic difference is th
 |  `-sourceBins`            |    70:100    | int  | Range and number of bins in the source histogram
 |  `-n`            |    1000    | int  | Number of generated events
 |  `-e`            |    4400    | int  | Energy of particles [keV]
-|  `-theta`            |    auto    | int  | Min $\theta$ angle [Deg], (maximum $\theta$ is 180)
+|  `-theta`            |    auto    | int  | Min θ angle [Deg], (maximum θ is 180)
 |  `-sMac`            |    none    | string  | mac-script to change source parameters
 |  `-vis`            |    none    | flag  | Run in visual mode(no simulation is performed)
 |  `-1d`            |    none    | flag  | Mask and detector are single-dimensional
@@ -192,7 +192,7 @@ If `-masktype=nowallpetcut`, the cut parameter specifies a size of mask's centra
 **Parameter -er**
 
 Specifies the error in the size of Tungsten rods. If used, than  from the each dimension of each rod is subtracted a random number 
-from the distribution: $er/2 - N(er/2, er/6)$
+from the distribution: er/2 - N(er/2, er/6)
 
 
 **Parameter -source**
@@ -212,13 +212,13 @@ Number of generated events.
 
 **Parameter -e**
 
-Energy of generated $\gamma$-particles [kEv].
+Energy of generated γ-particles [kEv].
 
 
 **Parameter -theta**
 
-This parameter allows to set the $\theta_{min}$ angle [deg]. 
-$\theta_{max}$ is always $180^o$ (parallel to the source-detector axis). It means that particles will be shot with angles $[\theta_{min}, 180^o]$.
+This parameter allows to set the θmin angle [deg]. 
+θmax is always 180 [deg] (parallel to the source-detector axis). It means that particles will be shot with angles [θmin, 180].
 
 
 **Parameter -sMac**
