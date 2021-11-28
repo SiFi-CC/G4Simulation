@@ -154,7 +154,7 @@ def mse_uqi_set(x_set, y, normx=False, normy=True):
 def reco_mlem(matr, image, niter, reco=None):
     if not reco:
         reco = [np.ones(matr.shape[-1])]
-    for _ in tqdm(range(niter), desc="Reconstruction"):
+    for _ in tqdm(range(len(reco)-1, niter), desc="Reconstruction"):
         reco_tmp = reco[-1]*(matr.T @ (image/(matr @ reco[-1])))
         reco.append(normalize(reco_tmp))
     return reco

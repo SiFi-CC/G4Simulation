@@ -14,11 +14,10 @@
 
 ## Prerequisites
 
-* Required ROOT version: 6.24/00
+* Required ROOT version: 6.24/00  
   *For the installation guide look at [root_official][root_install]*[^root]
 * Compiler supporting c++17
-* CmdLineArgs >= 2.2.0
-  *Available in [SiFi-CC/CmdLineArgs](https://github.com/SiFi-CC/CmdLineArgs)*
+* [CmdLineArgs](https://github.com/SiFi-CC/CmdLineArgs) >= 2.2.0
 * mpich
   
 
