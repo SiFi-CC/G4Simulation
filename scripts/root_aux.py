@@ -53,7 +53,6 @@ class Edges(namedtuple("XY", "x y")):
     def __eq__(self, other):
         return np.all(self.x == other.x) and np.all(self.y == other.y)
 
-
 def sign(x):
     return (1, -1)[x > 0]
 
@@ -66,6 +65,17 @@ class Histogram(namedtuple('Histogram', ['vals', 'edges', 'name'])):
 
     def __repr__(self):
         return "Histogram {}".format(self.name)
+    
+    def __add__(self, other):
+        if self.edges == other.edges:
+            total_vals = self.vals + other.vals
+        else:
+            raise KeyError
+        if self.name == other.name:
+            name = self.name
+        else:
+            name = "summed_histo"
+        return Histogram(total_vals, self.edges, name)
 
 
 def get_histo(path, histo_names=["energyDeposits", "sourceHist"]):
@@ -288,3 +298,43 @@ def reco_mlem_last(matr, image, niter, reco=None):
         reco_tmp = reco*(matr.T @ (image/(matr @ reco)))
         reco = reco_tmp
     return reco
+
+def is_prime(n):
+    if n==2 or n==3: return True
+    if n%2==0 or n<2: return False
+    for i in range(3, int(n**0.5)+1, 2):   # only odd numbers
+        if n%i==0:
+            return False    
+    return True
+
+
+def get_mura(order):
+    """Return 2D MURA array
+    It is not a classical way.
+    Comparing to the wikipedia algorytm the mask is inverted 
+    """
+    if not is_prime(order):
+        raise ValueError("The mask order should be prime")
+    quadratic_residues = np.unique(np.arange(order)**2 % order)
+    mask = np.zeros((order, order))
+    c = -np.ones(order)
+    c[np.isin(np.arange(order), quadratic_residues)] = 1
+    cc = np.outer(c, c)
+    mask[np.where(cc == 1)] = 1
+    mask = np.abs(mask - 1)[:, ::-1]
+    mask[0, :] = 1
+    mask[:, -1] = 0
+    return mask
+
+
+def get_mura_cut(order, cutrange):
+    """Return 2D MURA array
+    It is not a classical way.
+    Comparing to the wikipedia algorytm the mask is inverted 
+    """
+    mask = get_mura(order)
+    mask_cut = mask[order//2-cutrange//2:order//2+cutrange // 2 + 1,
+                    order//2-cutrange//2:order//2+cutrange//2 + 1]
+    mask_cut[0, :] = 1
+    mask_cut[:, -1] = 0
+    return mask_cut
