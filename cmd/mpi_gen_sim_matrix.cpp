@@ -54,6 +54,8 @@ int main(int argc, char** argv)
                                 "Error in W rods size, default: 0.0[mm]"
                                 "(relevant only for pet and nowallpet masks",
                                 0.0);
+    CmdLineOption opt_detshift("DetectorShift", "-detshift",
+                               "Detector position shift [mm], default: 0:0", 0);
 
     CmdLineOption opt_dimension("Single_dimension", "-1d", "Run in 1 dimension");
 
@@ -70,6 +72,7 @@ int main(int argc, char** argv)
     Float_t sRange = 70;                 // source dimensions
     Int_t maxBinX = 100, maxBinY = 100;  // source bins
     int nLayer = opt_nlay.GetIntValue(); // number of layers in detector
+    double detshiftX = 0.0, detshiftY = 0.0;
 
     if (opt_det.GetArraySize() == 3)
     {
@@ -105,6 +108,21 @@ int main(int argc, char** argv)
     {
         spdlog::error("Source position - 2 parameters required, {} given",
                       opt_source.GetArraySize());
+        abort();
+    }
+    if (opt_detshift.GetArraySize() == 2)
+    {
+        detshiftX = opt_detshift.GetDoubleArrayValue(1);
+        detshiftY = opt_detshift.GetDoubleArrayValue(2);
+    }
+    else if (opt_detshift.GetArraySize() == 1)
+    {
+        detshiftX = opt_detshift.GetDoubleArrayValue(1);
+    }
+    else if (opt_detshift.GetArraySize() != 0)
+    {
+        spdlog::error("Source histogram - 2 parameters required: range and Nbins, {} given",
+                      opt_detshift.GetArraySize());
         abort();
     }
     if (CmdLineOption::GetFlagValue("Single_dimension")) { maxBinY = 1; }
@@ -204,7 +222,8 @@ int main(int argc, char** argv)
 
     log::info("maskDetDistance {}, maskSrcDistance {}", maskdetector * mm, masksource * mm);
     construction->setMaskPos(masksource * mm);
-    construction->setDetectorPos(detectorsource * mm + nLayer * fibrewidth / 2 * mm);
+    construction->setDetectorPos(detshiftX * mm, detshiftY * mm,
+                                 detectorsource * mm + nLayer * fibrewidth / 2 * mm);
     runManager.DefineWorldVolume(construction->Construct());
     runManager.GeometryHasBeenModified();
     log::info("world_size = {}", world_size);

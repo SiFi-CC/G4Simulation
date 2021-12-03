@@ -177,7 +177,8 @@ def reco_mlem_auto(matr, image, source,
         reco = [np.ones(matr.shape[-1])]
     score = mse_uqi_set(reco, source_norm, normy=False)[SCORE[method]]
     with tqdm(total=maxiter, desc="Reconstruction(autoiter)") as pbar:
-        while len(reco) == 1 or score[-1] < score[-2]:
+        while (len(reco) == 1 or score[-1] < score[-2]) and\
+              len(reco) < maxiter+1:
             reco_tmp = reco[-1]*(matr.T @ (image/(matr @ reco[-1])))
             reco.append(normalize(reco_tmp))
             score.append(mse_uqi(reco[-1], source_norm)[SCORE[method]])
@@ -299,12 +300,15 @@ def reco_mlem_last(matr, image, niter, reco=None):
         reco = reco_tmp
     return reco
 
+
 def is_prime(n):
-    if n==2 or n==3: return True
-    if n%2==0 or n<2: return False
-    for i in range(3, int(n**0.5)+1, 2):   # only odd numbers
-        if n%i==0:
-            return False    
+    if n == 2 or n == 3:
+        return True
+    if n % 2 == 0 or n < 2:
+        return False
+    for i in range(3, int(n**0.5) + 1, 2):   # only odd numbers
+        if n % i == 0:
+            return False
     return True
 
 
@@ -338,3 +342,13 @@ def get_mura_cut(order, cutrange):
     mask_cut[0, :] = 1
     mask_cut[:, -1] = 0
     return mask_cut
+
+
+def reco_mlem_raw(matr, image, sens, niter=100, reco=None):
+    if not reco:
+        reco = [np.ones(matr.shape[-1])]
+    for _ in tqdm(range(len(reco)-1, niter), desc="Reconstruction"):
+        reco_tmp = reco[-1]/sens*(matr.T @ (image/(matr @ reco[-1])))
+        # reco_tmp = reco[-1]*(matr.T @ (image/(matr @ reco[-1])))
+        reco.append(reco_tmp)
+    return reco

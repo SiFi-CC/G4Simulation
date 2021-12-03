@@ -148,6 +148,7 @@ The general procedure is very similar for both modes. The basic difference is th
 |  `-sMac`            |    none    | string  | mac-script to change source parameters
 |  `-vis`            |    none    | flag  | Run in visual mode(no simulation is performed)
 |  `-1d`            |    none    | flag  | Mask and detector are single-dimensional
+|  `-detshift`            |    0.0:0.0    | doubles  | The shift of the detector position
 
 
 **Parameter -det**
@@ -239,6 +240,9 @@ If this flag is used, the programs runs in visual mode[^2]. That is Geant4 graph
 
 If this flag is used, the detector and mask are constructed in a singe-dimensional mode along x-axis  
 
+**Parameter -detshift**
+
+Two values (X and Y direction) which determine the shift of the detector with respect to the center of mask. If one value is inserted - the shift will be applied only in X direction.
 
 ### H-matrix calculation
 
@@ -266,6 +270,9 @@ The most of the optional arguments are the same as for the [simulation](#optiona
 |  `-n`            |    1000    | int  | Number of generated events for each source position
 |  `-e`            |    4400    | int  | Energy of particles [keV]
 |  `-1d`            |    none    | flag  | Mask and detector are single-dimensional. The source position is shifted only along one dimension (`x`)
+|  `-detshift`            |    0.0:0.0    | doubles  | The shift of the detector position
+
+
 
 #### **Parameter -source**
 

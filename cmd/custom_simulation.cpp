@@ -62,6 +62,9 @@ int main(int argc, char** argv)
 
     CmdLineOption opt_dimension("Single_dimension", "-1d", "Run in 1 dimension");
 
+    CmdLineOption opt_detshift("DetectorShift", "-detshift",
+                                "Detector position shift [mm], default: 0:0", 0);
+
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
     const Positional& args = CmdLineConfig::GetPositionalArguments();
@@ -81,6 +84,8 @@ int main(int argc, char** argv)
 
     Int_t sNbins = 100; // source histogram parameters
     Float_t sRange = 70;
+
+    double detshiftX = 0.0, detshiftY = 0.0;
 
     int nLayer = opt_nlay.GetIntValue(); // number of layers in the detector
     storage.enablesource();              // enblesource histogram
@@ -144,6 +149,21 @@ int main(int argc, char** argv)
                           opt_sourceBins.GetArraySize());
             abort();
         }
+        if (opt_detshift.GetArraySize() == 2)
+        {
+            detshiftX = opt_detshift.GetDoubleArrayValue(1);
+            detshiftY = opt_detshift.GetDoubleArrayValue(2);
+        }
+        else if (opt_detshift.GetArraySize() == 1)
+        {
+            detshiftX = opt_detshift.GetDoubleArrayValue(1);
+        }
+        else if (opt_detshift.GetArraySize() != 0)
+        {
+            spdlog::error("Source histogram - 2 parameters required: range and Nbins, {} given",
+                          opt_detshift.GetArraySize());
+            abort();
+        }
     } // CmdLine options
 
     printf("Detector : %g %g %i %g [mm]\n", detectorsource, fibrenum * fibrewidth, fibrenum,
@@ -180,7 +200,8 @@ int main(int argc, char** argv)
                                       material, wrappingmaterial, airmaterial})));
     auto construction = new DetectorConstruction(&mask, &detector);
     construction->setMaskPos(masksource * mm);
-    construction->setDetectorPos(detectorsource * mm + nLayer * fibrewidth / 2 * mm);
+    construction->setDetectorPos(detshiftX * mm, detshiftY * mm,
+        detectorsource * mm + nLayer * fibrewidth / 2 * mm);
 
     G4RunManager runManager;
     runManager.SetUserInitialization(construction);
