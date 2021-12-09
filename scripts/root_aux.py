@@ -2,21 +2,10 @@ import uproot
 from collections import namedtuple
 import numpy as np
 from tqdm import tqdm
-from scipy.stats import multivariate_normal
-import scipy.optimize as opt
+
 
 SCORE = {"mse": 0, "uqi": 1, "both": 2}
 
-# XY = namedtuple("XY", "x y")
-# GAUSS2D = namedtuple("gauss_params", "meanx meany sigmax sigmay theta ampl cut")
-
-class GAUSS2D(namedtuple("gauss_params", "meanx meany sigmax sigmay theta ampl cut")):
-    @property
-    def variancex(self):
-        return self.sigmax**2
-    @property
-    def variancey(self):
-        return self.sigmay**2
 
 class Edges(namedtuple("XY", "x y")):
     """Class inherited from named tuple which represents
@@ -53,13 +42,14 @@ class Edges(namedtuple("XY", "x y")):
     def __eq__(self, other):
         return np.all(self.x == other.x) and np.all(self.y == other.y)
 
+
 def sign(x):
     return (1, -1)[x > 0]
 
 
 class Histogram(namedtuple('Histogram', ['vals', 'edges', 'name'])):
 
-    vals: np.array
+    vals: np.ndarray
     edges: Edges
     name: str
 
@@ -166,7 +156,8 @@ def reco_mlem(matr, image, niter, reco=None):
         reco = [np.ones(matr.shape[-1])]
     for _ in tqdm(range(len(reco)-1, niter), desc="Reconstruction"):
         reco_tmp = reco[-1]*(matr.T @ (image/(matr @ reco[-1])))
-        reco.append(normalize(reco_tmp))
+        # reco.append(normalize(reco_tmp))
+        reco.append(reco_tmp)
     return reco
 
 
@@ -227,67 +218,6 @@ def get_sim_row(path):
     return simdata[0].vals.flatten()
 
 
-def Gaussian_2D(xdata_tuple,
-                meanx, meany,
-                sigmax, sigmay, theta,
-                amplitude, cut):
-    """Probability density function for the 2D multivariate normal distribution
-    with custom amplitude and shift along Y.
-    This function is used for fitting.
-
-    Parameters
-    ----------
-    xdata_tuple : tuple(numpy.array, numpy.array)
-        Tuple of the X and Y coordinates
-    meanx : float
-            Location parameter for X axis
-    meany : float
-            Location parameter for Y axis
-    sigmax : float
-             Standard deviation for X axis
-    sigmay : float
-             Standard deviation for Y axis
-    theta : float
-            angle of the ellipsoid
-    amplitude : float
-    cut : float
-
-    Returns
-    -------
-    numpy.array
-        Flattened array of the function values
-    """
-    x, y = np.meshgrid(*xdata_tuple)
-    a = (np.cos(theta)**2)/(2*sigmax**2) + (np.sin(theta)**2)/(2*sigmay**2)
-    b = -(np.sin(2*theta))/(4*sigmax**2) + (np.sin(2*theta))/(4*sigmay**2)
-    c = (np.sin(theta)**2)/(2*sigmax**2) + (np.cos(theta)**2)/(2*sigmay**2)
-    g = cut + amplitude*np.exp( - (a*((x-meanx)**2) + 2*b*(x-meanx)*(y-meany) 
-                            + c*((y-meany)**2)))
-    return g.ravel()
-
-
-def fit_2d(x, y, data):
-    """Fir the function values with 2D Gaussian
-
-    Parameters
-    ----------
-    x : numpy.array
-    y : numpy.array
-    data : numpy.array
-        2D numpy array with function values
-
-    Returns
-    -------
-    GAUSS2D
-        fitting parameters
-    """
-    meanx = x[np.argmax(data.sum(axis=0))]
-    meany = y[np.argmax(data.sum(axis=1))]
-    popt, _ = opt.curve_fit(
-        Gaussian_2D, (x, y), data.ravel(), (meanx, meany, 1, 1, 1, 1, 0))
-    return GAUSS2D(*popt)
-
-
 def reco_mlem_last(matr, image, niter, reco=None):
     """Reconstruction which returns only the last image
     """
@@ -315,7 +245,7 @@ def is_prime(n):
 def get_mura(order):
     """Return 2D MURA array
     It is not a classical way.
-    Comparing to the wikipedia algorytm the mask is inverted 
+    Comparing to the wikipedia algorytm the mask is inverted
     """
     if not is_prime(order):
         raise ValueError("The mask order should be prime")
@@ -334,7 +264,7 @@ def get_mura(order):
 def get_mura_cut(order, cutrange):
     """Return 2D MURA array
     It is not a classical way.
-    Comparing to the wikipedia algorytm the mask is inverted 
+    Comparing to the wikipedia algorytm the mask is inverted
     """
     mask = get_mura(order)
     mask_cut = mask[order//2-cutrange//2:order//2+cutrange // 2 + 1,
@@ -344,11 +274,11 @@ def get_mura_cut(order, cutrange):
     return mask_cut
 
 
-def reco_mlem_raw(matr, image, sens, niter=100, reco=None):
-    if not reco:
-        reco = [np.ones(matr.shape[-1])]
-    for _ in tqdm(range(len(reco)-1, niter), desc="Reconstruction"):
-        reco_tmp = reco[-1]/sens*(matr.T @ (image/(matr @ reco[-1])))
-        # reco_tmp = reco[-1]*(matr.T @ (image/(matr @ reco[-1])))
-        reco.append(reco_tmp)
-    return reco
+# def reco_mlem_raw(matr, image, sens, niter=100, reco=None):
+#     if not reco:
+#         reco = [np.ones(matr.shape[-1])]
+#     for _ in tqdm(range(len(reco)-1, niter), desc="Reconstruction"):
+#         reco_tmp = reco[-1]/sens*(matr.T @ (image/(matr @ reco[-1])))
+#         # reco_tmp = reco[-1]*(matr.T @ (image/(matr @ reco[-1])))
+#         reco.append(reco_tmp)
+#     return reco
