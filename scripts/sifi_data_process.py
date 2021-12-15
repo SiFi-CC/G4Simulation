@@ -161,7 +161,7 @@ def fit_2d(x, y, data):
 def smooth(data, scale=7, norm=True, filter="median"):
     if filter == "median":
         smoothed = ndimage.median_filter(data, size=scale)
-    elif filter == "gaus":
+    elif filter == "gaus" or "gauss":
         smoothed = ndimage.gaussian_filter(data, scale)
     else:
         raise ValueError("this filter is not defined")

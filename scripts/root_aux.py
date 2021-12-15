@@ -2,6 +2,7 @@ import uproot
 from collections import namedtuple
 import numpy as np
 from tqdm import tqdm
+from collections import deque
 
 
 SCORE = {"mse": 0, "uqi": 1, "both": 2}
@@ -68,7 +69,7 @@ class Histogram(namedtuple('Histogram', ['vals', 'edges', 'name'])):
         return Histogram(total_vals, self.edges, name)
 
 
-def get_histo(path, histo_names=["energyDeposits", "sourceHist"]):
+def get_histo(path, histo_names=["energyDeposits", "sourceHist"], edges=True):
     """Get histogram(s) from the .root file
 
     Args:
@@ -76,16 +77,26 @@ def get_histo(path, histo_names=["energyDeposits", "sourceHist"]):
         histo_names (str or iterable of strings): Name(s) of histograms
 
     Returns:
-        list[Histogram]: List of 'Histogram' objects
+        if edges:
+            list[Histogram] or Histogram: 'Histogram' objects
+        else:
+            list[np.ndarray] or np.ndarray: histogram values only
     """
     histo_names_it = [histo_names] if type(histo_names) == str else histo_names
     result = []
     with uproot.open(path) as file:
         for name in histo_names_it:
             vals, edgesx, edgesy = file[name].to_numpy()
-            result.append(Histogram(vals[:, ::-1],
-                                    Edges(edgesx, edgesy[::-1]),
-                                    name))
+            if edges:
+                result.append(Histogram(vals[:, ::-1],
+                                        Edges(edgesx, edgesy[::-1]),
+                                        name))
+            else:
+                if vals.shape[-1] == 1:
+                    result.append(vals.flatten())
+                else:
+                    result.append(vals[:, ::-1])
+
     return result[0] if type(histo_names) == str else result
 
 
@@ -151,24 +162,29 @@ def mse_uqi_set(x_set, y, normx=False, normy=True):
     return mse, uqi, comb
 
 
-def reco_mlem(matr, image, niter, reco=None):
+def reco_mlem(matr, image, niter, reco=None, keep_all=True):
+    if keep_all:
+        maxlen = None
+    else:
+        maxlen = 2
     if not reco:
-        reco = [np.ones(matr.shape[-1])]
+        reco = deque([np.ones(matr.shape[-1])], maxlen=maxlen)
     for _ in tqdm(range(len(reco)-1, niter), desc="Reconstruction"):
         reco_tmp = reco[-1]*(matr.T @ (image/(matr @ reco[-1])))
         # reco.append(normalize(reco_tmp))
         reco.append(reco_tmp)
-    return reco
+    return list(reco) if keep_all else reco[-1]
 
 
 def reco_mlem_auto(matr, image, source,
-                   reco=None, method="both", maxiter=2000):
+                   reco=None, method="both",
+                   maxiter=2000, miniter=100):
     source_norm = normalize(source)
     if not reco:
         reco = [np.ones(matr.shape[-1])]
     score = mse_uqi_set(reco, source_norm, normy=False)[SCORE[method]]
     with tqdm(total=maxiter, desc="Reconstruction(autoiter)") as pbar:
-        while (len(reco) == 1 or score[-1] < score[-2]) and\
+        while (len(reco) < miniter+1 or score[-1] < score[-2]) and\
               len(reco) < maxiter+1:
             reco_tmp = reco[-1]*(matr.T @ (image/(matr @ reco[-1])))
             reco.append(normalize(reco_tmp))
@@ -211,11 +227,6 @@ def get_hypmed_sim_row(path):
     simdata = get_histo(
         path, [f"energyDepositsLayer{i}" for i in range(3)])
     return np.hstack([sim.vals.flatten() for sim in simdata])
-
-
-def get_sim_row(path):
-    simdata = get_histo(path, "energyDeposits")
-    return simdata[0].vals.flatten()
 
 
 def reco_mlem_last(matr, image, niter, reco=None):
