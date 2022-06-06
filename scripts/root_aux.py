@@ -2,21 +2,11 @@ import uproot
 from collections import namedtuple
 import numpy as np
 from tqdm import tqdm
-from scipy.stats import multivariate_normal
-import scipy.optimize as opt
+from collections import deque
+
 
 SCORE = {"mse": 0, "uqi": 1, "both": 2}
 
-# XY = namedtuple("XY", "x y")
-# GAUSS2D = namedtuple("gauss_params", "meanx meany sigmax sigmay theta ampl cut")
-
-class GAUSS2D(namedtuple("gauss_params", "meanx meany sigmax sigmay theta ampl cut")):
-    @property
-    def variancex(self):
-        return self.sigmax**2
-    @property
-    def variancey(self):
-        return self.sigmay**2
 
 
 class Edges(namedtuple("XY", "x y")):
@@ -83,7 +73,7 @@ def sign(x):
 
 class Histogram(namedtuple('Histogram', ['vals', 'edges', 'name'])):
 
-    vals: np.array
+    vals: np.ndarray
     edges: Edges
     name: str
 
@@ -102,7 +92,7 @@ class Histogram(namedtuple('Histogram', ['vals', 'edges', 'name'])):
         return Histogram(total_vals, self.edges, name)
 
 
-def get_histo(path, histo_names=["energyDeposits", "sourceHist"]):
+def get_histo(path, histo_names=["energyDeposits", "sourceHist"], edges=True):
     """Get histogram(s) from the .root file
 
     Args:
@@ -110,16 +100,26 @@ def get_histo(path, histo_names=["energyDeposits", "sourceHist"]):
         histo_names (str or iterable of strings): Name(s) of histograms
 
     Returns:
-        list[Histogram]: List of 'Histogram' objects
+        if edges:
+            list[Histogram] or Histogram: 'Histogram' objects
+        else:
+            list[np.ndarray] or np.ndarray: histogram values only
     """
     histo_names_it = [histo_names] if type(histo_names) == str else histo_names
     result = []
     with uproot.open(path) as file:
         for name in histo_names_it:
             vals, edgesx, edgesy = file[name].to_numpy()
-            result.append(Histogram(vals[:, ::-1],
-                                    Edges(edgesx, edgesy[::-1]),
-                                    name))
+            if edges:
+                result.append(Histogram(vals[:, ::-1],
+                                        Edges(edgesx, edgesy[::-1]),
+                                        name))
+            else:
+                if vals.shape[-1] == 1:
+                    result.append(vals.flatten())
+                else:
+                    result.append(vals[:, ::-1])
+
     return result[0] if type(histo_names) == str else result
 
 
@@ -185,23 +185,29 @@ def mse_uqi_set(x_set, y, normx=False, normy=True):
     return mse, uqi, comb
 
 
-def reco_mlem(matr, image, niter, reco=None):
+def reco_mlem(matr, image, niter, reco=None, keep_all=True):
+    if keep_all:
+        maxlen = None
+    else:
+        maxlen = 2
     if not reco:
-        reco = [np.ones(matr.shape[-1])]
+        reco = deque([np.ones(matr.shape[-1])], maxlen=maxlen)
     for _ in tqdm(range(len(reco)-1, niter), desc="Reconstruction"):
         reco_tmp = reco[-1]*(matr.T @ (image/(matr @ reco[-1])))
-        reco.append(normalize(reco_tmp))
-    return reco
+        # reco.append(normalize(reco_tmp))
+        reco.append(reco_tmp)
+    return list(reco) if keep_all else reco[-1]
 
 
 def reco_mlem_auto(matr, image, source,
-                   reco=None, method="both", maxiter=2000):
+                   reco=None, method="both",
+                   maxiter=2000, miniter=100):
     source_norm = normalize(source)
     if not reco:
         reco = [np.ones(matr.shape[-1])]
     score = mse_uqi_set(reco, source_norm, normy=False)[SCORE[method]]
     with tqdm(total=maxiter, desc="Reconstruction(autoiter)") as pbar:
-        while (len(reco) == 1 or score[-1] < score[-2]) and\
+        while (len(reco) < miniter+1 or score[-1] < score[-2]) and\
               len(reco) < maxiter+1:
             reco_tmp = reco[-1]*(matr.T @ (image/(matr @ reco[-1])))
             reco.append(normalize(reco_tmp))
@@ -246,72 +252,6 @@ def get_hypmed_sim_row(path):
     return np.hstack([sim.vals.flatten() for sim in simdata])
 
 
-def get_sim_row(path):
-    simdata = get_histo(path, "energyDeposits")
-    return simdata[0].vals.flatten()
-
-
-def Gaussian_2D(xdata_tuple,
-                meanx, meany,
-                sigmax, sigmay, theta,
-                amplitude, cut):
-    """Probability density function for the 2D multivariate normal distribution
-    with custom amplitude and shift along Y.
-    This function is used for fitting.
-
-    Parameters
-    ----------
-    xdata_tuple : tuple(numpy.array, numpy.array)
-        Tuple of the X and Y coordinates
-    meanx : float
-            Location parameter for X axis
-    meany : float
-            Location parameter for Y axis
-    sigmax : float
-             Standard deviation for X axis
-    sigmay : float
-             Standard deviation for Y axis
-    theta : float
-            angle of the ellipsoid
-    amplitude : float
-    cut : float
-
-    Returns
-    -------
-    numpy.array
-        Flattened array of the function values
-    """
-    x, y = np.meshgrid(*xdata_tuple)
-    a = (np.cos(theta)**2)/(2*sigmax**2) + (np.sin(theta)**2)/(2*sigmay**2)
-    b = -(np.sin(2*theta))/(4*sigmax**2) + (np.sin(2*theta))/(4*sigmay**2)
-    c = (np.sin(theta)**2)/(2*sigmax**2) + (np.cos(theta)**2)/(2*sigmay**2)
-    g = cut + amplitude*np.exp( - (a*((x-meanx)**2) + 2*b*(x-meanx)*(y-meany) 
-                            + c*((y-meany)**2)))
-    return g.ravel()
-
-
-def fit_2d(x, y, data):
-    """Fir the function values with 2D Gaussian
-
-    Parameters
-    ----------
-    x : numpy.array
-    y : numpy.array
-    data : numpy.array
-        2D numpy array with function values
-
-    Returns
-    -------
-    GAUSS2D
-        fitting parameters
-    """
-    meanx = x[np.argmax(data.sum(axis=0))]
-    meany = y[np.argmax(data.sum(axis=1))]
-    popt, _ = opt.curve_fit(
-        Gaussian_2D, (x, y), data.ravel(), (meanx, meany, 1, 1, 1, 1, 0))
-    return GAUSS2D(*popt)
-
-
 def reco_mlem_last(matr, image, niter, reco=None):
     """Reconstruction which returns only the last image
     """
@@ -339,7 +279,7 @@ def is_prime(n):
 def get_mura(order):
     """Return 2D MURA array
     It is not a classical way.
-    Comparing to the wikipedia algorytm the mask is inverted 
+    Comparing to the wikipedia algorytm the mask is inverted
     """
     if not is_prime(order):
         raise ValueError("The mask order should be prime")
@@ -358,7 +298,7 @@ def get_mura(order):
 def get_mura_cut(order, cutrange):
     """Return 2D MURA array
     It is not a classical way.
-    Comparing to the wikipedia algorytm the mask is inverted 
+    Comparing to the wikipedia algorytm the mask is inverted
     """
     mask = get_mura(order)
     mask_cut = mask[order//2-cutrange//2:order//2+cutrange // 2 + 1,
@@ -368,11 +308,11 @@ def get_mura_cut(order, cutrange):
     return mask_cut
 
 
-def reco_mlem_raw(matr, image, sens, niter=100, reco=None):
-    if not reco:
-        reco = [np.ones(matr.shape[-1])]
-    for _ in tqdm(range(len(reco)-1, niter), desc="Reconstruction"):
-        reco_tmp = reco[-1]/sens*(matr.T @ (image/(matr @ reco[-1])))
-        # reco_tmp = reco[-1]*(matr.T @ (image/(matr @ reco[-1])))
-        reco.append(reco_tmp)
-    return reco
+# def reco_mlem_raw(matr, image, sens, niter=100, reco=None):
+#     if not reco:
+#         reco = [np.ones(matr.shape[-1])]
+#     for _ in tqdm(range(len(reco)-1, niter), desc="Reconstruction"):
+#         reco_tmp = reco[-1]/sens*(matr.T @ (image/(matr @ reco[-1])))
+#         # reco_tmp = reco[-1]*(matr.T @ (image/(matr @ reco[-1])))
+#         reco.append(reco_tmp)
+#     return reco
