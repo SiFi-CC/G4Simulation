@@ -202,6 +202,7 @@ void DataStorage::setHmatrix(double DetX, double DetY, int sourceBinX, int sourc
     // spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH,
     // colIndexMatrixH);//nBinY - HISTOBIN fMatrixH(rowIndexMatrixH,colIndexMatrixH) ++;
     fMatrixH(rowIndexMatrixH, colIndexMatrixH) += energy;
+    // fMatrixH(rowIndexMatrixH, colIndexMatrixH) += 1;
 }
 
 void DataStorage::setHmatrixHypMed(int layerNum, double DetX, double DetY,

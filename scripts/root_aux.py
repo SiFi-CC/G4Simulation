@@ -18,6 +18,7 @@ class GAUSS2D(namedtuple("gauss_params", "meanx meany sigmax sigmay theta ampl c
     def variancey(self):
         return self.sigmay**2
 
+
 class Edges(namedtuple("XY", "x y")):
     """Class inherited from named tuple which represents
     edges of the histogram coordinates.
@@ -27,6 +28,22 @@ class Edges(namedtuple("XY", "x y")):
     ValueError
         If trying to get binWidth when widths are different for X and Y
     """
+    def __new__(cls, x, y, edges=True):
+        x = np.array(x)
+        y = np.array(y)
+        x.sort()
+        y.sort()
+        if edges:
+            return super().__new__(cls, x, y)
+        else:
+            xstep = x[1]-x[0]
+            x_edges = x - 0.5*xstep
+            x_edges = np.append(x_edges, x_edges[-1]+xstep)
+            ystep = y[1]-y[0]
+            y_edges = y - 0.5*ystep
+            y_edges = np.append(y_edges, y_edges[-1]+ystep)
+            return super().__new__(cls, x_edges, y_edges)
+
     @property
     def x_binWidth(self):
         return 0.5*abs(self.x[1] - self.x[0])
@@ -52,6 +69,13 @@ class Edges(namedtuple("XY", "x y")):
 
     def __eq__(self, other):
         return np.all(self.x == other.x) and np.all(self.y == other.y)
+
+    def xy_edges(self):
+        return self.x, self.y
+
+    def xy(self):
+        return self.x_cent, self.y_cent
+
 
 def sign(x):
     return (1, -1)[x > 0]
