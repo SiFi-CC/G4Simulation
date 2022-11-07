@@ -18,7 +18,6 @@ G4LogicalVolume* FibreLayer::Construct()
 
     auto fibre = fFibre.Construct();
     layer->SetVisAttributes(G4VisAttributes::Invisible);
-
     new G4PVReplica("fibreLayerRepFibre", fibre, layer, kYAxis, fNumberOfStrips, fFibre.getWidth());
 
     return layer;

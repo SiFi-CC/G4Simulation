@@ -214,8 +214,13 @@ G4LogicalVolume* MuraMask::Construct()
     else if (fType == "nowallpetcut")
     {
         int cut = CmdLineOption::GetIntValue("MaskCut");
-        segX = fSize.x() / cut;
-        segY = fSize.y() / cut;
+        int cutx = CmdLineOption::GetIntValue("MaskCutX");
+        int cuty = CmdLineOption::GetIntValue("MaskCutY");
+        cutx = (cutx == 0) ? cut : cutx;
+        cuty = (cuty == 0) ? cut : cuty;
+        
+        segX = fSize.x() / cutx;
+        segY = fSize.y() / cuty;
         auto gRandom = new TRandom3();
         gRandom->SetSeed(0);
         double deltaX, deltaY, deltaZ;
@@ -239,24 +244,24 @@ G4LogicalVolume* MuraMask::Construct()
 
         int placementId = 1;
 
-        for (int i = 0; i < cut; i++)
+        for (int i = 0; i < cutx; i++)
         {
-            for (int j = 0; j < cut; j++)
+            for (int j = 0; j < cuty; j++)
             {
                 if (CmdLineOption::GetFlagValue("Single_dimension"))
                 {
-                    ismask = isMaskedAt(round(i + fMaskOrder / 2) - (int)cut / 2);
+                    ismask = isMaskedAt(round(i + fMaskOrder / 2) - (int)cutx / 2);
                 }
                 else
                 {
-                    ismask = isMaskedAt(round(i + fMaskOrder / 2) - (int)cut / 2,
-                                        j + round(fMaskOrder / 2) - (int)cut / 2) ||
-                             j == 0;
+                    ismask = (isMaskedAt(round(i + fMaskOrder / 2) - (int)cutx / 2,
+                                        j + round(fMaskOrder / 2) - (int)cuty / 2) ||
+                             j == 0) && i != 0;
                 }
-                // if (j==0)
-                // {
-                //     spdlog::info("MASK at {} {}", i , ismask);
-                // }
+                if (j==0)
+                {
+                    spdlog::info("MASK at {} {}", i , ismask);
+                }
                 if (ismask)
                 {
                     auto posX = (i + 0.5) * segX - fSize.x() / 2;

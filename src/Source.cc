@@ -74,6 +74,7 @@ void Source::SetPosAng(const TVector3& position, double det, double SD)
     fSourceGeant->GetCurrentSource()->GetPosDist()->SetPosDisType("Point");
     fSourceGeant->GetCurrentSource()->GetPosDist()->SetCentreCoords(
         G4ThreeVector(fPosition.X() * mm, fPosition.Y() * mm, fPosition.Z() * mm));
+//    fMinTheta = 165.0; 
     fSourceGeant->GetCurrentSource()->GetAngDist()->SetMinTheta(fMinTheta * deg);
     fSourceGeant->GetCurrentSource()->GetAngDist()->SetMaxTheta(fMaxTheta * deg);
 }
@@ -81,8 +82,10 @@ void Source::SetPosAng(const TVector3& position, double det, double SD)
 void Source::SetAngles(const double det, const double SD)
 {
 
-    double sx = fPosition.X();
-    double sy = fPosition.Y();
+    //double sx = fPosition.X();
+    double sx = 0.0;
+   // double sy = fPosition.Y();
+    double sy = 0.0;
 
     double cos1 = (-sx * (det - sx) - sy * (det - sy) + pow(SD, 2)) /
                   sqrt(pow(sx, 2) + pow(sy, 2) + pow(SD, 2)) /

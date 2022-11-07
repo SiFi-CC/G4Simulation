@@ -33,13 +33,20 @@ int main(int argc, char** argv)
                           0, 0);
     CmdLineOption opt_mask(
         "Mask", "-mask",
-        "Mask: order:mask-source:width:length:thickness [mm], default: 31:150:64:20", 0, 0);
+        "Mask: order:mask-source:xSize:ySize:thickness [mm], default: 31:170:70:70:20", 0, 0);
     CmdLineOption opt_masktype("MaskType", "-masktype",
                                "MaskType: {standart, round, pet, nowallpet, nowallpetcut}",
                                "nowallpet");
     CmdLineOption opt_masktype_cut(
         "MaskCut", "-cut",
         "MaskNumber of pixels (relevant only if massktype=nowallpetcut), default: 31(integer)", 31);
+    CmdLineOption opt_masktype_cutX(
+        "MaskCutX", "-cutx",
+        "MaskNumber of pixels in horizontal direction,(relevant only if massktype=nowallpetcut) default: 31(integer)", 0);
+    CmdLineOption opt_masktype_cutY(
+        "MaskCutY", "-cuty",
+        "MaskNumber of pixels in vertical direction,(relevant only if massktype=nowallpetcut) default: 31(integer)", 0);
+
     CmdLineOption opt_events("Events", "-n", "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e", "Energy of particles [keV], default: 4400 (integer)",
                              4400);
@@ -67,7 +74,9 @@ int main(int argc, char** argv)
     Int_t fibrenum = 16;                            // number of fibers in one layer
 
     Int_t mord = 31;                                              // MURA mask order
-    Float_t masksource = 170., masklength = 70., maskthick = 20.; // mask dimensions
+    // Float_t masksource = 170., masklength = 70., maskthick = 20.; // mask dimensions
+    Float_t masksource = 170., masklengthX = 70., masklengthY = 70., maskthick = 20.; // mask dimensions
+
 
     Float_t sRange = 70;                 // source dimensions
     Int_t maxBinX = 100, maxBinY = 100;  // source bins
@@ -85,12 +94,13 @@ int main(int argc, char** argv)
         spdlog::error("Detector plane - 3 parameters required, {} given", opt_det.GetArraySize());
         abort();
     }
-    if (opt_mask.GetArraySize() == 4)
+    if (opt_mask.GetArraySize() == 5)
     {
         mord = opt_mask.GetIntArrayValue(1);
         masksource = opt_mask.GetDoubleArrayValue(2);
-        masklength = opt_mask.GetDoubleArrayValue(3);
-        maskthick = opt_mask.GetDoubleArrayValue(4);
+        masklengthX = opt_mask.GetDoubleArrayValue(3);
+        masklengthY = opt_mask.GetDoubleArrayValue(4);
+        maskthick = opt_mask.GetDoubleArrayValue(5);
     }
     else if (opt_mask.GetArraySize() != 0)
     {
@@ -130,7 +140,7 @@ int main(int argc, char** argv)
     printf("Detector : %g %g %i %g [mm]\n", detectorsource, fibrenum * fibrewidth, fibrenum,
            fibrewidth);
     printf("Mask     : %s, %g %g %g %g [mm]\n", opt_masktype.GetStringValue(), masksource,
-           masklength, masklength, maskthick);
+           masklengthX, masklengthY, maskthick);
     printf("Mask order      : %i\n", mord);
     printf("No. of events  : %i\n", opt_events.GetIntValue());
     printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
@@ -170,7 +180,7 @@ int main(int argc, char** argv)
     G4long seed = time(NULL);
     CLHEP::HepRandom::setTheSeed((world_rank + 1) * seed);
 
-    MuraMask mask(mord, {masklength * mm, masklength * mm, maskthick * mm},
+    MuraMask mask(mord, {masklengthX * mm, masklengthY * mm, maskthick * mm},
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
     DetectorBlock detector(nLayer,                                // number of layers
                            FibreLayer(                            //

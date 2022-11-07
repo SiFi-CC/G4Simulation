@@ -38,6 +38,13 @@ int main(int argc, char** argv)
     CmdLineOption opt_masktype_cut(
         "MaskCut", "-cut",
         "MaskNumber of pixels,(relevant only if massktype=nowallpetcut) default: 31(integer)", 31);
+    CmdLineOption opt_masktype_cutX(
+        "MaskCutX", "-cutx",
+        "MaskNumber of pixels in horizontal direction,(relevant only if massktype=nowallpetcut) default: 31(integer)", 0);
+    CmdLineOption opt_masktype_cutY(
+        "MaskCutY", "-cuty",
+        "MaskNumber of pixels in vertical direction,(relevant only if massktype=nowallpetcut) default: 31(integer)", 0);
+
     CmdLineOption opt_events("Events", "-n", "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e", "Energy of particles [keV], default: 4400 (integer)",
                              4400);
