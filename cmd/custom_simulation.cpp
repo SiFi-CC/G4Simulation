@@ -71,6 +71,8 @@ int main(int argc, char** argv)
     CmdLineOption opt_detshift("DetectorShift", "-detshift",
                                 "Detector position shift [mm], default: 0:0", 0);
 
+    CmdLineOption opt_sourcePhase("SourcePhaseSpace", "-sFile", "tsv with source", "");
+    
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
     const Positional& args = CmdLineConfig::GetPositionalArguments();
@@ -220,7 +222,7 @@ int main(int argc, char** argv)
     // source.SetPosAng(TVector3(sPosX, sPosY, 0),fibrewidth*fibrenum *mm,detectorsource * mm);
     source.SetPosAng(TVector3(sPosX, sPosY, 0));
 
-    runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource()));
+    runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource(), &storage));
     runManager.SetUserAction(new SteppingAction(&storage));
     runManager.SetUserAction(new EventAction(&storage));
     runManager.Initialize();
@@ -256,6 +258,7 @@ int main(int argc, char** argv)
     detector.writeMetadata(&storage);
     mask.writeMetadata(&storage);
     storage.init();
+
 
     if (opt_sourceMac.GetStringValue())
     {
