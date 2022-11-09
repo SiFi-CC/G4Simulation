@@ -20,6 +20,9 @@
 #include <CmdLineConfig.hh>
 
 #include <math.h>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 using namespace SiFi;
 
@@ -28,7 +31,7 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::info);
 
     CmdLineOption opt_det("Plane", "-det",
-                          "Detector-source distance [mm], default: 220", 220.);
+                          "Detector-source distance [mm], default: 220", 0);
     CmdLineOption opt_mask(
         "Mask", "-mask",
         "Mask: order:mask-source:width/length:thickness [mm], default: 31:170:70:20", 0, 0);
@@ -47,7 +50,7 @@ int main(int argc, char** argv)
 
     CmdLineOption opt_events("Events", "-n", "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e", "Energy of particles [keV], default: 4400 (integer)",
-                             4400);
+                             0);
     CmdLineOption opt_theta("Theta", "-theta",
                             "Min Theta angle [Deg] (maximum Theta is 180), default: auto", 0);
     CmdLineOption opt_source("Source", "-source", "Source position [mm], default: 0:0", 0);
@@ -66,6 +69,8 @@ int main(int argc, char** argv)
 
     CmdLineOption opt_dimension("Single_dimension", "-1d", "Run in 1 dimension");
 
+    CmdLineOption opt_json("Json", "-json", "Json config file", "");
+
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
     const Positional& args = CmdLineConfig::GetPositionalArguments();
@@ -73,7 +78,7 @@ int main(int argc, char** argv)
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t detectorsource = opt_det.GetDoubleValue(); // detector dimensions
+    Float_t detectorsource = 220.;
 
     Int_t mord = 31;                                              // MURA mask order
     Float_t masksource = 170., masklength = 70., maskthick = 20.; // mask dimensions
@@ -84,8 +89,80 @@ int main(int argc, char** argv)
 
     Int_t sNbins = 100; // source histogram parameters
     Float_t sRange = 70;
+    Int_t energy = 4400;
 
     storage.enablesource();              // enblesource histogram
+
+
+    if (opt_json.GetStringValue())
+    {
+        std::ifstream f(opt_json.GetStringValue());
+        json data = json::parse(f);
+        std::cout << "JSON" << std::endl;
+        std::cout << data << std::endl;
+        // std::cout << data.at("pi") << std::endl;
+        // for (auto& el : data.items())
+        // {
+        //     std::cout << "key: " << el.key() << ", value:" << el.value() << ", size:" << el.value().size()
+        //             << '\n';
+        // }
+        std::cout << data.contains("mask") << '\n';
+        std::cout << data.contains("detector") << '\n';
+        // std::cout << data.items() << std::endl;
+        if (data.contains("mask"))
+        {
+            if ( data.at("mask").size() == 4)
+            {
+                std::cout << data.at("mask") << '\n';
+                mord = (int) data.at("mask").at(0);
+                masksource = (double) data.at("mask").at(1);
+                masklength = (double) data.at("mask").at(2);
+                maskthick = (double) data.at("mask").at(3);
+            }
+            else
+            {
+                spdlog::error("Mask plane - 4 parameters required, {} given",
+                              data.at("mask").size());
+                abort();
+            }
+        }
+        if (data.contains("source"))
+        {
+            if (data.at("source").size() == 2)
+            {
+                sPosX = (double)data.at("source").at(0);
+                sPosY = (double)data.at("source").at(1);
+            }
+            else
+            {
+                spdlog::error("Source position - 2 parameters required, {} given",
+                              data.at("source").size());
+                abort();
+            }
+        }
+        if (data.contains("sourceBins"))
+        {
+            if (data.at("sourceBins").size() == 2)
+            {
+                sPosX = (double)data.at("sourceBins").at(0);
+                sPosY = (double)data.at("sourceBins").at(1);
+            }
+            else
+            {
+                spdlog::error("Source histogram - 2 parameters required: range and Nbins, {} given",
+                              data.at("sourceBins").size());
+                abort();
+            }
+        }
+        if (data.contains("energy"))
+        {
+            energy = (int) data.at("energy");
+        }
+        if (data.contains("det"))
+        {
+            detectorsource = (double) data.at("det");
+        }
+    }
 
     { // CmdLine options
         if (opt_mask.GetArraySize() == 4)
@@ -123,6 +200,14 @@ int main(int argc, char** argv)
                           opt_sourceBins.GetArraySize());
             abort();
         }
+        if (opt_energy.GetIntValue() > 0)
+        {   
+            energy = opt_energy.GetIntValue();
+        }
+        if (opt_det.GetDoubleValue() > 0)
+        {   
+            detectorsource = opt_det.GetIntValue();
+        }
     } // CmdLine options
 
 
@@ -133,7 +218,6 @@ int main(int argc, char** argv)
     CLHEP::HepRandom::setTheSeed(seed);
 
     double maskdetector = (detectorsource - masksource);
-    int energy = opt_energy.GetIntValue();
     // auto material = MaterialManager::get()->LuAGCe();
     auto material = MaterialManager::get()->LYSO();
     auto wrappingmaterial = MaterialManager::get()->GetMaterial("G4_Al");
@@ -173,9 +257,10 @@ int main(int argc, char** argv)
            masklength, masklength, maskthick);
     printf("Mask order      : %i\n", mord);
     printf("No. of events  : %i\n", opt_events.GetIntValue());
-    printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
+    printf("Energy [keV] : %i\n", energy);
     printf("Theta [Deg] : %g %g\n", minTheta, maxTheta);
     printf("Source position [mm] : %g %g\n", sPosX, sPosY);
+    abort();
 
     // top
     CrystalLayer layer0 = CrystalLayer(layer0binsX, layer0binsY,   // number of crystals in layer
@@ -257,6 +342,7 @@ int main(int argc, char** argv)
         UI->ApplyCommand(str);
     }
 
+    // if (CmdLineOption::GetFlagValue("Visualization") || data.value("vis", false))
     if (CmdLineOption::GetFlagValue("Visualization"))
     {
         // VISUALISATION:

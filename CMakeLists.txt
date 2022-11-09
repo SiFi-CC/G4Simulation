@@ -25,6 +25,8 @@ set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
 
 add_subdirectory(third_party/spdlog)
 include_directories(SYSTEM third_party/spdlog/include)
+add_subdirectory(third_party/nlohmann_json)
+include_directories(SYSTEM third_party/nlohmann_json/include)
 
 include(${Geant4_USE_FILE})
 include(${ROOT_USE_FILE})
@@ -78,6 +80,7 @@ target_link_libraries(g4sim
     PUBLIC 
     #  ROOT::Core ROOT::RIO ROOT::Geom ROOT::MathCore ROOT::Physics ROOT::Gui ROOT::Tree
     spdlog::spdlog
+    nlohmann_json::nlohmann_json
     ${ROOT_LIBRARIES} 
     ${Geant4_LIBRARIES}   # TODO (export target)
 )
