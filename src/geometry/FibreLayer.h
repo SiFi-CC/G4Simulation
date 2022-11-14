@@ -3,6 +3,8 @@
 #include "Element.h"
 #include "Fibre.h"
 
+#include "CmdLineConfig.hh"
+
 namespace SiFi
 {
 
@@ -13,8 +15,8 @@ public:
 
     G4LogicalVolume* Construct() override;
 
-    double getSizeX() { return fFibre.getLength(); };
-    double getSizeY() { return fNumberOfStrips * fFibre.getWidth(); };
+    double getSizeX();
+    double getSizeY();
     double getThickness() { return fFibre.getWidth(); };
     int getNumberOfStrips() { return fNumberOfStrips; };
 

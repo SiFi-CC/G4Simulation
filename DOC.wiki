@@ -1,18 +1,60 @@
 
 
-Description of [https://github.com/SiFi-CC/G4Simulation the code] for the 'simple'<ref>The simulation is simpler than [https://bragg.if.uj.edu.pl/gccbwiki/index.php/SiFi-CC/SiFi-CM_Geant4_Simulation one of JK] in a sense that it does not take into account a lot of details (electronics, fibers coupling etc.).</ref> <code>Geant4</code> simulation of the Coded-Mask(<code>CM</code>) setup.
+Description of the 'simple'<ref>The simulation is simpler than [https://bragg.if.uj.edu.pl/gccbwiki/index.php/SiFi-CC/SiFi-CM_Geant4_Simulation one of JK] in a sense that it does not take into account a lot of details (electronics, fibers coupling etc.).</ref> Geant4 simulation of the Coded-Mask(CM) setup. The source code is here https://github.com/SiFi-CC/G4Simulation .
 
-
-== General description ==
-
-The program contains 2 modes. [[#Simulation|The first]] of them is used to simulate an experiment of <math display="inline">\gamma</math>-particles being shot towards the detector. And [[#H-matrix calculation|the second]] - for the calculation of the system matrix.
-
-The general procedure is very similar for both modes. The basic difference is that the second performs a set of single simulations and combines them together in the form of <code>system matrix</code>.
+== Geometry ==
 
 <center>
-[[File:images/cool.jpg|Figure from Geant4 !TODO]]
+[[File:VU_CM_geometry.png|Geometry|600px]]
 </center>
+
+* '''SD''' - distance from the source plane to the detector
+* '''SM''' - distance from the source plane to the middle of the mask
+* '''MD''' - distance from the middle of the mask to the detector ('''SD = SM + MD''')
+* '''M''' - size of the mask in X and Y directions
+* '''M_z''' - mask thickness
+* '''S''' - size of the source plane. This dimension is specified during the system matrix calculation. It determines a space of reconstructed images for a particular matrix.
+* '''FCFOV''' (the fully coded field of view) - angular region which is defined as defined as “comprising all directions for which the detected flux is completely modulated by the mask”<ref name="Caroli">Caroli, E., Stephen, J.B., Di Cocco, G. et al. Coded aperture imaging in X- and gamma-ray astronomy. Space Sci Rev 45, 349–403 (1987). https://doi.org/10.1007/BF00171998</ref>.
+* '''FOV''' (the field of view) - angular region where “only a fraction of the detected photons is coded by the aperture pattern”<ref name="Caroli"/>.
+
+=== Some speculations ===
+
+==== Detector plane ====
+
+The size of the detector plane is determined by the fibers size and amount. It is hardcoded that the length of a single fiber is '''10 cm'''. Also it is not hardcoded but recommended to take a width of a fiber as '''1.36 mm''' (despite the fact that default value is 1.3 mm which should be corrected).
+
+So in '''2D''' regime, the detector plane would be a square-shaped and one side of such a square would be equal to '''nFibres×fibre_width'''.
+
+In '''1D''' the size of the detector plane in '''Y''' direction is always the same as fiber length (10 cm), and in '''X''' direction it is equal to '''nFibres×fibre_width'''.
+
+The thickness of the detector is always determined as '''nLayers×fibre_width'''
+
+==== Mask ====
+
+At the moment it is decided to test a <code>nowallpet</code> mask (or <code>nowallpetcut</code>) for the '''2D''' mode (the practical implementation can be slightly different for the '''1D'''). For that purpose the Tungsten rods had been ordered together with the first PET raster. It has been done for the '''31 order''' mask, with the size '''M = 70 mm''' and '''M_z = 20 mm'''. So each rod is in size 70/31 ≈ 2.3 mm. The number of rods available is '''480'''(or so?) This information should be taken into account when constructing another mask patterns - that is the single pixel size should kept the same (no matter it is '''1D''' or '''2D''').
+
+At the same time, it can be considered to use larger mask, but additional rods should be ordered than.
+
+==== Geometry parameters ====
+
+At this point experiments with geometry parameters led to finding optimal (''or just better than other in some particular cases'') values and set-ups.
+
+===== Small-scale prototype =====
+
+64 fibers in total, tested with 4 layers by 16 (can be also arranged in 2 layers by 32 or 1 layer with 64 fibers)
+
+* SM = 170 mm
+* MD = 50 mm
+* M = 70 mm
+* M_z = 20 mm
+* S = 70 mm <!-- - Number of points in the source plane: 100x100=10000 -->
+
 == Usage ==
+
+
+The program contains 2 modes. [[#Simulation|The first]] of them is used to simulate an experiment of γ-particles being shot towards the detector. And [[#H-matrix calculation|the second]] - for the calculation of the system matrix.
+
+The general procedure is very similar for both modes. The basic difference is that the second performs a set of single simulations and combines them together in the form of <code>system matrix</code>.
 
 === Simulation ===
 
@@ -32,23 +74,23 @@ The general procedure is very similar for both modes. The basic difference is th
 |-
 |align="center"| <code>-det</code>
 |align="center"| 220:16:1.3
-|align="center"| list(float:int:float)
-| Detector parameters: detector-source:nFibres:fibre_width [mm/-/mm]
+|align="center"| float:int:float
+| Detector parameters: SD<ref>The decryption of some abbreviations can be found in the [[#Geometry|Geometry]] section.</ref>:nFibres:fibre_width [mm/-/mm]
 |-
 |align="center"| <code>-nlay</code>
 |align="center"| 4
 |align="center"| int
-| Number of layers in detector)
+| Number of layers in detector
 |-
 |align="center"| <code>-mask</code>
 |align="center"| 31:170:70:20
-|align="center"| list(int:floats)
-| Mask parameters: order:mask-source:width/length:thickness [mm]
+|align="center"| int:floats
+| Mask parameters: order:SM:M:M_z [mm]
 |-
 |align="center"| <code>-masktype</code>
 |align="center"| standard
 |align="center"| string
-| Mask type: {<code>standard</code>, <code>round</code>, <code>pet</code>, <code>nowallpet</code>, <code>nowallpetCUT</code>}
+| Mask type: {<code>standard</code>, <code>round</code>, <code>pet</code>, <code>nowallpet</code>, <code>nowallpetcut</code>}
 |-
 |align="center"| <code>-cut</code>
 |align="center"| 31
@@ -62,12 +104,12 @@ The general procedure is very similar for both modes. The basic difference is th
 |-
 |align="center"| <code>-source</code>
 |align="center"| 0:0
-|align="center"| list(float:int)
+|align="center"| float:int
 | Source coordinates [mm]
 |-
 |align="center"| <code>-sourceBins</code>
 |align="center"| 70:100
-|align="center"| list(int)
+|align="center"| float:int
 | Range and number of bins in the source histogram
 |-
 |align="center"| <code>-n</code>
@@ -83,7 +125,7 @@ The general procedure is very similar for both modes. The basic difference is th
 |align="center"| <code>-theta</code>
 |align="center"| auto
 |align="center"| int
-| Min <math display="inline">\theta</math> angle [Deg], (maximum <math display="inline">\theta</math> is 180)
+| Min θ angle [Deg], (maximum θ is 180)
 |-
 |align="center"| <code>-sMac</code>
 |align="center"| none
@@ -94,6 +136,11 @@ The general procedure is very similar for both modes. The basic difference is th
 |align="center"| none
 |align="center"| flag
 | Run in visual mode(no simulation is performed)
+|-
+|align="center"| <code>-1d</code>
+|align="center"| none
+|align="center"| flag
+| Mask and detector are single-dimensional
 |}
 
 '''Parameter -det'''
@@ -106,7 +153,7 @@ This parameter allows user to set a number of the layers in the detector.
 
 '''Parameter -mask'''
 
-List of 4 values which define define geometry parameters, connected to the <code>MURA</code> mask. First one defines an order of the mask (should be a prime number). Second value is <code>mask-source</code>, that is a distance between the source and the mask. The last 2 parameters are the width(and the length - as the mask is a square) and thickness.
+List of 4 values which define define geometry parameters, connected to the <code>MURA mask</code>. First one defines an order of the mask (should be a prime number). Second value is <code>mask-source</code>, that is a distance between the source and the mask. The last 2 parameters are the width(and the length - as the mask is a square) and thickness.
 
 '''Parameter -masktype'''
 
@@ -116,15 +163,15 @@ Specify the type of implementation of the MURA mask. It should be one of the fol
 * <code>round</code> - the mask is constructed as a Tungsten monoblock, where in places of empty pixels are round-shape holes
 * <code>pet</code> - the mask has a <code>PET raster</code> where it is possible to put Tungsten rods and prepare any pattern. The size of rods is hardcoded as a 90% of the full pixel size.
 * <code>nowallpet</code> - similar to <code>pet</code> but the raster is prepared specifically to the particular pattern. It means that empty pixels are filled with PET and it allows to avoid having walls.
-* <code>nowallpetCUT</code> - the same as <code>nowallpet</code> but allows option <code>-cut</code> to be activated
+* <code>nowallpetcut</code> - the same as <code>nowallpet</code> but allows option <code>-cut</code> to be activated
 
 '''Parameter -cut'''
 
-If <code>-masktype=nowallpetCUT</code>, the cut parameter specifies a size of mask’s central area to be used. For example if mask order is 467 and <code>-cut=31</code>, then only 31X31 central pixels of the 467’s order MURA mask will be used.
+If <code>-masktype=nowallpetcut</code>, the cut parameter specifies a size of mask’s central area to be used. For example if mask order is 467 and <code>-cut=31</code>, then only 31X31 central pixels of the 467’s order MURA mask will be used.
 
 '''Parameter -er'''
 
-Specifies the error in the size of Tungsten rods. If used, than from the each dimension of each rod is subtracted a random number from the distribution: <math display="inline">er/2 - N(er/2, er/6)</math>
+Specifies the error in the size of Tungsten rods. If used, than from the each dimension of each rod is subtracted a random number from the distribution: er/2 - N(er/2, er/6)
 
 '''Parameter -source'''
 
@@ -140,26 +187,32 @@ Number of generated events.
 
 '''Parameter -e'''
 
-Energy of generated <math display="inline">\gamma</math>-particles [kEv].
+Energy of generated γ-particles [kEv].
 
 '''Parameter -theta'''
 
-This parameter allows to set the <math display="inline">\theta_{min}</math> angle [deg]. <math display="inline">\theta_{max}</math> is always <math display="inline">180^o</math> (parallel to the source-detector axis). It means that particles will be shot with angles <math display="inline">[\theta_{min}, 180^o]</math>.
+This parameter allows to set the θmin angle [deg]. θmax is always 180 [deg] (parallel to the source-detector axis). It means that particles will be shot with angles [θmin, 180^o].
 
 '''Parameter -sMac'''
 
 Path to the <code>mac</code>-script with additional specifications of the source. It allows to change type and shape of the source distribution.
 
-<pre>Example !TODO</pre>
+<!-- ```
+Example !TODO
+```  -->
 '''Parameter -vis'''
 
 If this flag is used, the programs runs in visual mode<ref>Parameters of the graphical interface can be set in the file <code>vic_CC.mac</code> which is executed before the opening of the viewer and should be placed in the working directory.</ref>. That is Geant4 graphical interface is opened with specified geometry setup.
 
+'''Parameter -1d'''
+
+If this flag is used, the detector and mask are constructed in a singe-dimensional mode along x-axis
+
 === H-matrix calculation ===
 
- $ mpirun -np #cores ./cmd/mpi_gen_sim_matrix.cp output.root [optional arguments]
+ $ mpirun -np n_cores ./cmd/mpi_gen_sim_matrix.cp output.root [optional arguments]
 
-<code>#cores</code> - is a number of parallel processes (number of cores used).
+<code>n_cores</code> - is a number of parallel processes (number of cores used).
 
 <code>output.root</code> is a name of the output root-file.
 
@@ -175,23 +228,23 @@ The most of the optional arguments are the same as for the [[#optional-arguments
 |-
 |align="center"| <code>-det</code>
 |align="center"| 220:16:1.3
-|align="center"| list(float:int:float)
-| Detector parameters: detector-source:nFibres:fibre_width [mm/-/mm]
+|align="center"| float:int:float
+| Detector parameters: SD:nFibres:fibre_width [mm/-/mm]
 |-
 |align="center"| <code>-nlay</code>
 |align="center"| 4
 |align="center"| int
-| Number of layers in detector)
+| Number of layers in detector
 |-
 |align="center"| <code>-mask</code>
 |align="center"| 31:170:70:20
-|align="center"| list(int:floats)
-| Mask parameters: order:mask-source:width/length:thickness [mm]
+|align="center"| int:floats
+| Mask parameters: order:SM:M:M_z [mm]
 |-
 |align="center"| <code>-masktype</code>
 |align="center"| standard
 |align="center"| string
-| Mask type: {<code>standard</code>, <code>round</code>, <code>pet</code>, <code>nowallpet</code>, <code>nowallpetCUT</code>}
+| Mask type: {<code>standard</code>, <code>round</code>, <code>pet</code>, <code>nowallpet</code>, <code>nowallpetcut</code>}
 |-
 |align="center"| <code>-cut</code>
 |align="center"| 31
@@ -205,7 +258,7 @@ The most of the optional arguments are the same as for the [[#optional-arguments
 |-
 |align="center"| <code>-source</code>
 |align="center"| 70:100
-|align="center"| list(float:int)
+|align="center"| float:int
 | Range and number of bins in the source plane
 |-
 |align="center"| <code>-n</code>
@@ -217,14 +270,20 @@ The most of the optional arguments are the same as for the [[#optional-arguments
 |align="center"| 4400
 |align="center"| int
 | Energy of particles [keV]
+|-
+|align="center"| <code>-1d</code>
+|align="center"| none
+|align="center"| flag
+| Mask and detector are single-dimensional. The source position is shifted only along one dimension (<code>x</code>)
 |}
+
 
 '''Parameter -source'''
 
-The list of 2 values (float and int) to specify a source plane parameters. The first of them is a size of the plane in [mm] and the second is a number of source positions in each direction (positions are uniformly distributed among the source plane).<ref>Usually it is convenient to set [[#parameter-sourcebins|<code>-sourceBins</code>]] parameter for the simulation to be the same ace [[#parameter-source|<code>-source</code>]] parameter of system matrix for the further comparison of reconstructed image and original source histogram.</ref>
+The list of 2 values (float and int) to specify a source plane parameters. The first of them is a size of the plane in [mm] and the second is a number of source positions in each direction (positions are uniformly distributed among the source plane).<ref>Usually it is convenient to set [[#parameter-sourcebins|<code>-sourceBins</code>]] parameter for the simulation to be the same as [[#parameter-source|<code>-source</code>]] parameter of system matrix for the further comparison of reconstructed image and original source histogram.</ref>
 
-== Workflow ==
+''All the rest parameters have the same meaning and usage as for [[#Simulation|simulation]].''
 
-=== Geometry parameters ===
+----
 
-The very first step is to set all the geometry parameters needed for the setup.
+<references />
