@@ -4,6 +4,8 @@
 # G4Simulation
 *[SIFI-CM][sifi_link] 'simple'[^1] Geant4 Simulation*
 
+![](Pictures/logo_SiFi_CC.png)
+
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -57,7 +59,7 @@ cp ../*.mac .
 
 ## Geometry
 
-![Geometry](scripts/CM_geometry.png)
+![Geometry](Pictures/CM_geometry.png)
 
 * **SD** - distance from the source plane to the detector
 * **SM** - distance from the source plane to the middle of the mask
@@ -136,9 +138,11 @@ The general procedure is very similar for both modes. The basic difference is th
 | :----: |:---:| :--:| :--------|
 |  `-det`            |    220:16:1.3    | float:int:float | Detector parameters: detector-source:nFibres:fibre_width [mm/-/mm]
 |  `-nlay`            |    4    | int  | Number of layers in detector)
-|  `-mask`            |    31:170:70:20    | int:floats | Mask parameters: order:mask-source:width/length:thickness [mm]
+|  `-mask`            |    31:170:70:70:20    | int:floats | Mask parameters: order:mask-source:xSize:ySize:thickness [mm]
 |  `-masktype`            |    nowallpet    | string  | Mask type: \{`standard`, `round`, `pet`, `nowallpet`, `nowallpetcut`\}
 |  `-cut`            |    31    | int  | Number of pixels in mask, (relevant only if masktype=nowallpetcut)
+|  `-cutx`            |    None    | int  | Number of pixels in X-axis of mask, (can be used in order to construct rectangular mask)
+|  `-cuty`            |    None    | int  | Number of pixels in Y-axis of mask, (can be used in order to construct rectangular mask)
 |  `-er`            |    0.0    | float  | Error in W rods size [mm], (relevant only if `masktype`=`nowallpetcut`)
 |  `-source`            |    0:0    | float:int  | Source coordinates [mm]
 |  `-sourceBins`            |    70:100    | int  | Range and number of bins in the source histogram
@@ -146,6 +150,7 @@ The general procedure is very similar for both modes. The basic difference is th
 |  `-e`            |    4400    | int  | Energy of particles [keV]
 |  `-theta`            |    auto    | int  | Min θ angle [Deg], (maximum θ is 180)
 |  `-sMac`            |    none    | string  | mac-script to change source parameters
+|  `-sFile`            |    none    | string  | tsv file with PhaseSpace data for source 
 |  `-vis`            |    none    | flag  | Run in visual mode(no simulation is performed)
 |  `-1d`            |    none    | flag  | Mask and detector are single-dimensional
 |  `-detshift`            |    0.0:0.0    | doubles  | The shift of the detector position
@@ -226,9 +231,11 @@ This parameter allows to set the θmin angle [deg].
 
 Path to the `mac`-script with additional specifications of the source. It allows to change type and shape of the source distribution.
 
-<!-- ```
-Example !TODO
-```  -->
+**Parameter -sFile**
+
+Path to `tsv`  PhaseSpace file with eache row containing values: `ID:energy:x:y:z:p_x:p_y:pz`
+parameters of simulated gamma. In such case parameter `-n` will specify how many times each 
+gamma will be simulated.
 
 
 **Parameter -vis**
