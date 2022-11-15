@@ -108,6 +108,16 @@ public:
         std::cout << "TotalDeposited = " << total_deposited << std::endl;
     }
 
+    bool GetHmatrixEnable()
+    {
+        return fEnable.hMatrixScoring;
+    };
+
+    int GetFiberNumber(double x)
+    {
+        return fEnergyDeposits.histogram.GetXaxis()->FindBin(x);
+    };
+
 protected:
     TFile* fFile = nullptr;
 

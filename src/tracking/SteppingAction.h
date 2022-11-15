@@ -3,6 +3,7 @@
 #include "DataStorage.h"
 #include "Utils.h"
 #include <G4UserSteppingAction.hh>
+#include <TVector3.h>
 
 namespace SiFi
 {
@@ -18,6 +19,9 @@ public:
 
 private:
     DataStorage* fStorage = nullptr;
+
+    G4ThreeVector fCenterOfMass =  G4ThreeVector(0, 0, 0);
+    Double_t fTotalDeposit = 0.0;
 };
 
 } // namespace SiFi
