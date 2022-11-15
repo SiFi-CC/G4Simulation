@@ -28,13 +28,19 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     }
     if (name == "fibrephysical")
     {
-        auto number = step->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(2);
-        auto laynumber = step->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(3);
+        auto fiber_tmp = step->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(2);
+        auto layer_tmp = step->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(3);
         if (fStorage->GetHmatrixEnable())
         {
             log->info("Hi Matrix");
         }
-        if (step->GetTrack()->GetParticleDefinition()->GetParticleType() == G4String("gamma"))
+        if (step->GetTrack()->GetParticleDefinition()->GetParticleType() == G4String("gamma")){
+            log->debug("Event reset");
+            fCurrentFiber = 0;
+            fCurrentLayer = 0;
+        }
+        if (step->GetTrack()->GetParticleDefinition()->GetParticleType() == G4String("gamma") |
+            fiber_tmp != fCurrentFiber | layer_tmp != fCurrentLayer)
         {
             if (fTotalDeposit > 0)
             {
@@ -44,15 +50,17 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
                 fStorage->registerDepositScoring(name, fCenterOfMass, fTotalDeposit);
             }
             fTotalDeposit = 0.0;
+            fCurrentFiber = 0;
+            fCurrentLayer = 0;
             fCenterOfMass = G4ThreeVector(0, 0, 0);
         }
         if (deposit > 0)
         {
             auto pos = step->GetPostStepPoint()->GetPosition();
-            // log->debug("hit in fiber {}", fStorage->GetFiberNumber(pos.x()));
-            // log->debug("hit in fiber {} {}", fStorage->GetFiberNumber(pos.x()), number);
-            log->debug("hit in fiber {} {} {}", fStorage->GetFiberNumber(pos.x()), number,
-                       laynumber);
+            fCurrentFiber = fiber_tmp;
+            fCurrentLayer = layer_tmp;
+            log->debug("hit in fiber {} {} {}", fStorage->GetFiberNumber(pos.x()), fiber_tmp,
+                       layer_tmp);
             log->debug("Position {} {} {}", pos.x(), pos.y(), pos.z());
             log->debug("EnergyDeposit {}", deposit);
             if (fTotalDeposit == 0){

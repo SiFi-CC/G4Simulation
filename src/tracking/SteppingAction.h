@@ -22,6 +22,8 @@ private:
 
     G4ThreeVector fCenterOfMass =  G4ThreeVector(0, 0, 0);
     Double_t fTotalDeposit = 0.0;
+    Int_t fCurrentFiber = 0;
+    Int_t fCurrentLayer = 0;
 };
 
 } // namespace SiFi
