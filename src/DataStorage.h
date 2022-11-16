@@ -47,7 +47,8 @@ public:
     // should be run after metadata
     void init(bool hypmed = false);
 
-    void registerDepositScoring(const G4String& volume, const G4ThreeVector& pos, double energy);
+    void registerDepositScoring(const G4String& volume, const G4ThreeVector& pos,
+                                double energy, double energy_error);
     
     void registerDepositScoringHypMed(const G4String& volume, const G4int layerNum,
                                 const G4ThreeVector& pos, double energy);
@@ -164,6 +165,7 @@ protected:
         TVector3 position;
         int eventId = 0;
         double energy = 0;
+        double energy_error = 0;
 
         TH2F histogram;
     } fEnergyDeposits;

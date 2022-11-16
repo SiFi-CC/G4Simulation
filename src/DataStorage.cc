@@ -43,6 +43,7 @@ void DataStorage::init(bool hypmed)
         fEnergyDeposits.hits = new TTree("deposits", "energy deposits in detector");
         fEnergyDeposits.hits->Branch("position", &fEnergyDeposits.position);
         fEnergyDeposits.hits->Branch("energy", &fEnergyDeposits.energy);
+        fEnergyDeposits.hits->Branch("energyError", &fEnergyDeposits.energy_error);
         fEnergyDeposits.hits->Branch("id", &fEnergyDeposits.eventId);
         fEnergyDeposits.histogram =
             TH2F("energyDeposits", "energy deposits in detector",
@@ -91,7 +92,7 @@ void DataStorage::init(bool hypmed)
 }
 
 void DataStorage::registerDepositScoring(const G4String& volume, const G4ThreeVector& pos,
-                                         double energy)
+                                         double energy, double energy_error)
 {
     if (volume == "fibrephysical")
     {
@@ -100,9 +101,10 @@ void DataStorage::registerDepositScoring(const G4String& volume, const G4ThreeVe
             fEnergyDeposits.eventId = fSourceRecord.eventId;
             fEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
             fEnergyDeposits.energy = energy;
+            fEnergyDeposits.energy_error = energy_error;
 
             fEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
-            // fEnergyDeposits.hits->Fill();
+            fEnergyDeposits.hits->Fill();
             total_deposited += energy;
             // spdlog::info("Energy = {}", energy);
         }

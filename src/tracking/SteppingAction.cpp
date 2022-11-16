@@ -1,5 +1,6 @@
 #include "SteppingAction.h"
 #include <G4Step.hh>
+#include <cmath>
 
 namespace SiFi
 {
@@ -34,25 +35,30 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         {
             log->info("Hi Matrix");
         }
-        if (step->GetTrack()->GetParticleDefinition()->GetParticleType() == G4String("gamma")){
-            log->debug("Event reset");
-            fCurrentFiber = 0;
-            fCurrentLayer = 0;
-        }
-        if (step->GetTrack()->GetParticleDefinition()->GetParticleType() == G4String("gamma") |
-            fiber_tmp != fCurrentFiber | layer_tmp != fCurrentLayer)
+        if ((step->GetTrack()->GetParticleDefinition()->GetParticleType() == G4String("gamma")) |
+            (fiber_tmp != fCurrentFiber) |
+            (layer_tmp != fCurrentLayer))
         {
             if (fTotalDeposit > 0)
             {
                 log->debug("total Deposit {}", fTotalDeposit);
+                // log->debug("Scale {}", fSigmaScaleFactor);
+                // double TotalDepositSmeared = fRandom->Gaus(
+                //     0.0, sigma_energy_JK(fTotalDeposit));
+                double sigma = 0.097*sigma_energy_JK(fTotalDeposit)/sigma_energy_JK(0.511);
+                log->debug("sigma {}", sigma);
+                double TotalDepositSmeared = fRandom->Gaus(0.0, fTotalDeposit * sigma);
+                log->debug("total DepositError {} {}", fTotalDeposit, TotalDepositSmeared);
                 log->debug("center of mass {} {} {}", fCenterOfMass.x(), fCenterOfMass.y(),
                     fCenterOfMass.z());
-                fStorage->registerDepositScoring(name, fCenterOfMass, fTotalDeposit);
+                fStorage->registerDepositScoring(
+                    name, fCenterOfMass, fTotalDeposit + TotalDepositSmeared, TotalDepositSmeared);
             }
             fTotalDeposit = 0.0;
-            fCurrentFiber = 0;
-            fCurrentLayer = 0;
+            fCurrentFiber = -1;
+            fCurrentLayer = -1;
             fCenterOfMass = G4ThreeVector(0, 0, 0);
+            log->debug("Event reset");
         }
         if (deposit > 0)
         {
@@ -71,6 +77,13 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
             fTotalDeposit += deposit;
         }
     }
+}
+
+// Energy in MeV
+Double_t SteppingAction::sigma_energy_JK(Double_t E)
+{
+    Double_t sigma = 0.0017 + 0.0355 * pow(E, -1. / 2.) - 0.00007 * pow(E, -3. / 2.);
+    return sigma;
 }
 
 } // namespace SiFi
