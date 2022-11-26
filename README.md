@@ -104,16 +104,16 @@ At this point experiments with geometry parameters led to finding optimal (*or j
 - S = 70 mm
 - Number of points in the source plane: 100x100=10000
 
-##### Large-scale prototype  **2D**
+##### Full-scale prototype  **2D**
 
-tested with 8 layers with 76 fibers
+7 layers with 55 fibers
+2.01 mm fiberwidth
 
-- SM = 270 mm
+- SM = 170 mm
 - MD = 50 mm
-- M = 210 mm
+- M = 115.3 x 101.7 mm, 51 x 45 pixels, 467 order
 - M_z = 20 mm
-- S = 105 mm (210 mm is planned to be tested)
-- Number of points in the source plane: 100x100=10000
+- FOV = 130 mm, 200 bins
 
 ## Usage
 
@@ -251,10 +251,19 @@ If this flag is used, the detector and mask are constructed in a singe-dimension
 
 Two values (X and Y direction) which determine the shift of the detector with respect to the center of mask. If one value is inserted - the shift will be applied only in X direction.
 
+#### Parallel run of the  set of simulations
+
+**Example for full-scale prototype**
+
+```shell
+parallel -j ${njobs} --lb --progress "./cmd/custom_simulation ./sim_PMMA90p7MeV_energy_smear/sim220_170-det55_2p01_7lay-nowallpetcut-mask467_cut51_45-70mm_1d_PMMA90p7MeV{/.}_0_0.root -det 220:55:2.01 -mask 467:170:115.3:101.7:20 -n  1 -masktype nowallpetcut -cutx 51 -cuty 45 -sourceBins 130:200 -1d -nlay 7 -sFile {} -source 0:0 >>| logfile.log || echo {} error; echo {} >>| error_file.log" ::: ${phasespace_files}.tsv
+```
+
+
 ### H-matrix calculation
 
 ```shell
-mpirun -np n_cores ./cmd/mpi_gen_sim_matrix.cp output.root [optional arguments]
+mpirun -np ${n_cores} ./cmd/mpi_gen_sim_matrix.cp output.root [optional arguments]
 ```
 
 `n_cores` - is a number of parallel processes (number of cores used).
