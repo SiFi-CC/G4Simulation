@@ -1,6 +1,6 @@
 # create empty scene
 #
-#/vis/open OGLX
+# /vis/open OGLX
 /vis/open OGL
 /vis/scene/create
 ############## GUI commands

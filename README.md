@@ -104,7 +104,7 @@ At this point experiments with geometry parameters led to finding optimal (*or j
 - S = 70 mm
 - Number of points in the source plane: 100x100=10000
 
-##### Full-scale prototype  **2D** and **1D**
+##### Full-scale prototype  **1D** and **2D**(not tested yet)
 
 7 layers with 55 fibers
 2.01 mm fiberwidth
@@ -256,7 +256,7 @@ Two values (X and Y direction) which determine the shift of the detector with re
 **Example for full-scale prototype**
 
 ```shell
-parallel -j ${njobs} --lb --progress "./cmd/custom_simulation ./${output_dir}/sim220_170-det55_2p01_7lay-nowallpetcut-mask467_cut51_45-70mm_1d_PMMA90p7MeV{/.}_0_0.root -det 220:55:2.01 -mask 467:170:115.3:101.7:20 -n  1 -masktype nowallpetcut -cutx 51 -cuty 45 -sourceBins 130:200 -1d -nlay 7 -sFile {} -source 0:0 >>| logfile.log || echo {} error; echo {} >>| error_file.log" ::: ${phasespace_files}.tsv
+parallel -j ${njobs} --lb --progress "./cmd/custom_simulation ./sim_PMMA90p7MeV_energy_smear/sim220_170-det55_2p01_7lay-nowallpetcut-mask467_cut51_45-70mm_1d_PMMA90p7MeV{/.}_0_0.root -det 220:55:2.01 -mask 467:170:115.3:101.7:20 -n  1 -masktype nowallpetcut -cutx 51 -cuty 45 -sourceBins 130:200 -1d -nlay 7 -sFile {} -source 0:0 >>| logfile.log || echo {} error; echo {} >>| error_file.log" ::: ${phasespace_files}.tsv
 ```
 
 

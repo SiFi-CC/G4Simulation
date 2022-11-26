@@ -30,19 +30,23 @@ public:
 
         auto world = new G4LogicalVolume(new G4Box("world", .5 * m, .5 * m, 1.2 * m),
                                          MaterialManager::get()->GetMaterial("G4_AIR"), "world");
+        new G4PVPlacement(nullptr, G4ThreeVector(fDetectorPosX, fDetectorPosY, fDetectorPosZ),
+                          fAbsober->Construct(), "detector", world, false, 0);
 
-        new G4PVPlacement(nullptr, G4ThreeVector(0, 0, fDetectorPosZ), fAbsober->Construct(),
-                          "detector", world, false, 0);
-
-        new G4PVPlacement(nullptr, G4ThreeVector(0, 0, fMaskPosZ), fMask->Construct(), "mask",
-                          world, false, 0);
+        new G4PVPlacement(nullptr, G4ThreeVector(0, 0, fMaskPosZ),
+                          fMask->Construct(), "mask", world, false, 0);
 
         world->SetVisAttributes(G4VisAttributes::Invisible);
         return new G4PVPlacement(nullptr, G4ThreeVector(), world, "world", nullptr, false, 0);
     };
 
     void setMaskPos(double z) { fMaskPosZ = z; };
-    void setDetectorPos(double z) { fDetectorPosZ = z; };
+    void setDetectorPos(double z){fDetectorPosZ = z;};
+    void setDetectorPos(double x, double y, double z) {
+        fDetectorPosX = x;
+        fDetectorPosY = y;
+        fDetectorPosZ = z;
+    };
 
     const logger log = createLogger("DetectorConstruction");
 
@@ -50,6 +54,8 @@ private:
     DetectorElement* fMask;
     DetectorElement* fAbsober;
     double fMaskPosZ = 30 * cm;
+    double fDetectorPosX = 0 * mm;
+    double fDetectorPosY = 0 * mm;
     double fDetectorPosZ = 50 * cm;
 };
 

@@ -28,11 +28,10 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::info);
 
     CmdLineOption opt_det("Plane", "-det",
-                          "Detector: detector-source:nFibres:fibre_width, default: 220:16:1.3", 0,
-                          0);
+                          "Detector-source distance [mm], default: 220", 220.);
     CmdLineOption opt_mask(
         "Mask", "-mask",
-        "Mask: order:mask-source:xSize:ySize:thickness [mm], default: 31:170:70:70:20", 0, 0);
+        "Mask: order:mask-source:width/length:thickness [mm], default: 31:170:70:20", 0, 0);
     CmdLineOption opt_masktype("MaskType", "-masktype",
                                "MaskType: {standart, round, pet, nowallpet, nowallpetcut}",
                                "nowallpet");
@@ -45,11 +44,10 @@ int main(int argc, char** argv)
     CmdLineOption opt_masktype_cutY(
         "MaskCutY", "-cuty",
         "MaskNumber of pixels in vertical direction,(relevant only if massktype=nowallpetcut) default: 31(integer)", 0);
+
     CmdLineOption opt_events("Events", "-n", "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_energy("Energy", "-e", "Energy of particles [keV], default: 4400 (integer)",
                              4400);
-    CmdLineOption opt_nlay("#layers", "-nlay", "Number of layers in detector, default: 4 (integer)",
-                           4);
     CmdLineOption opt_theta("Theta", "-theta",
                             "Min Theta angle [Deg] (maximum Theta is 180), default: auto", 0);
     CmdLineOption opt_source("Source", "-source", "Source position [mm], default: 0:0", 0);
@@ -68,11 +66,6 @@ int main(int argc, char** argv)
 
     CmdLineOption opt_dimension("Single_dimension", "-1d", "Run in 1 dimension");
 
-    CmdLineOption opt_detshift("DetectorShift", "-detshift",
-                                "Detector position shift [mm], default: 0:0", 0);
-
-    CmdLineOption opt_sourcePhase("SourcePhaseSpace", "-sFile", "tsv with source", "");
-    
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
     const Positional& args = CmdLineConfig::GetPositionalArguments();
@@ -80,11 +73,10 @@ int main(int argc, char** argv)
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t detectorsource = 220, fibrewidth = 1.3; // detector dimensions
-    Int_t fibrenum = 16;                            // number of fibers in one layer
+    Float_t detectorsource = opt_det.GetDoubleValue(); // detector dimensions
 
     Int_t mord = 31;                                              // MURA mask order
-    Float_t masksource = 170., masklengthX = 70., masklengthY = 70., maskthick = 20.; // mask dimensions
+    Float_t masksource = 170., masklength = 70., maskthick = 20.; // mask dimensions
 
     Float_t minTheta, maxTheta = 180;
 
@@ -93,31 +85,15 @@ int main(int argc, char** argv)
     Int_t sNbins = 100; // source histogram parameters
     Float_t sRange = 70;
 
-    double detshiftX = 0.0, detshiftY = 0.0;
-
-    int nLayer = opt_nlay.GetIntValue(); // number of layers in the detector
     storage.enablesource();              // enblesource histogram
 
     { // CmdLine options
-        if (opt_det.GetArraySize() == 3)
-        {
-            detectorsource = opt_det.GetDoubleArrayValue(1);
-            fibrenum = opt_det.GetIntArrayValue(2);
-            fibrewidth = opt_det.GetDoubleArrayValue(3);
-        }
-        else if (opt_det.GetArraySize() != 0)
-        {
-            spdlog::error("Detector plane - 3 parameters required, {} given",
-                          opt_det.GetArraySize());
-            abort();
-        }
-        if (opt_mask.GetArraySize() == 5)
+        if (opt_mask.GetArraySize() == 4)
         {
             mord = opt_mask.GetIntArrayValue(1);
             masksource = opt_mask.GetDoubleArrayValue(2);
-            masklengthX = opt_mask.GetDoubleArrayValue(3);
-            masklengthY = opt_mask.GetDoubleArrayValue(4);
-            maskthick = opt_mask.GetDoubleArrayValue(5);
+            masklength = opt_mask.GetDoubleArrayValue(3);
+            maskthick = opt_mask.GetDoubleArrayValue(4);
         }
         else if (opt_mask.GetArraySize() != 0)
         {
@@ -125,17 +101,6 @@ int main(int argc, char** argv)
             abort();
         }
 
-        // minTheta =
-        // atan(-(masklength+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
-        minTheta =
-            atan(-(masklengthX + fibrewidth * fibrenum) / 2 / detectorsource) * 180 / M_PI + 180.;
-        if (opt_theta.GetArraySize() == 1) { minTheta = opt_theta.GetDoubleArrayValue(1); }
-        else if (opt_theta.GetArraySize() != 0)
-        {
-            spdlog::error("Theta_Min angle - 1 parameter is required, {} given",
-                          opt_theta.GetArraySize());
-            abort();
-        }
         if (opt_source.GetArraySize() == 2)
         {
             sPosX = opt_source.GetDoubleArrayValue(1);
@@ -158,32 +123,8 @@ int main(int argc, char** argv)
                           opt_sourceBins.GetArraySize());
             abort();
         }
-        if (opt_detshift.GetArraySize() == 2)
-        {
-            detshiftX = opt_detshift.GetDoubleArrayValue(1);
-            detshiftY = opt_detshift.GetDoubleArrayValue(2);
-        }
-        else if (opt_detshift.GetArraySize() == 1)
-        {
-            detshiftX = opt_detshift.GetDoubleArrayValue(1);
-        }
-        else if (opt_detshift.GetArraySize() != 0)
-        {
-            spdlog::error("Source histogram - 2 parameters required: range and Nbins, {} given",
-                          opt_detshift.GetArraySize());
-            abort();
-        }
     } // CmdLine options
 
-    printf("Detector : %g %g %i %g [mm]\n", detectorsource, fibrenum * fibrewidth, fibrenum,
-           fibrewidth);
-    printf("Mask     : %s, %g %g %g %g [mm]\n", opt_masktype.GetStringValue(), masksource,
-           masklengthX, masklengthY, maskthick);
-    printf("Mask order      : %i\n", mord);
-    printf("No. of events  : %i\n", opt_events.GetIntValue());
-    printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
-    printf("Theta [Deg] : %g %g\n", minTheta, maxTheta);
-    printf("Source position [mm] : %g %g\n", sPosX, sPosY);
 
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine());
@@ -198,19 +139,67 @@ int main(int argc, char** argv)
     auto wrappingmaterial = MaterialManager::get()->GetMaterial("G4_Al");
     auto airmaterial = MaterialManager::get()->GetMaterial("G4_AIR");
 
-    MuraMask mask(mord, {masklengthX * mm, masklengthY * mm, maskthick * mm},
+    MuraMask mask(mord, {masklength * mm, masklength * mm, maskthick * mm},
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
 
-    DetectorBlock detector(nLayer,                                // number of layers
-                           FibreLayer(                            //
-                               fibrenum,                          // number of fibres in layer
-                               Fibre({100 * mm, // fibre length
-                                      fibrewidth * mm,            // fibre width and thickness
-                                      material, wrappingmaterial, airmaterial})));
+    // # HypMed
+    double crystalWidth = 1.333;
+    double layer0Z = 3.2;
+    double layer1Z = 4.4;
+    double layer2Z = 7.4;
+    int layer0binsX = 31;
+    int layer0binsY = 35;
+    int layer1binsX = 31;
+    int layer1binsY = 36;
+    int layer2binsX = 34;
+    int layer2binsY = 36;
+
+    // minTheta =
+    // atan(-(masklength+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
+    minTheta =
+        atan(-(masklength + layer2binsY * crystalWidth) / 2 / detectorsource) * 180 / M_PI + 180.;
+    if (opt_theta.GetArraySize() == 1) { minTheta = opt_theta.GetDoubleArrayValue(1); }
+    else if (opt_theta.GetArraySize() != 0)
+    {
+        spdlog::error("Theta_Min angle - 1 parameter is required, {} given",
+                        opt_theta.GetArraySize());
+        abort();
+    }
+
+
+    printf("Detector HypMed Array: %g %g %g [mm]\n", detectorsource, layer2binsY * crystalWidth,
+           crystalWidth);
+    printf("Mask     : %s, %g %g %g %g [mm]\n", opt_masktype.GetStringValue(), masksource,
+           masklength, masklength, maskthick);
+    printf("Mask order      : %i\n", mord);
+    printf("No. of events  : %i\n", opt_events.GetIntValue());
+    printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
+    printf("Theta [Deg] : %g %g\n", minTheta, maxTheta);
+    printf("Source position [mm] : %g %g\n", sPosX, sPosY);
+
+    // top
+    CrystalLayer layer0 = CrystalLayer(layer0binsX, layer0binsY,   // number of crystals in layer
+                                       Crystal({crystalWidth * mm, // fibre length
+                                                crystalWidth * mm, // fibre width
+                                                layer0Z * mm,      // fibre thickness
+                                                material, wrappingmaterial, airmaterial}));
+    // middle
+    CrystalLayer layer1 = CrystalLayer(layer1binsX, layer1binsY,   // number of crystals in layer
+                                       Crystal({crystalWidth * mm, // fibre length
+                                                crystalWidth * mm, // fibre width
+                                                layer1Z * mm,      // fibre thickness
+                                                material, wrappingmaterial, airmaterial}));
+    CrystalLayer layer2 = CrystalLayer(layer2binsX, layer2binsY,   // number of crystals in layer
+                                       Crystal({crystalWidth * mm, // fibre length
+                                                crystalWidth * mm, // fibre width
+                                                layer2Z * mm,      // fibre thickness
+                                                material, wrappingmaterial, airmaterial}));
+
+    HypMedBlock detector(layer0, layer1, layer2);
+
     auto construction = new DetectorConstruction(&mask, &detector);
     construction->setMaskPos(masksource * mm);
-    construction->setDetectorPos(detshiftX * mm, detshiftY * mm,
-        detectorsource * mm + nLayer * fibrewidth / 2 * mm);
+    construction->setDetectorPos(detectorsource * mm + detector.getThickness() / 2. * mm);
 
     G4RunManager runManager;
     runManager.SetUserInitialization(construction);
@@ -222,7 +211,7 @@ int main(int argc, char** argv)
     // source.SetPosAng(TVector3(sPosX, sPosY, 0),fibrewidth*fibrenum *mm,detectorsource * mm);
     source.SetPosAng(TVector3(sPosX, sPosY, 0));
 
-    runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource(), &storage));
+    runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource()));
     runManager.SetUserAction(new SteppingAction(&storage));
     runManager.SetUserAction(new EventAction(&storage));
     runManager.Initialize();
@@ -257,8 +246,7 @@ int main(int argc, char** argv)
     }
     detector.writeMetadata(&storage);
     mask.writeMetadata(&storage);
-    storage.init();
-
+    storage.init(true);
 
     if (opt_sourceMac.GetStringValue())
     {
