@@ -1,20 +1,25 @@
+ <!-- Convert to MediaWiki format:
+ 	$ pandoc .\DOC.md --mathjax -f markdown -t mediawiki -s -o DOC.wiki -->
+
 # G4Simulation
 *[SIFI-CM][sifi_link] 'simple'[^1] Geant4 Simulation*
 
+![](Pictures/logo_SiFi_CC.png)
+
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [General description](#general-description)
 - [Usage](#usage)
   - [Simulation](#simulation)
   - [H-matrix calculation](#h-matrix-calculation)
+- [Geometry](#geometry)
+- [References](#references)
 
 ## Prerequisites
 
-* Required ROOT version: 6.24/00
+* Required ROOT version: 6.24/00  
   *For the installation guide look at [root_official][root_install]*[^root]
 * Compiler supporting c++17
-* CmdLineArgs >= 2.2.0
-  *Available in [SiFi-CC/CmdLineArgs](https://github.com/SiFi-CC/CmdLineArgs)*
+* [CmdLineArgs](https://github.com/SiFi-CC/CmdLineArgs) >= 2.2.0
 * mpich
   
 
@@ -51,15 +56,70 @@ cp ../*.mac .
 ```
 
 
-## General description
 
-The program operates in 2 modes. [The first](#simulation) of them is used to simulate an experiment of $\gamma$-particles being shot towards the detector. And [the second](#h-matrix-calculation) - for the calculation of the system matrix (needed for the reconstruction).
+## Geometry
 
-The general procedure is very similar for both modes. The basic difference is that the second performs a set of single simulations and combines them together in the form of `system matrix`.
+![Geometry](Pictures/CM_geometry.png)
 
+* **SD** - distance from the source plane to the detector
+* **SM** - distance from the source plane to the middle of the mask
+* **MD** - distance from the middle of the mask to the detector (**SD = SM + MD**)
+* **M** - size of the mask in X and Y directions
+* **M_z** - mask thickness
+* **S** - size of the source plane. This dimension is specified during the system matrix calculation. It determines a space of reconstructed images for a particular matrix.
+* **FCFOV** (the fully coded field of view) - angular region which is defined as defined as "comprising all directions for which the detected flux is completely modulated by the mask"[[Caroli et al]](#caroli).
+* **FOV** (the field of view) - angular region where "only a fraction of the detected photons is coded by the aperture pattern"[[Caroli et al]](#caroli).
 
+### Some speculations
+
+#### Detector plane
+
+The size of the detector plane is determined by the fibers size and amount. It is hardcoded that the length of a single fiber is **10 cm**. Also it is not hardcoded but recommended to take a width of a fiber as **1.36 mm** (despite the fact that default value is 1.3 mm which should be corrected).
+
+So in **2D** regime, the detector plane would be a square-shaped and one side of such a square would be equal to **nFibres X fibre_width**.
+
+In **1D** the size of the detector plane in **Y** direction is always the same as fiber length (10 cm), and in **X** direction it is equal to **nFibres X fibre_width**.
+
+The thickness of the detector is always determined as **nLayers X fibre_width**
+
+#### Mask
+
+At the moment it is decided to test a `nowallpet` mask (or `nowallpetcut`) for the **2D** mode (the practical implementation can be slightly different for the **1D**). For that purpose the Tungsten rods had been ordered together with the first PET raster. It has been done for the **31 order** mask, with the size **M = 70 mm** and **M_z = 20 mm**. So each rod is in size **70/31 ≈ 2.3 mm**. The number of rods available is **480**(or so?) This information should be taken into account when constructing another mask patterns - that is the single pixel size should kept the same (no matter it is **1D** or **2D**).
+
+At the same time, it can be considered to use larger mask, but additional rods should be ordered than.
+
+#### Geometry parameters
+
+At this point experiments with geometry parameters led to finding optimal (*or just better than other in some particular cases*) values and set-ups.
+
+##### Small-scale prototype  **2D** and **1D**
+
+64 fibers in total, tested with 4 layers by 16
+(can be also arranged in 2 layers by 32 or 1 layer with 64 fibers)
+
+- SM = 170 mm
+- MD = 50 mm
+- M = 70 mm
+- M_z = 20 mm
+- S = 70 mm
+- Number of points in the source plane: 100x100=10000
+
+##### Full-scale prototype  **2D** and **1D**
+
+7 layers with 55 fibers
+2.01 mm fiberwidth
+
+- SM = 170 mm
+- MD = 50 mm
+- M = 115.3 x 101.7 mm, 51 x 45 pixels, 467 order
+- M_z = 20 mm
+- FOV = 130 mm, 200 bins
 
 ## Usage
+
+The program operates in 2 modes. [The first](#simulation) of them is used to simulate an experiment of γ-particles being shot towards the detector. And [the second](#h-matrix-calculation) - for the calculation of the system matrix (needed for the reconstruction).
+
+The general procedure is very similar for both modes. The basic difference is that the second performs a set of single simulations and combines them together in the form of `system matrix`.
 
 ### Simulation
 
@@ -78,18 +138,22 @@ The general procedure is very similar for both modes. The basic difference is th
 | :----: |:---:| :--:| :--------|
 |  `-det`            |    220:16:1.3    | float:int:float | Detector parameters: detector-source:nFibres:fibre_width [mm/-/mm]
 |  `-nlay`            |    4    | int  | Number of layers in detector)
-|  `-mask`            |    31:170:70:20    | int:floats | Mask parameters: order:mask-source:width/length:thickness [mm]
-|  `-masktype`            |    standard    | string  | Mask type: \{`standard`, `round`, `pet`, `nowallpet`, `nowallpetcut`\}
+|  `-mask`            |    31:170:70:70:20    | int:floats | Mask parameters: order:mask-source:xSize:ySize:thickness [mm]
+|  `-masktype`            |    nowallpet    | string  | Mask type: \{`standard`, `round`, `pet`, `nowallpet`, `nowallpetcut`\}
 |  `-cut`            |    31    | int  | Number of pixels in mask, (relevant only if masktype=nowallpetcut)
+|  `-cutx`            |    None    | int  | Number of pixels in X-axis of mask, (can be used in order to construct rectangular mask)
+|  `-cuty`            |    None    | int  | Number of pixels in Y-axis of mask, (can be used in order to construct rectangular mask)
 |  `-er`            |    0.0    | float  | Error in W rods size [mm], (relevant only if `masktype`=`nowallpetcut`)
 |  `-source`            |    0:0    | float:int  | Source coordinates [mm]
 |  `-sourceBins`            |    70:100    | int  | Range and number of bins in the source histogram
 |  `-n`            |    1000    | int  | Number of generated events
 |  `-e`            |    4400    | int  | Energy of particles [keV]
-|  `-theta`            |    auto    | int  | Min $\theta$ angle [Deg], (maximum $\theta$ is 180)
+|  `-theta`            |    auto    | int  | Min θ angle [Deg], (maximum θ is 180)
 |  `-sMac`            |    none    | string  | mac-script to change source parameters
+|  `-sFile`            |    none    | string  | tsv file with PhaseSpace data for source 
 |  `-vis`            |    none    | flag  | Run in visual mode(no simulation is performed)
 |  `-1d`            |    none    | flag  | Mask and detector are single-dimensional
+|  `-detshift`            |    0.0:0.0    | doubles  | The shift of the detector position
 
 
 **Parameter -det**
@@ -134,7 +198,7 @@ If `-masktype=nowallpetcut`, the cut parameter specifies a size of mask's centra
 **Parameter -er**
 
 Specifies the error in the size of Tungsten rods. If used, than  from the each dimension of each rod is subtracted a random number 
-from the distribution: $er/2 - N(er/2, er/6)$
+from the distribution: er/2 - N(er/2, er/6)
 
 
 **Parameter -source**
@@ -154,22 +218,24 @@ Number of generated events.
 
 **Parameter -e**
 
-Energy of generated $\gamma$-particles [kEv].
+Energy of generated γ-particles [kEv].
 
 
 **Parameter -theta**
 
-This parameter allows to set the $\theta_{min}$ angle [deg]. 
-$\theta_{max}$ is always $180^o$ (parallel to the source-detector axis). It means that particles will be shot with angles $[\theta_{min}, 180^o]$.
+This parameter allows to set the θmin angle [deg]. 
+θmax is always 180 [deg] (parallel to the source-detector axis). It means that particles will be shot with angles [θmin, 180].
 
 
 **Parameter -sMac**
 
 Path to the `mac`-script with additional specifications of the source. It allows to change type and shape of the source distribution.
 
-<!-- ```
-Example !TODO
-```  -->
+**Parameter -sFile**
+
+Path to `tsv`  PhaseSpace file with eache row containing values: `ID:energy:x:y:z:p_x:p_y:pz`
+parameters of simulated gamma. In such case parameter `-n` will specify how many times each 
+gamma will be simulated.
 
 
 **Parameter -vis**
@@ -181,14 +247,26 @@ If this flag is used, the programs runs in visual mode[^2]. That is Geant4 graph
 
 If this flag is used, the detector and mask are constructed in a singe-dimensional mode along x-axis  
 
+**Parameter -detshift**
+
+Two values (X and Y direction) which determine the shift of the detector with respect to the center of mask. If one value is inserted - the shift will be applied only in X direction.
+
+#### Parallel run of the  set of simulations
+
+**Example for full-scale prototype**
+
+```shell
+parallel -j ${njobs} --lb --progress "./cmd/custom_simulation ./${output_dir}/sim220_170-det55_2p01_7lay-nowallpetcut-mask467_cut51_45-70mm_1d_PMMA90p7MeV{/.}_0_0.root -det 220:55:2.01 -mask 467:170:115.3:101.7:20 -n  1 -masktype nowallpetcut -cutx 51 -cuty 45 -sourceBins 130:200 -1d -nlay 7 -sFile {} -source 0:0 >>| logfile.log || echo {} error; echo {} >>| error_file.log" ::: ${phasespace_files}.tsv
+```
+
 
 ### H-matrix calculation
 
 ```shell
-mpirun -np _#cores_ ./cmd/mpi_gen_sim_matrix.cp output.root [optional arguments]
+mpirun -np ${n_cores} ./cmd/mpi_gen_sim_matrix.cp output.root [optional arguments]
 ```
 
-`#cores` - is a number of parallel processes (number of cores used).
+`n_cores` - is a number of parallel processes (number of cores used).
 
 `output.root` is a name of the output root-file.
 
@@ -201,13 +279,16 @@ The most of the optional arguments are the same as for the [simulation](#optiona
 |  `-det`            |    220:16:1.3    | list(float:int:float) | Detector parameters: detector-source:nFibres:fibre_width [mm/-/mm]
 |  `-nlay`            |    4    | int  | Number of layers in detector)
 |  `-mask`            |    31:170:70:20    | list(int:floats) | Mask parameters: order:mask-source:width/length:thickness [mm]
-|  `-masktype`            |    standard    | string  | Mask type: \{`standard`, `round`, `pet`, `nowallpet`, `nowallpetcut`\}
+|  `-masktype`            |    nowallpet    | string  | Mask type: \{`standard`, `round`, `pet`, `nowallpet`, `nowallpetcut`\}
 |  `-cut`            |    31    | int  | Number of pixels in mask, (relevant only if masktype=nowallpetcut)
 |  `-er`            |    0.0    | float  | Error in W rods size [mm], (relevant only if `masktype`=`nowallpetcut`)
-|  `-source`            |    70:100    | list(float:int)  | Range and number of bins in the source plane
+|  `-source`            |    70:100    | float:int  | Range (**S**) and number of bins in the source plane
 |  `-n`            |    1000    | int  | Number of generated events for each source position
 |  `-e`            |    4400    | int  | Energy of particles [keV]
 |  `-1d`            |    none    | flag  | Mask and detector are single-dimensional. The source position is shifted only along one dimension (`x`)
+|  `-detshift`            |    0.0:0.0    | doubles  | The shift of the detector position
+
+
 
 #### **Parameter -source**
 
@@ -215,6 +296,11 @@ The list of 2 values (float and int) to specify a source plane parameters. The f
 
 
 *All the rest parameters have the same meaning and usage as for [Simulation](#simulation)*
+
+## References
+
+<a id="caroli">[Caroli et al]</a> : Caroli, E., Stephen, J.B., Di Cocco, G. et al. Coded aperture imaging in X- and gamma-ray astronomy. Space Sci Rev 45, 349–403 (1987). https://doi.org/10.1007/BF00171998
+
 
 <!-- Footnotes -->
 [^1]: The simulation is simpler than [one of JK](https://bragg.if.uj.edu.pl/gccbwiki/index.php/SiFi-CC/SiFi-CM_Geant4_Simulation) in a sense that it does not take into account a lot of details (electronics, fibers coupling etc.).
@@ -225,6 +311,8 @@ The list of 2 values (float and int) to specify a source plane parameters. The f
 [^3]: Usually it is convenient to set [`-sourceBins`](#parameter-sourcebins) parameter for the simulation to be the same as [`-source`](#parameter-source) parameter of system matrix for the further comparison of reconstructed image and original source histogram.
 
 [^root]: Be aware that ROOT may not be using C++17 by default and one will need to compile it using option `-DCMAKE_CXX_STANDARD=17` 
+
+[^sd]: The decryption of some abbreviations can can be found at the [Geometry](#geometry) section.
 
 <!-- Links -->
 [sifi_link]: https://bragg.if.uj.edu.pl/gccbwiki/index.php/Main_Page "SiFi-CC"
