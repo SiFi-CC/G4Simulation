@@ -25,7 +25,7 @@ using namespace SiFi;
 
 int main(int argc, char** argv)
 {
-    spdlog::set_level(spdlog::level::info);
+    spdlog::set_level(spdlog::level::debug);
 
     CmdLineOption opt_det("Plane", "-det",
                           "Detector: detector-source:nFibres:fibre_width, default: 220:16:1.3", 0,
@@ -80,7 +80,7 @@ int main(int argc, char** argv)
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t detectorsource = 220, fibrewidth = 1.3; // detector dimensions
+    Float_t detectorsource = 220, fibrewidth = 2.0; // detector dimensions
     Int_t fibrenum = 16;                            // number of fibers in one layer
 
     Int_t mord = 31;                                              // MURA mask order
@@ -202,7 +202,8 @@ int main(int argc, char** argv)
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
 
     DetectorBlock detector(nLayer,                                // number of layers
-                           FibreLayer(                            //
+                           FibreLayer_Scatterrer(                            //
+                        //    FibreLayer(                            //
                                fibrenum,                          // number of fibres in layer
                                Fibre({100 * mm, // fibre length
                                       fibrewidth * mm,            // fibre width and thickness
