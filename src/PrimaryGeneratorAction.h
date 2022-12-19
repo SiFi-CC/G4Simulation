@@ -37,7 +37,7 @@ public:
         // gps->GetCurrentSource()->GetPosDist()->SetPosDisType("Point");
         gps->GetCurrentSource()->GetAngDist()->SetAngDistType("iso");
         gps->GetCurrentSource()->GetEneDist()->SetEnergyDisType("Mono");
-        fParticleGun = new G4ParticleGun(10);
+        fParticleGun = new G4ParticleGun(1);
         fParticleGun->SetParticleDefinition(fParticle);
         fParticleGun->SetParticleEnergy(4400 * keV);
         fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0, 0, 1));
