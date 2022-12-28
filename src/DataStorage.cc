@@ -44,6 +44,7 @@ void DataStorage::init(bool hypmed)
         fEnergyDeposits.hits->Branch("position", &fEnergyDeposits.position);
         fEnergyDeposits.hits->Branch("energy", &fEnergyDeposits.energy);
         fEnergyDeposits.hits->Branch("id", &fEnergyDeposits.eventId);
+        fEnergyDeposits.hits->Branch("fiberID", &fEnergyDeposits.fiberId);
         fEnergyDeposits.histogram =
             TH2F("energyDeposits", "energy deposits in detector",
                 static_cast<int>(fMetadata.data["detectorBinX"]), fMetadata.data["detectorMinX"],
@@ -91,22 +92,23 @@ void DataStorage::init(bool hypmed)
 }
 
 void DataStorage::registerDepositScoring(const G4String& volume, const G4ThreeVector& pos,
-                                         double energy)
+                                         double energy, int fiberID)
 {
     if (volume == "fibrephysical")
     {
         if (fEnable.depositScoring)
         {   
             fEnergyDeposits.eventId = fSourceRecord.eventId;
+            fEnergyDeposits.fiberId = fiberID;
             fEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
             fEnergyDeposits.energy = energy;
 
             fEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
-            // fEnergyDeposits.hits->Fill();
+            fEnergyDeposits.hits->Fill();
             total_deposited += energy;
             // spdlog::info("Energy = {}", energy);
         }
-        if (fEnable.hMatrixScoring) { setHmatrix(pos.x(), pos.y(), fBinX, fBinY, energy); }
+        if (fEnable.hMatrixScoring) { setHmatrix1D(fiberID, fBinX, fBinY, energy); }
         return;
     }
     if (volume == "maskBin" && fEnable.maskDepositScoring)
@@ -202,6 +204,33 @@ void DataStorage::setHmatrix(double DetX, double DetY, int sourceBinX, int sourc
     // spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH,
     // colIndexMatrixH);//nBinY - HISTOBIN fMatrixH(rowIndexMatrixH,colIndexMatrixH) ++;
     fMatrixH(rowIndexMatrixH, colIndexMatrixH) += energy;
+    // fMatrixH(rowIndexMatrixH, colIndexMatrixH) += 1;
+}
+
+
+void DataStorage::setHmatrix1D(int fibreNo, int sourceBinX, int sourceBinY,
+                             double energy)
+    {
+    auto sourceHistBin = std::make_tuple<int, int>(std::forward<int>(sourceBinX + 1),
+                                                   std::forward<int>(sourceBinY + 1));
+
+    auto sourceMatBin = std::make_tuple<int, int>(fMaxBinY - std::get<1>(sourceHistBin),
+                                                  std::get<0>(sourceHistBin) - 1);
+    int colIndexMatrixH = std::get<1>(sourceMatBin) * fMaxBinY + std::get<0>(sourceMatBin);
+
+    // double x = DetX;
+    // double y = DetY;
+    // auto nBinX = static_cast<int>((x + fDetBinsX * fDetBinSize / 2) / fDetBinSize) + 1;
+    // auto nBinY = static_cast<int>((y + fDetBinsX * fDetBinSize / 2) / fDetBinSize) + 1;
+    // nBinX = nBinX < 1 ? 1 : nBinX;
+    // nBinX = nBinX > fDetBinsX - 1 ? fDetBinsX : nBinX;
+    // nBinY = nBinY < 1 ? 1 : nBinY;
+    // nBinY = nBinY > fDetBinsY - 1 ? fDetBinsY : nBinY;
+    // int rowIndexMatrixH = (nBinX - 1) * fDetBinsY + fDetBinsY - nBinY;
+    // spdlog::info("x = {}, y = {}", x, y);//nBinY - HISTOBIN
+    // spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH,
+    // colIndexMatrixH);//nBinY - HISTOBIN fMatrixH(rowIndexMatrixH,colIndexMatrixH) ++;
+    fMatrixH(fibreNo, colIndexMatrixH) += energy;
     // fMatrixH(rowIndexMatrixH, colIndexMatrixH) += 1;
 }
 

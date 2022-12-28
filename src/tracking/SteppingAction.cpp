@@ -28,15 +28,17 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
 
     if (deposit > 0 && name == "fibrephysical")
     {
-        auto pos = step->GetPostStepPoint()->GetPosition();
+        auto pos = step->GetPreStepPoint()->GetPosition();
         auto fiber_tmp = step->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(2);
-        auto layer_tmp = step->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(3);
+        auto stack_tmp = step->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(3);
+        auto layer_tmp = step->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(4);
 
         log->debug("hit in volume {}", name);
-        log->debug("Position {} {}", pos.x(), pos.y());
-        log->debug("Fiber {} {}", fiber_tmp, layer_tmp);
+        log->debug("Position {} {} {}", pos.x(), pos.y(), pos.z());
+        log->debug("Fiber {}, stack {}, layer {}", fiber_tmp, stack_tmp, layer_tmp);
+        log->debug("FiberID {}", 8*stack_tmp + fiber_tmp);
 
-        fStorage->registerDepositScoring(name, pos, deposit);
+        fStorage->registerDepositScoring(name, pos, deposit, 8*stack_tmp + fiber_tmp);
         if (step->GetTrack()->GetParticleDefinition()->GetParticleType() == G4String("gamma"))
         {
             fStorage->gammacount();

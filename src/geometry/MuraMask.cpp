@@ -250,7 +250,8 @@ G4LogicalVolume* MuraMask::Construct()
             {
                 if (CmdLineOption::GetFlagValue("Single_dimension"))
                 {
-                    ismask = isMaskedAt(round(i + fMaskOrder / 2) - (int)cutx / 2);
+                    ismask = (isMaskedAt(round(i + fMaskOrder / 2) - (int)cutx / 2))
+                     || i == 0;
                 }
                 else
                 {

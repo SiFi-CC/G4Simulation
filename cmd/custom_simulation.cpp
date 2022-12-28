@@ -25,7 +25,7 @@ using namespace SiFi;
 
 int main(int argc, char** argv)
 {
-    spdlog::set_level(spdlog::level::debug);
+    spdlog::set_level(spdlog::level::info);
 
     CmdLineOption opt_det("Plane", "-det",
                           "Detector: detector-source:nFibres:fibre_width, default: 220:16:1.3", 0,
