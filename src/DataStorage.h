@@ -14,6 +14,7 @@
 
 #include <mpi.h>
 
+#include "CmdLineConfig.hh"
 #include "DataStructConvert.hh"
 
 namespace SiFi
@@ -38,6 +39,7 @@ public:
 
     virtual ~DataStorage();
     void writeMetadata(TObject* obj);
+    void write(TObject obj){obj.Write();};
     void writeMetadata(const TString& key, double value);
 
     double getMetadataNumber(const TString& key);

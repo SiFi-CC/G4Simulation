@@ -46,7 +46,7 @@ int MuraMask::isQuaResidue(int q, int p)
 G4LogicalVolume* MuraMask::Construct()
 {
     auto segX = fSize.x() / fMaskOrder;
-    auto segY = fSize.y() / fMaskOrder;
+    auto segY = fSize.y() / fMaskOrder; 
 
     G4LogicalVolume* mask = NULL;
 
@@ -157,6 +157,9 @@ G4LogicalVolume* MuraMask::Construct()
         double deltaX, deltaY, deltaZ;
         double error = CmdLineOption::GetDoubleValue("Precision");
         TH1D *histX, *histY, *histZ;
+        fMaskHisto = TH2F("Mura", "MURA mask",
+                fMaskOrder, -fSize.x()/2.0, fSize.x()/2.0,
+                fMaskOrder, -fSize.y()/2.0, fSize.y()/2.0);
 
         histX = new TH1D("rodsX", "X Size of Rods", 100, segX - 0.03 - error, segX + 0.03);
         histY = new TH1D("rodsY", "Y Size of Rods", 100, segY - 0.03 - error, segY + 0.03);
@@ -202,6 +205,7 @@ G4LogicalVolume* MuraMask::Construct()
                                                                 (fSize.z() - deltaZ) / 2),
                                                       fMaterial, "maskSegment");
                     maskSegment->SetVisAttributes(G4VisAttributes(G4Colour::Red()));
+                    fMaskHisto.Fill(posX, posY, 1);
                     // }
 
                     new G4PVPlacement(nullptr, G4ThreeVector(posX, posY, 0), maskSegment, "maskBin",
@@ -218,6 +222,9 @@ G4LogicalVolume* MuraMask::Construct()
         int cuty = CmdLineOption::GetIntValue("MaskCutY");
         cutx = (cutx == 0) ? cut : cutx;
         cuty = (cuty == 0) ? cut : cuty;
+        fMaskHisto = TH2F("Mura", "MURA mask",
+                cutx, -fSize.x()/2.0, fSize.x()/2.0,
+                cuty, -fSize.y()/2.0, fSize.y()/2.0);
         
         segX = fSize.x() / cutx;
         segY = fSize.y() / cuty;
@@ -275,6 +282,7 @@ G4LogicalVolume* MuraMask::Construct()
                     histY->Fill(segY - deltaY);
                     deltaZ = gRandom->Gaus(error / 2.0, error / 6.0);
                     histZ->Fill(fSize.z() - deltaZ);
+                    fMaskHisto.Fill(posX, posY, 1);
 
                     maskSegment = new G4LogicalVolume(new G4Box("maskSegment", (segX - deltaX) / 2,
                                                                 (segY - deltaY) / 2,
@@ -382,6 +390,7 @@ void MuraMask::writeMetadata(DataStorage* storage)
     storage->writeMetadata("maskMaxZ", zPosition + fSize.z() / 2);
     storage->writeMetadata("maskBinX", fMaskOrder);
     storage->writeMetadata("maskBinY", fMaskOrder);
+    storage->write(fMaskHisto);
 }
 
 } // namespace SiFi

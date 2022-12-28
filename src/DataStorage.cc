@@ -108,7 +108,12 @@ void DataStorage::registerDepositScoring(const G4String& volume, const G4ThreeVe
             total_deposited += energy;
             // spdlog::info("Energy = {}", energy);
         }
-        if (fEnable.hMatrixScoring) { setHmatrix1D(fiberID, fBinX, fBinY, energy); }
+        if (fEnable.hMatrixScoring) {
+            if (CmdLineOption::GetFlagValue("Full_scatterrer")){{
+                setHmatrix1D(fiberID, fBinX, fBinY, energy);}
+            } else {
+                setHmatrix(pos.x(), pos.y(), fBinX, fBinY, energy);}
+            }
         return;
     }
     if (volume == "maskBin" && fEnable.maskDepositScoring)

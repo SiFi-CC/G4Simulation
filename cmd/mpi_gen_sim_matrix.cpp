@@ -183,7 +183,8 @@ int main(int argc, char** argv)
     MuraMask mask(mord, {masklengthX * mm, masklengthY * mm, maskthick * mm},
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
     DetectorBlock detector(nLayer,                                // number of layers
-                           FibreLayer_Scatterrer(                  //
+                           FibreLayer(                  //
+                        //    FibreLayer_Scatterrer(                  //
                                fibrenum,                          // number of fibres in layer
                                Fibre({100 * mm, // fibre length
                                       fibrewidth * mm,            // fibre width and thickness

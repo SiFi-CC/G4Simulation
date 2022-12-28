@@ -68,6 +68,8 @@ int main(int argc, char** argv)
 
     CmdLineOption opt_dimension("Single_dimension", "-1d", "Run in 1 dimension");
 
+    CmdLineOption opt_scat("Full_scatterrer", "-fullscat", "Full-cale scatterrer");
+
     CmdLineOption opt_detshift("DetectorShift", "-detshift",
                                 "Detector position shift [mm], default: 0:0", 0);
 
@@ -202,8 +204,8 @@ int main(int argc, char** argv)
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
 
     DetectorBlock detector(nLayer,                                // number of layers
-                           FibreLayer_Scatterrer(                            //
-                        //    FibreLayer(                            //
+                        //    FibreLayer_Scatterrer(                            //
+                           FibreLayer(                            //
                                fibrenum,                          // number of fibres in layer
                                Fibre({100 * mm, // fibre length
                                       fibrewidth * mm,            // fibre width and thickness
