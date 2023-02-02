@@ -13,7 +13,6 @@ namespace SiFi
 G4LogicalVolume* FibreLayer::Construct()
 {   
     if (CmdLineOption::GetFlagValue("Full_scatterrer")){
-        spdlog::info("Full-scale prototype");
         double offset = 0.1;
         double total_width = 6 * 8 * fFibre.getWidth() + 7 * fFibre.getWidth() + offset * 6;
         spdlog::info("Full-scale prototype {}", getSizeY());
@@ -28,6 +27,7 @@ G4LogicalVolume* FibreLayer::Construct()
             MaterialManager::get()->Vacuum(), "smallstackLogical");
         
         auto fibre = fFibre.Construct();
+        spdlog::info("FibreWidth = {}", fFibre.getWidth());
 
         new G4PVReplica("largeStackRepFibre", fibre, largestack, kYAxis, 8, fFibre.getWidth());
         new G4PVReplica("smallstackRepFibre", fibre, smallstack, kYAxis, 7, fFibre.getWidth());
@@ -39,12 +39,13 @@ G4LogicalVolume* FibreLayer::Construct()
                         0, G4ThreeVector(0,
                         -total_width/2 + (8 * fFibre.getWidth() + offset) *i + 8 * fFibre.getWidth()/2.0, 0),
                         largestack, "largestack", layer, 0, i, 0);
-            spdlog::debug("LargeStack{} [{}, {}]", i, -total_width/2 + (8 * fFibre.getWidth() + offset) *i,
-                                                    -total_width/2 + (8 * fFibre.getWidth() + offset) *(i+1) -offset);
+            spdlog::info("LargeStack{} x = {}", i, -total_width/2 + (8 * fFibre.getWidth() + offset) *i + 8 * fFibre.getWidth()/2.0);
         }
         new G4PVPlacement(
                         0, G4ThreeVector(0, total_width/2 - 7 * fFibre.getWidth() / 2.0, 0),
                         smallstack, "smallstack", layer, 0, 6, 0);
+        spdlog::info("SmallStack x = {}", total_width/2 - 7 * fFibre.getWidth() / 2.0);
+
         return layer;
     }
     else

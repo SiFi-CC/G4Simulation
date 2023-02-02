@@ -42,6 +42,7 @@ G4LogicalVolume* DetectorBlock::Construct()
                 0, G4ThreeVector(0, 0, (i + 0.5 - 0.5 * fNumberOfLayers) * fLayer.getThickness()),
                 layer, "detectorBlockRepLayers", block, 0, i, 0);
         }
+        spdlog::info("Layer {} z = {}", i, (i + 0.5 - 0.5 * fNumberOfLayers) * fLayer.getThickness());
     }
 
     // For aligned:

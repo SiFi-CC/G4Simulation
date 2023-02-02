@@ -214,6 +214,7 @@ int main(int argc, char** argv)
     construction->setMaskPos(masksource * mm);
     construction->setDetectorPos(detshiftX * mm, detshiftY * mm,
         detectorsource * mm + nLayer * fibrewidth / 2 * mm);
+    spdlog::info("DetectorPosition z = {}", detectorsource * mm + nLayer * fibrewidth / 2 * mm);
 
     G4RunManager runManager;
     runManager.SetUserInitialization(construction);
