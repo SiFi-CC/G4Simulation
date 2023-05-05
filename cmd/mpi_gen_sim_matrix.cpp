@@ -54,7 +54,7 @@ int main(int argc, char** argv)
                            4);
     CmdLineOption opt_source("Source", "-source",
                              "Source plane size and number of bins [mm], default: 64:100", 0);
-
+    
     CmdLineArg cmdarg_output("output", "Output file", CmdLineArg::kString);
 
     CmdLineOption opt_precision("Precision", "-er",
@@ -65,6 +65,8 @@ int main(int argc, char** argv)
                                "Detector position shift [mm], default: 0:0", 0);
 
     CmdLineOption opt_dimension("Single_dimension", "-1d", "Run in 1 dimension");
+
+    CmdLineOption opt_scat("Full_scatterrer", "-fullscat", "Full-cale scatterrer");
 
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
