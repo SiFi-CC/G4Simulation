@@ -54,7 +54,7 @@ int main(int argc, char** argv)
                            4);
     CmdLineOption opt_source("Source", "-source",
                              "Source plane size and number of bins [mm], default: 64:100", 0);
-    
+
     CmdLineArg cmdarg_output("output", "Output file", CmdLineArg::kString);
 
     CmdLineOption opt_precision("Precision", "-er",
@@ -74,6 +74,7 @@ int main(int argc, char** argv)
 
     Float_t detectorsource = 220, fibrewidth = 1.3; // detector dimensions
     Int_t fibrenum = 16;                            // number of fibers in one layer
+    double fibrelength = 100;                       // length of the fiber
 
     Int_t mord = 31;                                              // MURA mask order
     // Float_t masksource = 170., masklength = 70., maskthick = 20.; // mask dimensions
@@ -186,9 +187,8 @@ int main(int argc, char** argv)
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
     DetectorBlock detector(nLayer,                                // number of layers
                            FibreLayer(                  //
-                        //    FibreLayer_Scatterrer(                  //
                                fibrenum,                          // number of fibres in layer
-                               Fibre({100 * mm, // fibre length
+                               Fibre({fibrelength * mm, // fibre length
                                       fibrewidth * mm,            // fibre width and thickness
                                       material, wrappingmaterial, airmaterial})));
 

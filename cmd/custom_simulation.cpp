@@ -204,7 +204,6 @@ int main(int argc, char** argv)
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
 
     DetectorBlock detector(nLayer,                                // number of layers
-                        //    FibreLayer_Scatterrer(                            //
                            FibreLayer(                            //
                                fibrenum,                          // number of fibres in layer
                                Fibre({100 * mm, // fibre length
