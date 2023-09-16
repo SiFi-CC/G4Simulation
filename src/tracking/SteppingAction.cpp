@@ -29,6 +29,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     if (deposit > 0 && name == "fibrephysical")
     {
         auto pos = step->GetPreStepPoint()->GetPosition();
+        // Only for -fullscat
         auto fiber_tmp = step->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(2);
         auto stack_tmp = step->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(3);
         auto layer_tmp = step->GetPreStepPoint()->GetTouchableHandle()->GetReplicaNumber(4);
