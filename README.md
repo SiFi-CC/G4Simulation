@@ -273,6 +273,10 @@ parallel -j ${njobs} --lb --progress "./cmd/custom_simulation ./sim_PMMA90p7MeV_
 mpirun -np ${n_cores} ./cmd/mpi_gen_sim_matrix.cp output.root [optional arguments]
 ```
 
+```shell
+mpirun -np 6 ./cmd/mpi_gen_sim_matrix matr220_170-fullscat-nowallpetcut-mask467_cut51_45-70mm_1d_layerwise.root -det 220:55:2.01 -mask 467:170:115.3:101.7:20 -n  1000 -masktype nowallpetcut -cutx 51 -cuty 45 -source 130:100 -1d -nlay 7 -fullscat
+```
+
 `n_cores` - is a number of parallel processes (number of cores used).
 
 `output.root` is a name of the output root-file.

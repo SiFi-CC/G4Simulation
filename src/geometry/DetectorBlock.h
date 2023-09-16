@@ -2,7 +2,6 @@
 
 #include "DataStorage.h"
 #include "FibreLayer.h"
-#include "FibreLayer_Scatterrer.h"
 #include <G4LogicalVolume.hh>
 
 namespace SiFi

@@ -3,7 +3,7 @@
 #include "geometry/DetectorBlock.h"
 #include "geometry/HypMedBlock.h"
 #include "geometry/Fibre.h"
-#include "geometry/FibreLayer_Scatterrer.h"
+#include "geometry/FibreLayer.h"
 #include "geometry/Crystal.h"
 #include "geometry/CrystalLayer.h"
 #include "geometry/MuraMask.h"
@@ -17,7 +17,7 @@ namespace geometry
 {
 
 Fibre simpleFibre();
-FibreLayer_Scatterrer simpleFibreLayer();
+FibreLayer simpleFibreLayer();
 Crystal simpleCrystal();
 CrystalLayer simpleCrystalLayer();
 DetectorBlock simpleDetectorBlock();

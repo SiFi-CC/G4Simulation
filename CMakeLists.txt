@@ -55,7 +55,6 @@ add_library(g4sim
 
     ./src/geometry/DetectorBlock.cpp
     ./src/geometry/FibreLayer.cpp
-    ./src/geometry/FibreLayer_Scatterrer.cpp
     ./src/geometry/Fibre.cpp
     ./src/geometry/MuraMask.cpp
     ./src/geometry/HypMedBlock.cpp
