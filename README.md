@@ -130,6 +130,10 @@ The general procedure is very similar for both modes. The basic difference is th
 
 `output.root` is a name of the output root-file.
 
+```shell
+./cmd/custom_simulation simtest2.root -det 220:55:2.01 -mask 467:170:115.3:101.7:20 -n  1000 -masktype nowallpetcut -cutx 51 -cuty 45 -sourceBins 130:200 -nlay 7 -source -20:0 -1d -fullscat
+```
+
 
 ##### Optional arguments  
 *(detailed description below the table)*
@@ -241,7 +245,9 @@ gamma will be simulated.
 
 **Parameter -vis**
 
-If this flag is used, the programs runs in visual mode[^2]. That is Geant4 graphical interface is opened with specified geometry setup.  
+If this flag is used, the programs runs in visual mode[^2]. That is Geant4 graphical interface is opened with specified geometry setup.
+
+*IMPORTANT* you need to copy all the `*.mac` files to the build catalog.
 
 
 **Parameter -1d**
