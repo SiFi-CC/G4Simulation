@@ -110,7 +110,7 @@ void DataStorage::registerDepositScoring(const G4String& volume, const G4ThreeVe
         }
         if (fEnable.hMatrixScoring) {
             if (CmdLineOption::GetFlagValue("Full_scatterrer")){{
-                setHmatrix1D(fiberID, fBinX, fBinY, energy);}
+                setHmatrix_fullscat(fiberID, fBinX, fBinY, energy);}
             } else {
                 setHmatrix(pos.x(), pos.y(), fBinX, fBinY, energy);}
             }
@@ -213,7 +213,7 @@ void DataStorage::setHmatrix(double DetX, double DetY, int sourceBinX, int sourc
 }
 
 
-void DataStorage::setHmatrix1D(int fibreNo, int sourceBinX, int sourceBinY,
+void DataStorage::setHmatrix_fullscat(int fibreNo, int sourceBinX, int sourceBinY,
                              double energy)
     {
     auto sourceHistBin = std::make_tuple<int, int>(std::forward<int>(sourceBinX + 1),

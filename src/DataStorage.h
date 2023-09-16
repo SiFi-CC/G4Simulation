@@ -64,7 +64,7 @@ public:
 
     void setHmatrix(double DetX, double DetY, int sourceBinX, int sourceBinY, double energy);
     
-    void setHmatrix1D(int fibreNo, int sourceBinX, int sourceBinY, double energy);
+    void setHmatrix_fullscat(int fibreNo, int sourceBinX, int sourceBinY, double energy);
     
     void setHmatrixHypMed(int layerNum, double DetX, double DetY,
                     int sourceBinX, int sourceBinY, double energy);
