@@ -68,6 +68,8 @@ int main(int argc, char** argv)
 
     CmdLineOption opt_dimension("Single_dimension", "-1d", "Run in 1 dimension");
 
+    CmdLineOption opt_scat("Full_scatterrer", "-fullscat", "Full-cale scatterrer");
+
     CmdLineOption opt_detshift("DetectorShift", "-detshift",
                                 "Detector position shift [mm], default: 0:0", 0);
 
@@ -80,7 +82,7 @@ int main(int argc, char** argv)
     TString output(args.at("output")->GetStringValue());
     DataStorage storage(output);
 
-    Float_t detectorsource = 220, fibrewidth = 1.3; // detector dimensions
+    Float_t detectorsource = 220, fibrewidth = 2.0; // detector dimensions
     Int_t fibrenum = 16;                            // number of fibers in one layer
 
     Int_t mord = 31;                                              // MURA mask order
@@ -211,6 +213,7 @@ int main(int argc, char** argv)
     construction->setMaskPos(masksource * mm);
     construction->setDetectorPos(detshiftX * mm, detshiftY * mm,
         detectorsource * mm + nLayer * fibrewidth / 2 * mm);
+    spdlog::info("DetectorPosition z = {}", detectorsource * mm + nLayer * fibrewidth / 2 * mm);
 
     G4RunManager runManager;
     runManager.SetUserInitialization(construction);

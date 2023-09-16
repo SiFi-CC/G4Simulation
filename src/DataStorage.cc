@@ -44,6 +44,7 @@ void DataStorage::init(bool hypmed)
         fEnergyDeposits.hits->Branch("position", &fEnergyDeposits.position);
         fEnergyDeposits.hits->Branch("energy", &fEnergyDeposits.energy);
         fEnergyDeposits.hits->Branch("id", &fEnergyDeposits.eventId);
+        fEnergyDeposits.hits->Branch("fiberID", &fEnergyDeposits.fiberId);
         fEnergyDeposits.histogram =
             TH2F("energyDeposits", "energy deposits in detector",
                 static_cast<int>(fMetadata.data["detectorBinX"]), fMetadata.data["detectorMinX"],
@@ -91,22 +92,28 @@ void DataStorage::init(bool hypmed)
 }
 
 void DataStorage::registerDepositScoring(const G4String& volume, const G4ThreeVector& pos,
-                                         double energy)
+                                         double energy, int fiberID)
 {
     if (volume == "fibrephysical")
     {
         if (fEnable.depositScoring)
         {   
             fEnergyDeposits.eventId = fSourceRecord.eventId;
+            fEnergyDeposits.fiberId = fiberID;
             fEnergyDeposits.position = TVector3(pos.x(), pos.y(), pos.z());
             fEnergyDeposits.energy = energy;
 
             fEnergyDeposits.histogram.Fill(pos.x(), pos.y(), energy);
-            // fEnergyDeposits.hits->Fill();
+            fEnergyDeposits.hits->Fill();
             total_deposited += energy;
             // spdlog::info("Energy = {}", energy);
         }
-        if (fEnable.hMatrixScoring) { setHmatrix(pos.x(), pos.y(), fBinX, fBinY, energy); }
+        if (fEnable.hMatrixScoring) {
+            if (CmdLineOption::GetFlagValue("Full_scatterrer")){{
+                setHmatrix_fullscat(fiberID, fBinX, fBinY, energy);}
+            } else {
+                setHmatrix(pos.x(), pos.y(), fBinX, fBinY, energy);}
+            }
         return;
     }
     if (volume == "maskBin" && fEnable.maskDepositScoring)
@@ -198,11 +205,22 @@ void DataStorage::setHmatrix(double DetX, double DetY, int sourceBinX, int sourc
     nBinY = nBinY < 1 ? 1 : nBinY;
     nBinY = nBinY > fDetBinsY - 1 ? fDetBinsY : nBinY;
     int rowIndexMatrixH = (nBinX - 1) * fDetBinsY + fDetBinsY - nBinY;
-    // spdlog::info("x = {}, y = {}", x, y);//nBinY - HISTOBIN
-    // spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH,
-    // colIndexMatrixH);//nBinY - HISTOBIN fMatrixH(rowIndexMatrixH,colIndexMatrixH) ++;
     fMatrixH(rowIndexMatrixH, colIndexMatrixH) += energy;
     // fMatrixH(rowIndexMatrixH, colIndexMatrixH) += 1;
+}
+
+
+void DataStorage::setHmatrix_fullscat(int fibreNo, int sourceBinX, int sourceBinY,
+                             double energy)
+    {
+    auto sourceHistBin = std::make_tuple<int, int>(std::forward<int>(sourceBinX + 1),
+                                                   std::forward<int>(sourceBinY + 1));
+
+    auto sourceMatBin = std::make_tuple<int, int>(fMaxBinY - std::get<1>(sourceHistBin),
+                                                  std::get<0>(sourceHistBin) - 1);
+    int colIndexMatrixH = std::get<1>(sourceMatBin) * fMaxBinY + std::get<0>(sourceMatBin);
+
+    fMatrixH(fibreNo, colIndexMatrixH) += energy;
 }
 
 void DataStorage::setHmatrixHypMed(int layerNum, double DetX, double DetY,
@@ -220,20 +238,12 @@ void DataStorage::setHmatrixHypMed(int layerNum, double DetX, double DetY,
     double y = DetY;
     auto nBinX = fLayersDeposits[layerNum].histogram.GetXaxis()->FindBin(x);
     auto nBinY = fLayersDeposits[layerNum].histogram.GetYaxis()->FindBin(y);
-    // auto nBinX = static_cast<int>((x + fDetBinsXLayers[layerNum] * fDetBinSize / 2) / fDetBinSize) + 1;
-    // auto nBinY = static_cast<int>((y + fDetBinsYLayers[layerNum] * fDetBinSize / 2) / fDetBinSize) + 1;
-    // spdlog::info("xbin : hist {}, loc {}", nBinCheckX, nBinX);//nBinY - HISTOBIN
-    // spdlog::info("ybin : hist {}, loc {}", nBinCheckY, nBinY);//nBinY - HISTOBIN
     nBinX = nBinX < 1 ? 1 : nBinX;
     nBinX = nBinX > fDetBinsXLayers[layerNum] - 1 ? fDetBinsXLayers[layerNum] : nBinX;
     nBinY = nBinY < 1 ? 1 : nBinY;
     nBinY = nBinY > fDetBinsYLayers[layerNum] - 1 ? fDetBinsYLayers[layerNum] : nBinY;
     int rowIndexMatrixH = (nBinX - 1) * fDetBinsYLayers[layerNum] + fDetBinsYLayers[layerNum] - nBinY;
-    // spdlog::info("x = {}, y = {}", x, y);//nBinY - HISTOBIN
-    // spdlog::info("Layer {}", layerNum); // nBinY - HISTOBIN
-    // spdlog::info("xbin {}, ybin {}", nBinX, nBinY); // nBinY - HISTOBIN
-    // spdlog::info("rowIndexMatrixH = {}, colIndexMatrixH = {}", rowIndexMatrixH, colIndexMatrixH);
-    //nBinY - HISTOBIN fMatrixH(rowIndexMatrixH,colIndexMatrixH) ++;
+
     fMatrixHHypMed[layerNum](rowIndexMatrixH, colIndexMatrixH) += energy;
 }
 

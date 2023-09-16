@@ -66,12 +66,15 @@ int main(int argc, char** argv)
 
     CmdLineOption opt_dimension("Single_dimension", "-1d", "Run in 1 dimension");
 
+    CmdLineOption opt_scat("Full_scatterrer", "-fullscat", "Full-cale scatterrer");
+
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
     const Positional& args = CmdLineConfig::GetPositionalArguments();
 
     Float_t detectorsource = 220, fibrewidth = 1.3; // detector dimensions
     Int_t fibrenum = 16;                            // number of fibers in one layer
+    double fibrelength = 100;                       // length of the fiber
 
     Int_t mord = 31;                                              // MURA mask order
     // Float_t masksource = 170., masklength = 70., maskthick = 20.; // mask dimensions
@@ -183,9 +186,9 @@ int main(int argc, char** argv)
     MuraMask mask(mord, {masklengthX * mm, masklengthY * mm, maskthick * mm},
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
     DetectorBlock detector(nLayer,                                // number of layers
-                           FibreLayer(                            //
+                           FibreLayer(                  //
                                fibrenum,                          // number of fibres in layer
-                               Fibre({fibrewidth * fibrenum * mm, // fibre length
+                               Fibre({fibrelength * mm, // fibre length
                                       fibrewidth * mm,            // fibre width and thickness
                                       material, wrappingmaterial, airmaterial})));
 

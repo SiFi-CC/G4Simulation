@@ -15,11 +15,11 @@ G4LogicalVolume* Fibre::Construct()
 
     // wrapping width is hardcoded as 0.014 mm
     auto fibreWrapping =
-        new G4LogicalVolume(new G4Box("fibreWrappingSolid", fLength / 2, fWidth / 2, fWidth / 2),
+        new G4LogicalVolume(new G4Box("fibreWrappingSolid", fLength / 2, (fWidth - 0.025) / 2, fWidth / 2),
                             fWrappingMaterial, "fibreWrappingLogical");
 
     // actual fibre width is hardcoded as 1 mm
-    auto actualfibre = new G4LogicalVolume(new G4Box("fibreSolid", fLength / 2, (fWidth - 0.014) / 2, (fWidth - 0.014) / 2),
+    auto actualfibre = new G4LogicalVolume(new G4Box("fibreSolid", fLength / 2, (fWidth - 0.06) / 2, (fWidth - 0.014) / 2),
                                            fFibreMaterial, "fibreLogical");
 
     new G4PVPlacement(0, G4ThreeVector(0, 0, 0), fibreWrapping, "fibreWrappingphysical", fibre, 0,

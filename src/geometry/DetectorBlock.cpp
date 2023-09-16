@@ -29,12 +29,12 @@ G4LogicalVolume* DetectorBlock::Construct()
     rotMatrix->rotateZ(90 * deg);
     for (int i = 0; i < fNumberOfLayers; i++)
     {
-        if (i % 2 == 0 || CmdLineOption::GetFlagValue("Single_dimension"))
+        if (i % 2 == 0 || CmdLineOption::GetFlagValue("Single_dimension") || CmdLineOption::GetFlagValue("Full_scatterrer"))
         {
-            new G4PVPlacement(
-                rotMatrix,
-                G4ThreeVector(0, 0, (i + 0.5 - 0.5 * fNumberOfLayers) * fLayer.getThickness()),
-                layer, "detectorBlockRepLayers", block, 0, i, 0);
+        new G4PVPlacement(
+            rotMatrix,
+            G4ThreeVector(0, 0, (i + 0.5 - 0.5 * fNumberOfLayers) * fLayer.getThickness()),
+            layer, "detectorBlockRepLayers", block, 0, i, 0);
         }
         else
         {
@@ -42,6 +42,7 @@ G4LogicalVolume* DetectorBlock::Construct()
                 0, G4ThreeVector(0, 0, (i + 0.5 - 0.5 * fNumberOfLayers) * fLayer.getThickness()),
                 layer, "detectorBlockRepLayers", block, 0, i, 0);
         }
+        spdlog::info("Layer {} z = {}", i, (i + 0.5 - 0.5 * fNumberOfLayers) * fLayer.getThickness());
     }
 
     // For aligned:

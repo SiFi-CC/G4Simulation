@@ -35,6 +35,7 @@ private:
     G4ThreeVector fSize;
     G4Material* fMaterial;
     G4String fType;
+    TH2F fMaskHisto;
 };
 
 } // namespace SiFi

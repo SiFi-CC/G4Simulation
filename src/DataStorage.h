@@ -14,6 +14,7 @@
 
 #include <mpi.h>
 
+#include "CmdLineConfig.hh"
 #include "DataStructConvert.hh"
 
 namespace SiFi
@@ -38,6 +39,7 @@ public:
 
     virtual ~DataStorage();
     void writeMetadata(TObject* obj);
+    void write(TObject obj){obj.Write();};
     void writeMetadata(const TString& key, double value);
 
     double getMetadataNumber(const TString& key);
@@ -47,7 +49,8 @@ public:
     // should be run after metadata
     void init(bool hypmed = false);
 
-    void registerDepositScoring(const G4String& volume, const G4ThreeVector& pos, double energy);
+    void registerDepositScoring(const G4String& volume, const G4ThreeVector& pos, double energy,
+                                int fiberID);
     
     void registerDepositScoringHypMed(const G4String& volume, const G4int layerNum,
                                 const G4ThreeVector& pos, double energy);
@@ -60,6 +63,8 @@ public:
     void resizeHmatrixHypMed();
 
     void setHmatrix(double DetX, double DetY, int sourceBinX, int sourceBinY, double energy);
+    
+    void setHmatrix_fullscat(int fibreNo, int sourceBinX, int sourceBinY, double energy);
     
     void setHmatrixHypMed(int layerNum, double DetX, double DetY,
                     int sourceBinX, int sourceBinY, double energy);
@@ -153,6 +158,7 @@ protected:
 
         TVector3 position;
         int eventId = 0;
+        int fiberId = 0;
         double energy = 0;
 
         TH2F histogram;
