@@ -15,7 +15,7 @@ Fibre simpleFibre()
                   material::coupling()});
 }
 
-FibreLayer_Scatterrer simpleFibreLayer() { return {20, simpleFibre()}; }
+FibreLayer simpleFibreLayer() { return {20, simpleFibre()}; }
 
 DetectorBlock simpleDetectorBlock() { return {5, simpleFibreLayer()}; }
 

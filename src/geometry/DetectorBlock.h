@@ -11,7 +11,6 @@ class DetectorBlock : public DetectorElement
 {
 public:
     DetectorBlock(int nLayers, const FibreLayer& layer) : fNumberOfLayers(nLayers), fLayer(layer){};
-    // DetectorBlock(int nLayers, const FibreLayer_Scatterrer& layer) : fNumberOfLayers(nLayers), fLayer(layer){};
 
     G4LogicalVolume* Construct() override;
 
@@ -23,7 +22,6 @@ public:
 private:
     int fNumberOfLayers;
     FibreLayer fLayer;
-    // FibreLayer_Scatterrer fLayer;
 };
 
 } // namespace SiFi
