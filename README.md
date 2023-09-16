@@ -154,6 +154,7 @@ The general procedure is very similar for both modes. The basic difference is th
 |  `-vis`            |    none    | flag  | Run in visual mode(no simulation is performed)
 |  `-1d`            |    none    | flag  | Mask and detector are single-dimensional
 |  `-detshift`            |    0.0:0.0    | doubles  | The shift of the detector position
+|  `-fullscat`            |    none    | flag  | The full-scale detector with predefined goeometry (see the paper Hetzel et al)
 
 
 **Parameter -det**
