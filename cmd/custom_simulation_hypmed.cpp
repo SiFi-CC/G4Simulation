@@ -31,7 +31,7 @@ int main(int argc, char** argv)
                           "Detector-source distance [mm], default: 220", 220.);
     CmdLineOption opt_mask(
         "Mask", "-mask",
-        "Mask: order:mask-source:width/length:thickness [mm], default: 31:170:70:20", 0, 0);
+        "Mask: order:mask-source:xSize:ySize:thickness [mm], default: 31:170:70:70:20", 0, 0);
     CmdLineOption opt_masktype("MaskType", "-masktype",
                                "MaskType: {standart, round, pet, nowallpet, nowallpetcut}",
                                "nowallpet");
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
     Float_t detectorsource = opt_det.GetDoubleValue(); // detector dimensions
 
     Int_t mord = 31;                                              // MURA mask order
-    Float_t masksource = 170., masklength = 70., maskthick = 20.; // mask dimensions
+    Float_t masksource = 170., masklengthX = 70., masklengthY = 70., maskthick = 20.; // mask dimensions
 
     Float_t minTheta, maxTheta = 180;
 
@@ -88,12 +88,13 @@ int main(int argc, char** argv)
     storage.enablesource();              // enblesource histogram
 
     { // CmdLine options
-        if (opt_mask.GetArraySize() == 4)
+        if (opt_mask.GetArraySize() == 5)
         {
             mord = opt_mask.GetIntArrayValue(1);
             masksource = opt_mask.GetDoubleArrayValue(2);
-            masklength = opt_mask.GetDoubleArrayValue(3);
-            maskthick = opt_mask.GetDoubleArrayValue(4);
+            masklengthX = opt_mask.GetDoubleArrayValue(3);
+            masklengthY = opt_mask.GetDoubleArrayValue(4);
+            maskthick = opt_mask.GetDoubleArrayValue(5);
         }
         else if (opt_mask.GetArraySize() != 0)
         {
@@ -139,7 +140,7 @@ int main(int argc, char** argv)
     auto wrappingmaterial = MaterialManager::get()->GetMaterial("G4_Al");
     auto airmaterial = MaterialManager::get()->GetMaterial("G4_AIR");
 
-    MuraMask mask(mord, {masklength * mm, masklength * mm, maskthick * mm},
+    MuraMask mask(mord, {masklengthX * mm, masklengthY * mm, maskthick * mm},
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
 
     // # HypMed
@@ -157,7 +158,7 @@ int main(int argc, char** argv)
     // minTheta =
     // atan(-(masklength+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
     minTheta =
-        atan(-(masklength + layer2binsY * crystalWidth) / 2 / detectorsource) * 180 / M_PI + 180.;
+        atan(-(masklengthX + layer2binsY * crystalWidth) / 2 / detectorsource) * 180 / M_PI + 180.;
     if (opt_theta.GetArraySize() == 1) { minTheta = opt_theta.GetDoubleArrayValue(1); }
     else if (opt_theta.GetArraySize() != 0)
     {
@@ -170,7 +171,7 @@ int main(int argc, char** argv)
     printf("Detector HypMed Array: %g %g %g [mm]\n", detectorsource, layer2binsY * crystalWidth,
            crystalWidth);
     printf("Mask     : %s, %g %g %g %g [mm]\n", opt_masktype.GetStringValue(), masksource,
-           masklength, masklength, maskthick);
+           masklengthX, masklengthY, maskthick);
     printf("Mask order      : %i\n", mord);
     printf("No. of events  : %i\n", opt_events.GetIntValue());
     printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
