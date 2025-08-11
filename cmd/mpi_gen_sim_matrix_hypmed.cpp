@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     CmdLineOption opt_energy("Energy", "-e", "Energy of particles [keV], default: 4400 (integer)",
                              4400);
     CmdLineOption opt_source("Source", "-source",
-                             "Source plane size and number of bins [mm], default: 64:100", 0);
+                             "Source plane size and number of bins (sizeX:sizeY:binsX:binsY) [mm], default: 70:70:100:100", 0);
 
     CmdLineArg cmdarg_output("output", "Output file", CmdLineArg::kString);
 
@@ -73,7 +73,7 @@ int main(int argc, char** argv)
     Float_t masksource = 170., masklengthX = 70., masklengthY = 70., maskthick = 20.; // mask dimensions
 
 
-    Float_t sRange = 70;                 // source dimensions
+    Float_t sRangeX = 70, sRangeY = 70;                 // source dimensions
     Int_t maxBinX = 100, maxBinY = 100;  // source bins
 
     if (opt_mask.GetArraySize() == 5)
@@ -90,11 +90,12 @@ int main(int argc, char** argv)
         abort();
     }
 
-    if (opt_source.GetArraySize() == 2)
+    if (opt_source.GetArraySize() == 4)
     {
-        sRange = opt_source.GetDoubleArrayValue(1);
-        maxBinX = opt_source.GetIntArrayValue(2);
-        maxBinY = maxBinX;
+        sRangeX = opt_source.GetDoubleArrayValue(1);
+        sRangeY = opt_source.GetDoubleArrayValue(2);
+        maxBinX = opt_source.GetIntArrayValue(3);
+        maxBinY = opt_source.GetIntArrayValue(4);
     }
     else if (opt_source.GetArraySize() != 0)
     {
@@ -144,14 +145,14 @@ int main(int argc, char** argv)
     // # HypMed
     double crystalWidth = 1.333;
     double layer0Z = 3.2;
-    double layer1Z = 4.4;
-    double layer2Z = 7.4;
-    int layer0binsX = 31;
-    int layer0binsY = 35;
-    int layer1binsX = 31;
-    int layer1binsY = 36;
-    int layer2binsX = 34;
-    int layer2binsY = 36;
+    double layer1Z = 0.00001;
+    double layer2Z = 0.00001;
+    int layer0binsX = 96;
+    int layer0binsY = 24;
+    int layer1binsX = 1;
+    int layer1binsY = 1;
+    int layer2binsX = 1;
+    int layer2binsY = 1;
 
     printf("Detector HypMed Array: %g %g %g [mm]\n", detectorsource, layer2binsY * crystalWidth,
            crystalWidth);
@@ -160,7 +161,7 @@ int main(int argc, char** argv)
     printf("Mask order      : %i\n", mord);
     printf("No. of events  : %i\n", opt_events.GetIntValue());
     printf("Energy [keV] : %i\n", opt_energy.GetIntValue());
-    printf("Source plane [mm] : %g %g Number of bins: %i %i\n", sRange, sRange, maxBinX, maxBinY);
+    printf("Source plane [mm] : %g %g Number of bins: %i %i\n", sRangeX, sRangeY, maxBinX, maxBinY);
 
     // top
     CrystalLayer layer0 = CrystalLayer(layer0binsX, layer0binsY,   // number of crystals in layer
@@ -211,10 +212,10 @@ int main(int argc, char** argv)
     storage.writeMetadata("maskToDetectorDistance", maskdetector * mm);
     detector.writeMetadata(&storage);
     mask.writeMetadata(&storage);
-    storage.writeMetadata("sourceMinX", -sRange / 2);
-    storage.writeMetadata("sourceMaxX", sRange / 2);
-    storage.writeMetadata("sourceMinY", -sRange / 2);
-    storage.writeMetadata("sourceMaxY", sRange / 2);
+    storage.writeMetadata("sourceMinX", -sRangeX / 2);
+    storage.writeMetadata("sourceMaxX", sRangeX / 2);
+    storage.writeMetadata("sourceMinY", -sRangeY / 2);
+    storage.writeMetadata("sourceMaxY", sRangeY / 2);
     storage.writeMetadata("sourceNBinX", maxBinX);
     storage.writeMetadata("sourceNBinY", maxBinY);
     storage.init(true);
@@ -226,14 +227,14 @@ int main(int argc, char** argv)
     runManager.GeometryHasBeenModified();
     log::info("world_size = {}", world_size);
 
-    log::debug("xDimSource = {}, yDimSource = {}",sRange,sRange);
+    log::debug("xDimSource = {}, yDimSource = {}",sRangeX,sRangeY);
     // log::info("maxBinX = {}, maxBinY = {}",maxBinX,maxBinY);
     for (int binX = 0; binX < maxBinX; binX += 1)
     {
         for (int binY = 0; binY < maxBinY; binY += 1)
         {
-            double sPosX = -sRange / 2. + (0.5 + binX) * (sRange / maxBinX);
-            double sPosY = -sRange / 2. + (0.5 + binY) * (sRange / maxBinY);
+            double sPosX = -sRangeX / 2. + (0.5 + binX) * (sRangeX / maxBinX);
+            double sPosY = -sRangeY / 2. + (0.5 + binY) * (sRangeY / maxBinY);
             // for (int energy_it  = energy; energy_it > 50; energy_it /= 4) {
             if (binX % world_size == world_rank)
             {

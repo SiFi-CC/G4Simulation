@@ -146,14 +146,14 @@ int main(int argc, char** argv)
     // # HypMed
     double crystalWidth = 1.333;
     double layer0Z = 3.2;
-    double layer1Z = 4.4;
-    double layer2Z = 7.4;
-    int layer0binsX = 31;
-    int layer0binsY = 35;
-    int layer1binsX = 31;
-    int layer1binsY = 36;
-    int layer2binsX = 34;
-    int layer2binsY = 36;
+    double layer1Z = 0.00001;
+    double layer2Z = 0.00001;
+    int layer0binsX = 96;
+    int layer0binsY = 24;
+    int layer1binsX = 1;
+    int layer1binsY = 1;
+    int layer2binsX = 1;
+    int layer2binsY = 1;
 
     // minTheta =
     // atan(-(masklength+fibrewidth*fibrenum)*sqrt(2)/2/detectorsource)*180/M_PI+180.;
