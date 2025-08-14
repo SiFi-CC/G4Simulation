@@ -144,7 +144,7 @@ int main(int argc, char** argv)
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
     // # HypMed
     double crystalWidth = 1.333;
-    double layer0Z = 3.2;
+    double layer0Z = 15;
     double layer1Z = 0.00001;
     double layer2Z = 0.00001;
     int layer0binsX = 96;
@@ -246,7 +246,7 @@ int main(int argc, char** argv)
                 // log::info("processor {} calculates column {}", world_rank, binX);
                 storage.setCurrentBins(binX, binY);
 
-                source.SetPosAng(TVector3(sPosX, sPosY, 0), layer2.getSizeY() * mm,
+                source.SetPosAng(TVector3(sPosX, sPosY, 0), layer0.getSizeX() * mm,
                                     detectorsource * mm);
                 // source.SetPosAng(TVector3(sPosX, sPosY, 0));
                 runManager.BeamOn(nIter);

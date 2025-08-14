@@ -52,8 +52,8 @@ int main(int argc, char** argv)
                             "Min Theta angle [Deg] (maximum Theta is 180), default: auto", 0);
     CmdLineOption opt_source("Source", "-source", "Source position [mm], default: 0:0", 0);
     CmdLineOption opt_sourceBins("SourceBins", "-sourceBins",
-                                 "Range and number of bins and in source Histogram (is needed for "
-                                 "RMSE and UQI), default: 70:100",
+                                 "Source plane size and number of bins (sizeX:sizeY:binsX:binsY) [mm], "
+                                 "default: 70:70:100:100",
                                  0);
     CmdLineOption opt_sourceMac("SourceMac", "-sMac", "Source '.mac' script (string)", "");
     CmdLineOption opt_visualization("Visualization", "-vis", "Run visualization");
@@ -65,6 +65,8 @@ int main(int argc, char** argv)
                                 0.0);
 
     CmdLineOption opt_dimension("Single_dimension", "-1d", "Run in 1 dimension");
+    CmdLineOption opt_sourcePhase("SourcePhaseSpace", "-sFile", "tsv with source", "");
+
 
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
@@ -82,8 +84,8 @@ int main(int argc, char** argv)
 
     Float_t sPosX = 0, sPosY = 0; // source coordinates
 
-    Int_t sNbins = 100; // source histogram parameters
-    Float_t sRange = 70;
+    Int_t sNbinsX = 100, sNbinsY = 100; // source histogram parameters
+    Float_t sRangeX = 70, sRangeY = 70;
 
     storage.enablesource();              // enblesource histogram
 
@@ -113,10 +115,12 @@ int main(int argc, char** argv)
                           opt_source.GetArraySize());
             abort();
         }
-        if (opt_sourceBins.GetArraySize() == 2)
+        if (opt_sourceBins.GetArraySize() == 4)
         {
-            sRange = opt_sourceBins.GetDoubleArrayValue(1);
-            sNbins = opt_sourceBins.GetIntArrayValue(2);
+            sRangeX = opt_sourceBins.GetDoubleArrayValue(1);
+            sRangeY = opt_sourceBins.GetDoubleArrayValue(2);
+            sNbinsX = opt_sourceBins.GetIntArrayValue(3);
+            sNbinsY = opt_sourceBins.GetIntArrayValue(4);
         }
         else if (opt_sourceBins.GetArraySize() != 0)
         {
@@ -145,7 +149,7 @@ int main(int argc, char** argv)
 
     // # HypMed
     double crystalWidth = 1.333;
-    double layer0Z = 3.2;
+    double layer0Z = 15;
     double layer1Z = 0.00001;
     double layer2Z = 0.00001;
     int layer0binsX = 96;
@@ -212,7 +216,7 @@ int main(int argc, char** argv)
     // source.SetPosAng(TVector3(sPosX, sPosY, 0),fibrewidth*fibrenum *mm,detectorsource * mm);
     source.SetPosAng(TVector3(sPosX, sPosY, 0));
 
-    runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource()));
+    runManager.SetUserAction(new PrimaryGeneratorAction(source.GetSource(), &storage));
     runManager.SetUserAction(new SteppingAction(&storage));
     runManager.SetUserAction(new EventAction(&storage));
     runManager.Initialize();
@@ -232,18 +236,18 @@ int main(int argc, char** argv)
     storage.writeMetadata("energy", energy * keV);
     storage.writeMetadata("sourceToMaskDistance", masksource * mm);
     storage.writeMetadata("maskToDetectorDistance", maskdetector * mm);
-    storage.writeMetadata("sourceMinX", -sRange / 2);
-    storage.writeMetadata("sourceMaxX", sRange / 2);
-    storage.writeMetadata("sourceMinY", -sRange / 2);
-    storage.writeMetadata("sourceMaxY", sRange / 2);
-    storage.writeMetadata("sourceNBinX", sNbins);
+    storage.writeMetadata("sourceMinX", -sRangeX / 2);
+    storage.writeMetadata("sourceMaxX", sRangeX / 2);
+    storage.writeMetadata("sourceMinY", -sRangeY / 2);
+    storage.writeMetadata("sourceMaxY", sRangeY / 2);
+    storage.writeMetadata("sourceNBinX", sNbinsX);
     if (CmdLineOption::GetFlagValue("Single_dimension"))
     {
         storage.writeMetadata("sourceNBinY", 1);
     }
     else
     {
-        storage.writeMetadata("sourceNBinY", sNbins);
+        storage.writeMetadata("sourceNBinY", sNbinsY);
     }
     detector.writeMetadata(&storage);
     mask.writeMetadata(&storage);

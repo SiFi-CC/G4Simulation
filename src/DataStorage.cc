@@ -183,6 +183,7 @@ void DataStorage::resizeHmatrixHypMed()
     {
         fMatrixHHypMed[i].ResizeTo(fDetBinsXLayers[i] * fDetBinsYLayers[i],
                                    fMaxBinX * fMaxBinY);
+        spdlog::info("resizing matrix {} to size {} x {}", i, fDetBinsXLayers[i] * fDetBinsYLayers[i], fMaxBinX * fMaxBinY);
     }
 }
 
