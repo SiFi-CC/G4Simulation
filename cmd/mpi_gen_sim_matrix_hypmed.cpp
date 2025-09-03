@@ -144,15 +144,15 @@ int main(int argc, char** argv)
                   MaterialManager::get()->GetMaterial("G4_W"), opt_masktype.GetStringValue());
     // # HypMed
     double crystalWidth = 1.333;
-    double layer0Z = 15;
-    double layer1Z = 0.00001;
-    double layer2Z = 0.00001;
+    double layer0Z = 5;
+    double layer1Z = 5;
+    double layer2Z = 5;
     int layer0binsX = 96;
     int layer0binsY = 24;
-    int layer1binsX = 1;
-    int layer1binsY = 1;
-    int layer2binsX = 1;
-    int layer2binsY = 1;
+    int layer1binsX = 96;
+    int layer1binsY = 24;
+    int layer2binsX = 96;
+    int layer2binsY = 24;
 
     printf("Detector HypMed Array: %g %g %g [mm]\n", detectorsource, layer2binsY * crystalWidth,
            crystalWidth);
